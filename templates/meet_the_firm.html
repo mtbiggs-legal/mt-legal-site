@@ -59,6 +59,7 @@
   .mp-bio-scroll.is-end { -webkit-mask-image: none; mask-image: none; }
   .mp-portrait img {
     width: 100%;
+    height: auto;             /* the width/height attributes only reserve space */
     aspect-ratio: 4 / 5;
     object-fit: cover;
     object-position: center top;
@@ -149,7 +150,20 @@
   @media (max-width: 900px) {
     .firm-intro { padding: 3rem 1.5rem 2rem; }
     .mp-profile { grid-template-columns: 1fr; padding: 0 1.5rem 3rem; gap: 2rem; }
-    .mp-portrait { max-width: 380px; }
+    /* Phones and tablets: a compact header card (small photo beside the name
+       and title) instead of a full-width portrait, with the facts below. */
+    .mp-portrait {
+      display: grid;
+      grid-template-columns: clamp(104px, 30vw, 150px) 1fr;
+      column-gap: 1.1rem;
+      align-items: center;
+      max-width: 560px;
+    }
+    .mp-portrait picture { display: block; grid-row: 1 / span 2; }
+    .mp-portrait img { aspect-ratio: 4 / 5; }
+    .mp-portrait .mp-name { margin-top: 0; font-size: 1.3rem; align-self: end; }
+    .mp-portrait .mp-title { margin: .35rem 0 0; align-self: start; }
+    .mp-portrait .mp-facts { grid-column: 1 / -1; margin-top: 1.25rem; }
     .mp-bio-scroll { position: static; height: auto; overflow: visible; padding-bottom: 0; -webkit-mask-image: none; mask-image: none; }
     .mp-grid { grid-template-columns: 1fr; }
     .commit-section { padding: 3rem 1.5rem; }
