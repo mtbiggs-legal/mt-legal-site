@@ -7,7 +7,15 @@ import shared
 
 def test_healthz_is_always_available(client):
     resp = client.get("/healthz")
-    assert resp.status_code == 200 and resp.get_json() == {"ok": True}
+    data = resp.get_json()
+    assert resp.status_code == 200 and data["ok"] is True
+    assert set(data) == {"ok", "production", "public_site_only", "persistent_data"}
+
+
+@pytest.mark.parametrize("raw", ['1', '"1"', "'1'", " true ", "on"])
+def test_public_site_only_flag_tolerates_quotes_and_spaces(monkeypatch, raw):
+    monkeypatch.setenv("PUBLIC_SITE_ONLY", raw)
+    assert shared._env("PUBLIC_SITE_ONLY").lower() in ("1", "true", "yes", "on")
 
 
 @pytest.mark.parametrize("path", [

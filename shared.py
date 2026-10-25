@@ -129,14 +129,20 @@ CASE_ATTORNEY_MAP = {
 # startup on missing secrets. PUBLIC_SITE_ONLY=1 serves only the marketing site
 # and intake: portals, logins, and attorney tools return 404 (see app.py).
 
-IS_PRODUCTION    = os.getenv("APP_ENV", "").strip().lower() == "production"
-PUBLIC_SITE_ONLY = os.getenv("PUBLIC_SITE_ONLY", "").strip().lower() in ("1", "true", "yes")
+def _env(name: str) -> str:
+    """An env var with surrounding whitespace and stray quotes removed, so a
+    value pasted into a hosting dashboard as "1" or 'production' still counts."""
+    return os.getenv(name, "").strip().strip("\"'").strip()
+
+
+IS_PRODUCTION    = _env("APP_ENV").lower() == "production"
+PUBLIC_SITE_ONLY = _env("PUBLIC_SITE_ONLY").lower() in ("1", "true", "yes", "on")
 
 # ── Data directories ──────────────────────────────────────────────────────────
 # DATA_DIR points every runtime data folder at a persistent disk in hosting
 # (e.g. /var/data); locally it defaults to the project folder as before.
 
-DATA_ROOT = Path(os.getenv("DATA_DIR", "").strip() or BASE_DIR)
+DATA_ROOT = Path(_env("DATA_DIR") or BASE_DIR)
 
 CLIENT_DATA_DIR      = DATA_ROOT / "client-data"
 RESEARCH_HISTORY_DIR = DATA_ROOT / "research-history"

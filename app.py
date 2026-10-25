@@ -61,8 +61,14 @@ def _public_site_only():
 
 @app.route("/healthz")
 def healthz():
-    """Uptime check for the hosting platform."""
-    return {"ok": True}
+    """Uptime check for the hosting platform. Also reports which deployment
+    modes are active (yes/no flags only, never values) to diagnose settings."""
+    return {
+        "ok":               True,
+        "production":       shared.IS_PRODUCTION,
+        "public_site_only": shared.PUBLIC_SITE_ONLY,
+        "persistent_data":  shared.DATA_ROOT != shared.BASE_DIR,
+    }
 
 
 @app.context_processor
