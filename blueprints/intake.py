@@ -9,7 +9,7 @@ from shared import (
     CLIENT_DATA_DIR, CLIENT_FILES_DIR,
     ATTORNEYS, CASE_ATTORNEY_MAP, MODEL,
     get_anthropic_client, create_intake_doc,
-    save_client, hash_password, generate_temp_password, recalc_hours,
+    save_client, hash_password, generate_temp_password,
     _log_activity, _make_username,
     GOOGLE_LIBS, TOKEN_FILE,
     _push_court_date_to_gcal,
@@ -33,10 +33,18 @@ def intake_submit():
     if not data:
         return jsonify({"error": "No data received."}), 400
 
-    required = ["full_name", "case_type", "matter_description"]
-    for field in required:
+    required = {
+        "full_name":          "your full name",
+        "email":              "your email address",
+        "phone":              "your phone number",
+        "matter_description": "a short description of your legal issue",
+    }
+    for field, label in required.items():
         if not data.get(field, "").strip():
-            return jsonify({"error": f"Missing required field: {field}"}), 400
+            return jsonify({"error": f"Please enter {label}."}), 400
+    # Case type is optional; an unselected one is filed as "Other".
+    if not data.get("case_type", "").strip():
+        data["case_type"] = "Other"
 
     portal_username = _make_username(data.get("full_name", "client"))
     # Random per-account temp password, emailed to the client and replaced on
@@ -205,15 +213,6 @@ def intake_submit():
     except Exception:
         pass
 
-    # Auto-bill 0.2 h for intake processing
-    portal_record.setdefault("billing_log", []).append({
-        "date":     datetime.now().strftime("%Y-%m-%d"),
-        "hours":    0.2,
-        "note":     "Intake Processing — New Client File Opened",
-        "type":     "intake",
-        "category": "Intake",
-    })
-    recalc_hours(portal_record)
     save_client(portal_record)
 
     # Auto-reply email: confirm intake + deliver portal credentials + booking link

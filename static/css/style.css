@@ -2618,3 +2618,6 @@ a.ed-layer--link:hover { background: var(--bg); border-top-color: var(--accent);
 @media (max-width: 700px) {
   .ed-layer-body .ed-focus-list, .ed-layer-body .ed-points { grid-template-columns: 1fr; }
 }
+
+/* Small "(optional)" marker beside intake fields that aren't required. */
+.field-optional { font-size: .72em; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--faint); margin-left: .25rem; }

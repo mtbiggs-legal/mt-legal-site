@@ -26,8 +26,8 @@
       </div>
 
       <div class="form-group">
-        <label for="case_type">Case Type *</label>
-        <select id="case_type" name="case_type" required onchange="updateDynamicFields()">
+        <label for="case_type">Case Type <span class="field-optional">(optional)</span></label>
+        <select id="case_type" name="case_type" onchange="updateDynamicFields()">
           <option value="">— Select —</option>
           <option value="Criminal Defense">Criminal Defense</option>
           <option value="Civil Rights">Civil Rights</option>
@@ -50,22 +50,22 @@
       </div>
 
       <div class="form-group">
-        <label for="dob">Date of Birth</label>
+        <label for="dob">Date of Birth <span class="field-optional">(optional)</span></label>
         <input type="date" id="dob" name="dob" />
       </div>
 
       <div class="form-group">
-        <label for="phone">Phone</label>
-        <input type="tel" id="phone" name="phone" placeholder="(555) 000-0000" />
+        <label for="phone">Phone *</label>
+        <input type="tel" id="phone" name="phone" placeholder="(555) 000-0000" required />
       </div>
 
       <div class="form-group">
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" placeholder="client@example.com" />
+        <label for="email">Email *</label>
+        <input type="email" id="email" name="email" placeholder="client@example.com" required />
       </div>
 
       <div class="form-group">
-        <label for="referral_source">How Did You Hear About Us?</label>
+        <label for="referral_source">How Did You Hear About Us? <span class="field-optional">(optional)</span></label>
         <input type="text" id="referral_source" name="referral_source" placeholder="Referral, web search, etc." />
       </div>
 
@@ -81,17 +81,17 @@
       <div class="form-section-title">Case Details</div>
 
       <div class="form-group">
-        <label for="case_no">Case Number <span style="font-weight:400;color:var(--gray-3)">(optional)</span></label>
+        <label for="case_no">Case Number <span class="field-optional">(optional)</span></label>
         <input type="text" id="case_no" name="case_no" placeholder="e.g. 2026-CR-00123" />
       </div>
 
       <div class="form-group">
-        <label for="county">County</label>
+        <label for="county">County <span class="field-optional">(optional)</span></label>
         <input type="text" id="county" name="county" placeholder="e.g. Knox County" />
       </div>
 
       <div class="form-group">
-        <label for="court_name">Court</label>
+        <label for="court_name">Court <span class="field-optional">(optional)</span></label>
         <input type="text" id="court_name" name="court_name" placeholder="e.g. Knox County General Sessions Court" />
       </div>
 
@@ -99,7 +99,7 @@
       <div class="form-section-title">Key Dates</div>
 
       <div class="form-group">
-        <label for="court_date_1">Court / Hearing Date</label>
+        <label for="court_date_1">Court / Hearing Date <span class="field-optional">(optional)</span></label>
         <input type="date" id="court_date_1" name="court_date_1" />
       </div>
 
@@ -107,19 +107,19 @@
       <div id="fields-criminal" class="dynamic-fields" style="display:none;contents:''">
         <div class="form-section-title">Criminal Defense Details</div>
         <div class="form-group">
-          <label for="arrest_date">Arrest Date</label>
+          <label for="arrest_date">Arrest Date <span class="field-optional">(optional)</span></label>
           <input type="date" id="arrest_date" name="arrest_date" />
         </div>
         <div class="form-group">
-          <label for="charges">Charges / Offense</label>
+          <label for="charges">Charges / Offense <span class="field-optional">(optional)</span></label>
           <input type="text" id="charges" name="charges" placeholder="e.g. DUI, Assault, Drug Possession" />
         </div>
         <div class="form-group">
-          <label for="arresting_agency">Arresting Agency</label>
+          <label for="arresting_agency">Arresting Agency <span class="field-optional">(optional)</span></label>
           <input type="text" id="arresting_agency" name="arresting_agency" placeholder="e.g. Knox County Sheriff's Office" />
         </div>
         <div class="form-group">
-          <label for="bond_amount">Bond / Bail Amount</label>
+          <label for="bond_amount">Bond / Bail Amount <span class="field-optional">(optional)</span></label>
           <input type="text" id="bond_amount" name="bond_amount" placeholder="e.g. $10,000 / Released on Own Recognizance" />
         </div>
       </div>
@@ -128,27 +128,27 @@
       <div id="fields-family" class="dynamic-fields" style="display:none;contents:''">
         <div class="form-section-title">Family Law Details</div>
         <div class="form-group">
-          <label for="date_of_marriage">Date of Marriage</label>
+          <label for="date_of_marriage">Date of Marriage <span class="field-optional">(optional)</span></label>
           <input type="date" id="date_of_marriage" name="date_of_marriage" />
         </div>
         <div class="form-group">
-          <label for="date_of_separation">Date of Separation</label>
+          <label for="date_of_separation">Date of Separation <span class="field-optional">(optional)</span></label>
           <input type="date" id="date_of_separation" name="date_of_separation" />
         </div>
         <div class="form-group">
-          <label for="spouse_name">Spouse / Other Party Name</label>
+          <label for="spouse_name">Spouse / Other Party Name <span class="field-optional">(optional)</span></label>
           <input type="text" id="spouse_name" name="spouse_name" placeholder="Full legal name" />
         </div>
         <div class="form-group">
-          <label for="minor_children">Minor Children (names &amp; ages)</label>
+          <label for="minor_children">Minor Children (names &amp; ages) <span class="field-optional">(optional)</span></label>
           <input type="text" id="minor_children" name="minor_children" placeholder="e.g. Emma, age 8; Noah, age 5; or None" />
         </div>
         <div class="form-group">
-          <label for="marital_assets">Major Marital Assets</label>
+          <label for="marital_assets">Major Marital Assets <span class="field-optional">(optional)</span></label>
           <input type="text" id="marital_assets" name="marital_assets" placeholder="e.g. Home, vehicles, retirement accounts" />
         </div>
         <div class="form-group">
-          <label for="custody_preference">Custody Preference</label>
+          <label for="custody_preference">Custody Preference <span class="field-optional">(optional)</span></label>
           <select id="custody_preference" name="custody_preference">
             <option value="">— Select if applicable —</option>
             <option value="Primary custody sought">Primary custody sought</option>
@@ -163,11 +163,11 @@
       <div id="fields-pi" class="dynamic-fields" style="display:none;contents:''">
         <div class="form-section-title">Personal Injury Details</div>
         <div class="form-group">
-          <label for="incident_date">Incident Date</label>
+          <label for="incident_date">Incident Date <span class="field-optional">(optional)</span></label>
           <input type="date" id="incident_date" name="incident_date" />
         </div>
         <div class="form-group">
-          <label for="incident_type">Type of Incident</label>
+          <label for="incident_type">Type of Incident <span class="field-optional">(optional)</span></label>
           <select id="incident_type" name="incident_type">
             <option value="">— Select —</option>
             <option value="Auto / Vehicle Accident">Auto / Vehicle Accident</option>
@@ -180,27 +180,27 @@
           </select>
         </div>
         <div class="form-group">
-          <label for="injuries_sustained">Injuries Sustained</label>
+          <label for="injuries_sustained">Injuries Sustained <span class="field-optional">(optional)</span></label>
           <input type="text" id="injuries_sustained" name="injuries_sustained" placeholder="e.g. Broken arm, herniated disc, concussion" />
         </div>
         <div class="form-group">
-          <label for="at_fault_party">At-Fault Party / Defendant</label>
+          <label for="at_fault_party">At-Fault Party / Defendant <span class="field-optional">(optional)</span></label>
           <input type="text" id="at_fault_party" name="at_fault_party" placeholder="Person, business, or government entity" />
         </div>
         <div class="form-group">
-          <label for="insurance_company">Their Insurance Company</label>
+          <label for="insurance_company">Their Insurance Company <span class="field-optional">(optional)</span></label>
           <input type="text" id="insurance_company" name="insurance_company" placeholder="e.g. State Farm, Allstate" />
         </div>
         <div class="form-group">
-          <label for="claim_number">Claim Number (if filed)</label>
+          <label for="claim_number">Claim Number (if filed) <span class="field-optional">(optional)</span></label>
           <input type="text" id="claim_number" name="claim_number" placeholder="e.g. CLM-2026-00142" />
         </div>
         <div class="form-group">
-          <label for="medical_treatment">Medical Treatment Received</label>
+          <label for="medical_treatment">Medical Treatment Received <span class="field-optional">(optional)</span></label>
           <input type="text" id="medical_treatment" name="medical_treatment" placeholder="e.g. ER visit, surgery, physical therapy" />
         </div>
         <div class="form-group">
-          <label for="approx_medical_bills">Approximate Medical Bills to Date</label>
+          <label for="approx_medical_bills">Approximate Medical Bills to Date <span class="field-optional">(optional)</span></label>
           <input type="text" id="approx_medical_bills" name="approx_medical_bills" placeholder="e.g. $12,500" />
         </div>
       </div>
@@ -209,19 +209,19 @@
       <div id="fields-employment" class="dynamic-fields" style="display:none;contents:''">
         <div class="form-section-title">Employment Law Details</div>
         <div class="form-group">
-          <label for="employer_name">Employer Name</label>
+          <label for="employer_name">Employer Name <span class="field-optional">(optional)</span></label>
           <input type="text" id="employer_name" name="employer_name" placeholder="Company name" />
         </div>
         <div class="form-group">
-          <label for="employment_start_date">Employment Start Date</label>
+          <label for="employment_start_date">Employment Start Date <span class="field-optional">(optional)</span></label>
           <input type="date" id="employment_start_date" name="employment_start_date" />
         </div>
         <div class="form-group">
-          <label for="termination_date">Termination / Last Day</label>
+          <label for="termination_date">Termination / Last Day <span class="field-optional">(optional)</span></label>
           <input type="date" id="termination_date" name="termination_date" />
         </div>
         <div class="form-group">
-          <label for="employment_issue_type">Issue Type</label>
+          <label for="employment_issue_type">Issue Type <span class="field-optional">(optional)</span></label>
           <select id="employment_issue_type" name="employment_issue_type">
             <option value="">— Select —</option>
             <option value="Wrongful Termination">Wrongful Termination</option>
@@ -236,11 +236,11 @@
           </select>
         </div>
         <div class="form-group">
-          <label for="discrimination_basis">Basis of Discrimination (if applicable)</label>
+          <label for="discrimination_basis">Basis of Discrimination (if applicable) <span class="field-optional">(optional)</span></label>
           <input type="text" id="discrimination_basis" name="discrimination_basis" placeholder="e.g. Race, Sex, Disability, Age, Religion" />
         </div>
         <div class="form-group">
-          <label for="eeoc_filed">EEOC / THRC Charge Filed?</label>
+          <label for="eeoc_filed">EEOC / THRC Charge Filed? <span class="field-optional">(optional)</span></label>
           <select id="eeoc_filed" name="eeoc_filed">
             <option value="">— Select —</option>
             <option value="Not yet filed">Not yet filed</option>
@@ -249,7 +249,7 @@
           </select>
         </div>
         <div class="form-group">
-          <label for="num_employees">Approx. Number of Employees</label>
+          <label for="num_employees">Approx. Number of Employees <span class="field-optional">(optional)</span></label>
           <select id="num_employees" name="num_employees">
             <option value="">— Select —</option>
             <option value="1–7">1–7 (small employer)</option>
@@ -266,11 +266,11 @@
       <div id="fields-realestate" class="dynamic-fields" style="display:none;contents:''">
         <div class="form-section-title">Real Estate Details</div>
         <div class="form-group">
-          <label for="property_address">Property Address</label>
+          <label for="property_address">Property Address <span class="field-optional">(optional)</span></label>
           <input type="text" id="property_address" name="property_address" placeholder="123 Main St, Nashville, TN 37201" />
         </div>
         <div class="form-group">
-          <label for="real_estate_issue_type">Issue Type</label>
+          <label for="real_estate_issue_type">Issue Type <span class="field-optional">(optional)</span></label>
           <select id="real_estate_issue_type" name="real_estate_issue_type">
             <option value="">— Select —</option>
             <option value="Purchase / Sale Transaction">Purchase / Sale Transaction</option>
@@ -285,7 +285,7 @@
           </select>
         </div>
         <div class="form-group">
-          <label for="re_buyer_seller">Are You the Buyer, Seller, Landlord, or Tenant?</label>
+          <label for="re_buyer_seller">Are You the Buyer, Seller, Landlord, or Tenant? <span class="field-optional">(optional)</span></label>
           <select id="re_buyer_seller" name="re_buyer_seller">
             <option value="">— Select —</option>
             <option value="Buyer">Buyer</option>
@@ -296,11 +296,11 @@
           </select>
         </div>
         <div class="form-group">
-          <label for="transaction_amount">Transaction / Property Value (approx.)</label>
+          <label for="transaction_amount">Transaction / Property Value (approx.) <span class="field-optional">(optional)</span></label>
           <input type="text" id="transaction_amount" name="transaction_amount" placeholder="e.g. $285,000" />
         </div>
         <div class="form-group">
-          <label for="closing_date">Closing or Hearing Date</label>
+          <label for="closing_date">Closing or Hearing Date <span class="field-optional">(optional)</span></label>
           <input type="date" id="closing_date" name="closing_date" />
         </div>
       </div>
@@ -309,19 +309,19 @@
       <div id="fields-contract" class="dynamic-fields" style="display:none;contents:''">
         <div class="form-section-title">Contract Dispute Details</div>
         <div class="form-group">
-          <label for="opposing_party">Opposing Party / Company</label>
+          <label for="opposing_party">Opposing Party / Company <span class="field-optional">(optional)</span></label>
           <input type="text" id="opposing_party" name="opposing_party" placeholder="Name or entity" />
         </div>
         <div class="form-group">
-          <label for="contract_date">Contract Date (approx.)</label>
+          <label for="contract_date">Contract Date (approx.) <span class="field-optional">(optional)</span></label>
           <input type="date" id="contract_date" name="contract_date" />
         </div>
         <div class="form-group">
-          <label for="contract_value">Contract Value / Amount in Dispute</label>
+          <label for="contract_value">Contract Value / Amount in Dispute <span class="field-optional">(optional)</span></label>
           <input type="text" id="contract_value" name="contract_value" placeholder="e.g. $45,000" />
         </div>
         <div class="form-group">
-          <label for="contract_has_arbitration">Arbitration Clause in Contract?</label>
+          <label for="contract_has_arbitration">Arbitration Clause in Contract? <span class="field-optional">(optional)</span></label>
           <select id="contract_has_arbitration" name="contract_has_arbitration">
             <option value="">— Unknown —</option>
             <option value="Yes">Yes</option>
@@ -334,7 +334,7 @@
       <div id="fields-defi" class="dynamic-fields" style="display:none;contents:''">
         <div class="form-section-title">DeFi / Crypto Law Details</div>
         <div class="form-group">
-          <label for="defi_issue_type">Issue Type</label>
+          <label for="defi_issue_type">Issue Type <span class="field-optional">(optional)</span></label>
           <select id="defi_issue_type" name="defi_issue_type">
             <option value="">— Select —</option>
             <option value="Token / Capital Raise">Token / Capital Raise</option>
@@ -348,15 +348,15 @@
           </select>
         </div>
         <div class="form-group">
-          <label for="project_name">Protocol / Project Name</label>
+          <label for="project_name">Protocol / Project Name <span class="field-optional">(optional)</span></label>
           <input type="text" id="project_name" name="project_name" placeholder="e.g. AcmeDAO, RealToken Protocol" />
         </div>
         <div class="form-group">
-          <label for="blockchain_network">Blockchain / Network</label>
+          <label for="blockchain_network">Blockchain / Network <span class="field-optional">(optional)</span></label>
           <input type="text" id="blockchain_network" name="blockchain_network" placeholder="e.g. Ethereum, Solana, Base" />
         </div>
         <div class="form-group">
-          <label for="defi_jurisdiction">Key Jurisdictions Involved</label>
+          <label for="defi_jurisdiction">Key Jurisdictions Involved <span class="field-optional">(optional)</span></label>
           <input type="text" id="defi_jurisdiction" name="defi_jurisdiction" placeholder="e.g. US, Cayman Islands, Switzerland" />
         </div>
       </div>
@@ -365,11 +365,11 @@
       <div class="dynamic-fields" id="fields-crypto-llc" style="display:none">
         <div class="form-section-title">Crypto LLC Formation Details</div>
         <div class="form-group">
-          <label for="llc_name">Proposed LLC Name</label>
+          <label for="llc_name">Proposed LLC Name <span class="field-optional">(optional)</span></label>
           <input type="text" id="llc_name" name="llc_name" placeholder="e.g. Acme Ventures LLC" />
         </div>
         <div class="form-group">
-          <label for="llc_jurisdiction">Formation Jurisdiction</label>
+          <label for="llc_jurisdiction">Formation Jurisdiction <span class="field-optional">(optional)</span></label>
           <select id="llc_jurisdiction" name="llc_jurisdiction">
             <option value="">— Select —</option>
             <option value="Delaware">Delaware</option>
@@ -381,11 +381,11 @@
           </select>
         </div>
         <div class="form-group">
-          <label for="num_members">Number of Members</label>
+          <label for="num_members">Number of Members <span class="field-optional">(optional)</span></label>
           <input type="number" id="num_members" name="num_members" min="1" placeholder="e.g. 2" />
         </div>
         <div class="form-group">
-          <label for="token_issuance">Plans to Issue Tokens?</label>
+          <label for="token_issuance">Plans to Issue Tokens? <span class="field-optional">(optional)</span></label>
           <select id="token_issuance" name="token_issuance">
             <option value="">— Select —</option>
             <option value="Yes - Utility Token">Yes — Utility Token</option>
@@ -395,7 +395,7 @@
           </select>
         </div>
         <div class="form-group">
-          <label for="business_description">Business/Project Description</label>
+          <label for="business_description">Business/Project Description <span class="field-optional">(optional)</span></label>
           <textarea id="business_description" name="business_description" rows="3" placeholder="Briefly describe the purpose and operations of the LLC"></textarea>
         </div>
       </div>
@@ -404,7 +404,7 @@
       <div class="dynamic-fields" id="fields-tokenization" style="display:none">
         <div class="form-section-title">Real Estate Tokenization Details</div>
         <div class="form-group">
-          <label for="tok_property_type">Property Type</label>
+          <label for="tok_property_type">Property Type <span class="field-optional">(optional)</span></label>
           <select id="tok_property_type" name="tok_property_type">
             <option value="">— Select —</option>
             <option value="Single-Family / Duplex">Single-Family / Duplex</option>
@@ -417,11 +417,11 @@
           </select>
         </div>
         <div class="form-group">
-          <label for="tok_property_county">Property County</label>
+          <label for="tok_property_county">Property County <span class="field-optional">(optional)</span></label>
           <input type="text" id="tok_property_county" name="tok_property_county" placeholder="e.g. Davidson, Williamson, Rutherford" />
         </div>
         <div class="form-group">
-          <label for="tok_asset_value">Estimated Asset Value</label>
+          <label for="tok_asset_value">Estimated Asset Value <span class="field-optional">(optional)</span></label>
           <select id="tok_asset_value" name="tok_asset_value">
             <option value="">— Select —</option>
             <option value="Under $500K">Under $500K</option>
@@ -431,7 +431,7 @@
           </select>
         </div>
         <div class="form-group">
-          <label for="tok_mortgage">Existing Mortgage or Lien?</label>
+          <label for="tok_mortgage">Existing Mortgage or Lien? <span class="field-optional">(optional)</span></label>
           <select id="tok_mortgage" name="tok_mortgage">
             <option value="">— Select —</option>
             <option value="Yes">Yes</option>
@@ -440,7 +440,7 @@
           </select>
         </div>
         <div class="form-group">
-          <label for="tok_investors">Intended Investors</label>
+          <label for="tok_investors">Intended Investors <span class="field-optional">(optional)</span></label>
           <select id="tok_investors" name="tok_investors">
             <option value="">— Select —</option>
             <option value="Accredited only">Accredited investors only</option>
@@ -451,7 +451,7 @@
           </select>
         </div>
         <div class="form-group">
-          <label for="tok_raise">Target Raise</label>
+          <label for="tok_raise">Target Raise <span class="field-optional">(optional)</span></label>
           <input type="text" id="tok_raise" name="tok_raise" placeholder="e.g. $750,000 for 40% of the property" />
         </div>
       </div>
@@ -460,7 +460,7 @@
       <div class="dynamic-fields" id="fields-estate" style="display:none">
         <div class="form-section-title">Estate Planning Details</div>
         <div class="form-group">
-          <label for="estate_type">Type of Estate Planning Service Needed *</label>
+          <label for="estate_type">Type of Estate Planning Service Needed <span class="field-optional">(optional)</span></label>
           <select id="estate_type" name="estate_type">
             <option value="">— Select —</option>
             <option value="Will Preparation">Will Preparation</option>
@@ -473,7 +473,7 @@
           </select>
         </div>
         <div class="form-group">
-          <label for="marital_status">Marital Status</label>
+          <label for="marital_status">Marital Status <span class="field-optional">(optional)</span></label>
           <select id="marital_status" name="marital_status">
             <option value="">— Select —</option>
             <option value="Single">Single</option>
@@ -483,11 +483,11 @@
           </select>
         </div>
         <div class="form-group">
-          <label for="num_children">Number of Children/Dependents</label>
+          <label for="num_children">Number of Children/Dependents <span class="field-optional">(optional)</span></label>
           <input type="number" id="num_children" name="num_children" min="0" placeholder="0" />
         </div>
         <div class="form-group">
-          <label for="est_assets">Estimated Estate Value</label>
+          <label for="est_assets">Estimated Estate Value <span class="field-optional">(optional)</span></label>
           <select id="est_assets" name="est_assets">
             <option value="">— Select —</option>
             <option value="Under $500k">Under $500,000</option>
@@ -498,7 +498,7 @@
           </select>
         </div>
         <div class="form-group">
-          <label for="digital_assets">Digital Assets to Include?</label>
+          <label for="digital_assets">Digital Assets to Include? <span class="field-optional">(optional)</span></label>
           <select id="digital_assets" name="digital_assets">
             <option value="">— Select —</option>
             <option value="Cryptocurrency">Cryptocurrency</option>
@@ -509,7 +509,7 @@
           </select>
         </div>
         <div class="form-group">
-          <label for="fiduciary_appointed">Executor/Trustee Identified?</label>
+          <label for="fiduciary_appointed">Executor/Trustee Identified? <span class="field-optional">(optional)</span></label>
           <select id="fiduciary_appointed" name="fiduciary_appointed">
             <option value="">— Select —</option>
             <option value="Yes">Yes</option>
@@ -530,7 +530,6 @@
           <li>The information I have provided is accurate and complete to the best of my knowledge.</li>
           <li>I understand this intake form initiates a conflict-of-interest review and does <em>not</em> create an attorney-client relationship until a signed engagement letter is issued by {{ firm_name }}.</li>
           <li>I consent to the firm contacting me via the phone number and/or email address provided.</li>
-          <li>I acknowledge that a <strong>0.2 billable hour administrative fee</strong> will be applied to my account upon file creation.</li>
         </ul>
       </div>
       <div style="display:flex;align-items:flex-start;gap:.65rem">
