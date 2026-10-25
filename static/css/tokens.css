@@ -1,0 +1,87 @@
+/* ── Self-hosted fonts ────────────────────────────────────────────────────────
+   The app runs over HTTPS on a LAN and is used offline. A CDN dependency would
+   leave the site unstyled in exactly the situation where it has to work — and
+   it would ping Google on every visit to a law firm's site.
+
+   Latin subsets only; the Cyrillic/Greek/Vietnamese cuts would triple the
+   weight for characters this site never renders.
+
+   Both are variable fonts — one file per family covers every weight, so the
+   400 and 600 downloads Google serves are byte-identical. Declaring a weight
+   range instead of two @font-face rules halves the payload to 116 KB.
+   ─────────────────────────────────────────────────────────────────────────── */
+@font-face {
+  font-family: 'Fraunces';
+  src: url('/static/fonts/fraunces-var.woff2') format('woff2-variations'),
+       url('/static/fonts/fraunces-var.woff2') format('woff2');
+  font-weight: 100 900; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('/static/fonts/inter-var.woff2') format('woff2-variations'),
+       url('/static/fonts/inter-var.woff2') format('woff2');
+  font-weight: 100 900; font-style: normal; font-display: swap;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Design tokens — single source of truth for colour and type.
+
+   Every value here is verified by tests/test_design_tokens.py. If you change a
+   colour, run that test: several of these were darkened from the approved
+   mockup specifically to clear WCAG AA.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Surfaces ── */
+  --bg:        #F7F5F0;   /* warm off-white page background */
+  --paper:     #FFFDF9;   /* cards and raised surfaces */
+  --tint:      #F0EBE0;   /* alternate box surface (two-tone grids) */
+
+  /* ── Text ── */
+  --ink:       #14181F;   /* headlines, primary buttons        16.33:1 on --bg */
+  --ink-2:     #39414F;   /* secondary text                     9.43:1 */
+  --muted:     #5A6472;   /* body copy                          5.51:1 */
+  --faint:     #686F79;   /* labels, captions, metadata         4.66:1 */
+
+  /* ── Accent ── */
+  --accent:    #7D6E4C;   /* antique brass, text-safe           4.58:1 */
+  --accent-lt: #B9AE93;   /* borders and underlines ONLY — fails AA for text */
+
+  /* ── Structure ── */
+  --rule:      #E2DED4;   /* all borders and dividers */
+
+  /* ── Semantic states (re-tuned for the warm background) ── */
+  --red:       #A33224;
+  --red-lt:    #F7E4E0;
+  --green:     #1B6B33;
+  --green-lt:  #E3F0E6;
+
+  /* ── Type ── */
+  --font-display: Fraunces, Georgia, "Times New Roman", serif;
+  --font-sans:    Inter, system-ui, "Segoe UI", Arial, sans-serif;
+
+  /* ── Geometry ── */
+  --radius:    2px;       /* buttons and inputs — was pill/12px */
+  --radius-lg: 6px;       /* cards */
+  --shadow:    none;      /* separation comes from rules, not elevation */
+
+  /* ───────────────────────────────────────────────────────────────────────────
+     Legacy aliases.
+
+     99 lines in style.css (190 references) plus inline styles across every
+     template use these names, and the attorney portal is out of scope for this
+     redesign. Aliasing lets the portal inherit the new palette untouched.
+     Do not remove without auditing every template.
+     ─────────────────────────────────────────────────────────────────────────── */
+  --navy:     #14181F;
+  --navy-lt:  #39414F;
+  --crimson:  #7D6E4C;
+  --gold:     #7D6E4C;
+  --gold-lt:  #B9AE93;
+  --gray-1:   #F7F5F0;
+  --gray-2:   #E2DED4;
+  --gray-3:   #686F79;
+  --gray-4:   #39414F;
+  --white:    #FFFDF9;
+  --text:     #14181F;
+}

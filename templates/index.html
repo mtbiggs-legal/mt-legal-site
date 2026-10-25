@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}{{ firm_name }} | Nashville AI, Blockchain, Tokenization &amp; Estate Attorney{% endblock %}
+
+{% block styles %}
+<style>
+/* Homepage sections run edge to edge; the shell's inner padding would fight them. */
+.main-content { max-width: 100%; padding: 0; }
+</style>
+{% endblock %}
+
+{% block hero %}
+<!-- ── Hero: tall full-bleed skyline with the headline over it; the practice
+     boxes below rise up over its bottom edge (see .ed-hero--layered) ──────── -->
+<section class="ed-hero ed-hero--home ed-hero--layered">
+  <div class="ed-hero-photo photo-treated" aria-hidden="true"
+       style="background-image:url('/static/images/hero-home.jpg')"></div>
+  <div class="ed-hero-shade" aria-hidden="true"></div>
+  <div class="ed-hero-text">
+    <h1>Counsel for<br><em>what comes next.</em></h1>
+    <p class="ed-lede">{{ firm_name }} helps Nashville families, founders, and investors plan for
+      crypto, tokenized property, and the assets that come next. Crypto estate and future-asset
+      planning, AI and blockchain law, stablecoins, and real estate tokenization, backed by real courtroom
+      experience in criminal and civil matters across Middle Tennessee.</p>
+  </div>
+</section>
+
+<!-- ── Practice areas: each box opens its own page ─────────────────────────── -->
+<section class="ed-section ed-section--tight ed-section--overlap" id="practice">
+  <div class="ed-grid ed-grid--titles">
+    {% for slug, area in areas.items() %}
+    <a href="{{ url_for('public.practice_area', slug=slug) }}" class="ed-cell">
+      <h3>{{ area.name }}</h3>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── Divider between the practice areas and the boxes below ──────────────── -->
+<section class="ed-quote ed-quote--divider">
+  <div class="ed-quote-photo photo-treated"
+       style="background-image:url('/static/images/quote-justice.jpg')"></div>
+  <div class="ed-quote-body">
+    <div class="ed-quote-rule"></div>
+    <blockquote>A person&rsquo;s worth cannot be measured by their wealth, and neither should
+      the quality of their counsel.</blockquote>
+    <div class="ed-attrib">
+      <b>{{ partner.display }}</b>
+      {{ partner.title }}, {{ firm_name }}
+    </div>
+    <p class="ed-quote-principle">Criminal defense and decentralization rest on the same idea:
+      a person deserves protection from overreaching power, whether it comes from the state, a
+      corporation, or a platform. We stand for privacy, due process, and the right to own and
+      control what is yours.</p>
+  </div>
+</section>
+
+<!-- ── Explore: every box opens its own page ───────────────────────────────── -->
+<section class="ed-section ed-section--tight">
+  <div class="ed-boxes ed-boxes--explore">
+    <a href="{{ url_for('public.meet_the_firm') }}" class="ed-box">
+      <span class="ed-box-label">About</span>
+      <h3>Meet Madison</h3>
+      <p>Background, experience, and why he practices.</p>
+    </a>
+    <a href="{{ url_for('public.emerging_tech') }}" class="ed-box">
+      <span class="ed-box-label">Practice focus</span>
+      <h3>Emerging Tech</h3>
+      <p>AI, blockchain, stablecoins, tokenization, and planning for the assets that come next.</p>
+    </a>
+    <a href="{{ url_for('public.case_search') }}" class="ed-box">
+      <span class="ed-box-label">Court records</span>
+      <h3>Search for your case</h3>
+      <p>Find your case in official Tennessee court records by county.</p>
+    </a>
+    <a href="{{ url_for('public.how_it_works') }}" class="ed-box">
+      <span class="ed-box-label">Process</span>
+      <h3>How it works</h3>
+      <p>From first message to engagement, with no hand-offs.</p>
+    </a>
+  </div>
+</section>
+
+<!-- ── Always-open panels: common questions and service area ───────────────── -->
+<section class="ed-section ed-section--tight" style="padding-top:0">
+  <div class="ed-panels">
+    <div class="ed-panel">
+      <span class="ed-box-label">Questions</span>
+      <h2>Common questions</h2>
+      <dl class="ed-qa ed-scroll" tabindex="0" aria-label="Common questions">
+        <dt>Is the first consultation really free?</dt>
+        <dd>Yes. It is free and confidential. Nothing is owed unless you sign an engagement
+          letter.</dd>
+        <dt>Will I work with a paralegal or an associate?</dt>
+        <dd>No. When you go to the doctor, you expect to see the doctor, not someone down
+          the hall. The same is true here: {{ partner.name }} handles your matter personally,
+          with the same care from the first call to the last.</dd>
+        <dt>Do you offer payment plans?</dt>
+        <dd>Ask during your consultation. Fees and any payment terms are always set out in
+          writing before work begins.</dd>
+        <dt>Do you only work with clients in Nashville?</dt>
+        <dd>Court matters are handled across Middle Tennessee. Crypto, AI, and tokenization
+          work often involves federal law and clients in other states.</dd>
+        <dt>Is what I tell you confidential?</dt>
+        <dd>Yes. What you share in a consultation is protected, even if you decide not to hire
+          us.</dd>
+        <dt>I&rsquo;ve already been charged. Is it too late?</dt>
+        <dd>No, but sooner is better. Reach out before your first court date so bond, evidence,
+          and deadlines can be addressed early.</dd>
+        <dt>What should I bring to my consultation?</dt>
+        <dd>Any paperwork you have, such as citations, court notices, contracts, or letters, plus
+          key dates. Never send anyone your private keys or seed phrases, including us.</dd>
+        <dt>What does a crypto estate plan include?</dt>
+        <dd>A will or trust, an inventory of your digital assets, legal authority for your
+          executor, and a secure way for them to reach your assets without exposing keys today.</dd>
+        <dt>Can you help my business accept stablecoins?</dt>
+        <dd>Yes. We review your payment partners, customer terms, compliance obligations, and
+          tax treatment so you can accept stablecoins with confidence.</dd>
+      </dl>
+    </div>
+    <div class="ed-panel">
+      <span class="ed-box-label">Service area</span>
+      <h2>Serving Middle Tennessee</h2>
+      <p class="ed-panel-lede">Based in Nashville, appearing in courts across the region.
+        Choose a county to look up your case. Crypto, AI, and tokenization clients are welcome
+        from anywhere.</p>
+      <ul class="ed-counties ed-counties--panel">
+        {% for c in service_counties %}<li><a href="{{ url_for('public.case_search', county=c) }}">{{ c }} County</a></li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ── Closing CTA: the whole band is the link ──────────────────────────────── -->
+<a href="{{ url_for('intake.intake') }}" class="ed-cta ed-cta--link">
+  <div>
+    <h2>Tell us what happened.</h2>
+    <p>A free, confidential consultation. No obligation, and no pressure to hire us.</p>
+  </div>
+  <span class="btn ed-cta-btn">Start your intake</span>
+</a>
+
+{% endblock %}

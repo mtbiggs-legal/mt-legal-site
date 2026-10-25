@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="csrf-token" content="{{ csrf_token() }}" />
+  <script>
+  // Adds the CSRF token to every same-origin state-changing fetch() and sends
+  // the user to the login page when the server reports an expired session.
+  // Installed as window.fetch so every existing call site is covered.
+  (function () {
+    var nativeFetch = window.fetch.bind(window);
+    function token() {
+      var m = document.querySelector('meta[name="csrf-token"]');
+      return m ? m.getAttribute("content") : "";
+    }
+    window.apiFetch = function (input, opts) {
+      opts = opts || {};
+      var isReq  = typeof Request !== "undefined" && input instanceof Request;
+      var url    = isReq ? input.url : String(input);
+      var method = (opts.method || (input && input.method) || "GET").toUpperCase();
+      var same   = new URL(url, location.href).origin === location.origin;
+      if (same && method !== "GET" && method !== "HEAD") {
+        var headers = new Headers(opts.headers || (isReq ? input.headers : undefined));
+        headers.set("X-CSRF-Token", token());
+        opts = Object.assign({}, opts, { headers: headers });
+      }
+      return nativeFetch(input, opts).then(function (resp) {
+        if (same && resp.status === 401 && resp.headers.get("X-Session-Expired")) {
+          location.href = resp.headers.get("X-Login-Url") || "/";
+        } else if (same && resp.status === 400 && resp.headers.get("X-CSRF-Failed")) {
+          alert("Your session changed — please reload the page and try again.");
+        }
+        return resp;
+      });
+    };
+    window.fetch = window.apiFetch;
+  })();
+  </script>
+  <title>{% block title %}{{ firm_name }} | Nashville AI, Blockchain, Tokenization &amp; Estate Attorney{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}{{ firm_name }} is a Nashville law practice for crypto estate and future-asset planning, AI and blockchain law, real estate tokenization, plus criminal defense and civil representation across Middle Tennessee. Free consultation.{% endblock %}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="{{ firm_name }}" />
+  <meta property="og:title" content="{{ self.title() }}" />
+  <meta property="og:description" content="{{ self.meta_description() }}" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "LegalService",
+    "name": {{ firm_name | tojson }},
+    "description": "Solo law practice serving Nashville and Middle Tennessee.",
+    "url": {{ request.url_root | tojson }},
+    "founder": {"@type": "Person", "name": {{ partner.display | tojson }}, "jobTitle": {{ partner.title | tojson }}},
+    "address": {"@type": "PostalAddress", "addressLocality": "Nashville", "addressRegion": "TN", "addressCountry": "US"},
+    "areaServed": [{% for c in service_counties %}{"@type": "AdministrativeArea", "name": {{ (c ~ " County, Tennessee") | tojson }}}{% if not loop.last %}, {% endif %}{% endfor %}],
+    "knowsAbout": ["Artificial intelligence law", "Blockchain and DeFi law", "Stablecoins and digital payments", "Crypto tax", "Real estate tokenization", "Estate planning", "Digital asset planning", "Criminal defense", "Civil litigation", "Family law", "Personal injury"]
+  }
+  </script>
+  <!-- tokens.css must load first: style.css consumes its custom properties -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  {% block styles %}{% endblock %}
+  <style>
+  /* ── Floating Legal Chat Widget ─────────────────────────────── */
+  #chat-widget {
+    position: fixed;
+    bottom: 1.6rem;
+    right: 1.6rem;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: .6rem;
+  }
+  #chat-window {
+    width: 330px;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 8px 32px rgba(20,24,31,.10);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transform-origin: bottom right;
+    animation: chatPop .2s ease;
+  }
+  @keyframes chatPop {
+    from { opacity: 0; transform: scale(.92) translateY(8px); }
+    to   { opacity: 1; transform: scale(1)  translateY(0); }
+  }
+  #chat-header {
+    background: var(--ink);
+    padding: .75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    border-bottom: 1px solid rgba(255,255,255,.12);
+  }
+  .chat-avatar {
+    width: 34px; height: 34px;
+    background: rgba(247,245,240,.14);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .chat-hdr-text { flex: 1; }
+  .chat-hdr-name {
+    font-family: var(--font-display);
+    font-size: .95rem;
+    font-weight: 400;
+    color: var(--bg);
+    line-height: 1.2;
+  }
+  .chat-hdr-status {
+    font-family: var(--font-sans);
+    font-size: .7rem;
+    color: rgba(247,245,240,.6);
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+  }
+  .chat-online-dot {
+    width: 7px; height: 7px;
+    background: #4caf50;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  #chat-close {
+    background: none;
+    border: none;
+    color: rgba(247,245,240,.55);
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: .2rem .3rem;
+    line-height: 1;
+    transition: color .15s;
+  }
+  #chat-close:hover { color: var(--bg); }
+  #chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: .9rem .85rem;
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+    min-height: 220px;
+    max-height: 260px;
+    background: var(--bg);
+  }
+  .chat-bubble {
+    max-width: 86%;
+    padding: .55rem .8rem;
+    border-radius: 10px;
+    font-family: var(--font-sans);
+    font-size: .84rem;
+    line-height: 1.55;
+    word-break: break-word;
+  }
+  .chat-bubble.bot {
+    background: var(--paper);
+    color: var(--ink);
+    border: 1px solid var(--rule);
+    align-self: flex-start;
+    border-bottom-left-radius: 3px;
+  }
+  .chat-bubble.user {
+    background: var(--ink);
+    color: var(--bg);
+    align-self: flex-end;
+    border-bottom-right-radius: 3px;
+  }
+  .chat-typing {
+    display: flex;
+    gap: 4px;
+    padding: .55rem .8rem;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    border-bottom-left-radius: 3px;
+    align-self: flex-start;
+    width: fit-content;
+  }
+  .chat-typing span {
+    width: 7px; height: 7px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: typingBounce .9s infinite;
+  }
+  .chat-typing span:nth-child(2) { animation-delay: .15s; }
+  .chat-typing span:nth-child(3) { animation-delay: .3s; }
+  @keyframes typingBounce {
+    0%,60%,100% { transform: translateY(0); }
+    30%          { transform: translateY(-5px); }
+  }
+  #chat-input-row {
+    display: flex;
+    gap: .4rem;
+    padding: .6rem .75rem;
+    border-top: 1px solid var(--rule);
+    background: var(--paper);
+    align-items: flex-end;
+  }
+  #chat-input {
+    flex: 1;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: .45rem .65rem;
+    font-family: var(--font-sans);
+    font-size: .83rem;
+    line-height: 1.4;
+    resize: none;
+    max-height: 80px;
+    outline: none;
+    color: var(--ink);
+  }
+  #chat-input:focus { border-color: var(--accent); }
+  #chat-send {
+    background: var(--ink);
+    color: var(--bg);
+    border: none;
+    border-radius: var(--radius);
+    width: 34px; height: 34px;
+    cursor: pointer;
+    font-size: 1rem;
+    flex-shrink: 0;
+    transition: background .15s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #chat-send:hover { background: var(--ink-2); }
+  #chat-disclaimer {
+    text-align: center;
+    font-family: var(--font-sans);
+    font-size: .67rem;
+    color: var(--faint);
+    padding: .3rem .75rem .5rem;
+    background: var(--paper);
+    border-top: 1px solid var(--rule);
+  }
+  /* ── Mobile: hide chat widget ── */
+  @media (max-width: 600px) {
+    #chat-widget { display: none !important; }
+  }
+
+
+  /* Toggle pill */
+  /* Translucent until hovered or focused, so it never hides page text. */
+  #chat-toggle {
+    background: rgba(20,24,31,.42);
+    -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
+    color: var(--bg);
+    border: 1px solid rgba(247,245,240,.22);
+    opacity: .78;
+    border-radius: 50px;
+    padding: .65rem 1.1rem .65rem .85rem;
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(20,24,31,.18);
+    font-family: var(--font-sans);
+    font-size: .8125rem;
+    font-weight: 500;
+    transition: transform .15s, box-shadow .15s, background .15s;
+    white-space: nowrap;
+  }
+  #chat-toggle:hover, #chat-toggle:focus-visible, #chat-widget.open #chat-toggle {
+    opacity: 1;
+    background: var(--ink);
+    border-color: var(--ink);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 22px rgba(20,24,31,.24);
+  }
+  .chat-toggle-icon {
+    width: 28px; height: 28px;
+    background: rgba(247,245,240,.16);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .95rem;
+    flex-shrink: 0;
+  }
+  </style>
+</head>
+<body data-page="{{ request.endpoint }}">
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="firm-name">
+        <a href="{{ url_for('public.index') }}" class="firm-name-link firm-name-main">{{ firm_name | upper }}</a>
+        <a href="{{ url_for('public.why_nashville') }}" class="firm-name-sub firm-name-sub--link">Nashville &middot; Middle Tennessee</a>
+      </div>
+      <div class="mobile-nav-collapse">
+        <nav class="main-nav">
+          <a href="{{ url_for('public.index') }}" class="nav-link {% if request.endpoint == 'public.index' %}active{% endif %}">Home</a>
+          <a href="{{ url_for('public.meet_the_firm') }}" class="nav-link {% if request.endpoint == 'public.meet_the_firm' %}active{% endif %}">Meet Madison</a>
+          <a href="{{ url_for('public.emerging_tech') }}" class="nav-link {% if request.endpoint == 'public.emerging_tech' %}active{% endif %}">Emerging Tech</a>
+        </nav>
+        <div class="header-portals">
+          {% if not public_site_only %}<a href="{{ url_for('auth.client_login') }}"   class="portal-pill">Client Login</a>{% endif %}
+          <a href="{{ url_for('intake.intake') }}"       class="header-cta">Free Consultation</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  {% block hero %}{% endblock %}
+
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-cols">
+      <div class="footer-brand">
+        <div class="footer-firm">{{ firm_name }}</div>
+        <p>Crypto estate and future-asset planning, AI and blockchain law, and
+           real estate tokenization for Nashville and Middle Tennessee.</p>
+        <p class="footer-counties">Serving {% for c in service_counties %}{{ c }}{% if not loop.last %} &middot; {% endif %}{% endfor %} counties</p>
+      </div>
+      <div>
+        <h5>Practice</h5>
+        <ul>
+          <li><a href="{{ url_for('public.practice_area', slug='criminal-defense') }}">Criminal Defense</a></li>
+          <li><a href="{{ url_for('public.practice_area', slug='civil-rights') }}">Civil Rights Litigation</a></li>
+          <li><a href="{{ url_for('public.practice_area', slug='ai-emerging-tech') }}">AI &amp; Emerging Tech</a></li>
+          <li><a href="{{ url_for('public.practice_area', slug='defi-digital-assets') }}">DeFi &amp; Crypto</a></li>
+          <li><a href="{{ url_for('public.practice_area', slug='stablecoins') }}">Stablecoins</a></li>
+          <li><a href="{{ url_for('public.practice_area', slug='real-estate-tokenization') }}">Real Estate Tokenization</a></li>
+          <li><a href="{{ url_for('public.practice_area', slug='family-law') }}">Family &amp; Estate Planning</a></li>
+          <li><a href="{{ url_for('public.practice_area', slug='personal-injury') }}">Personal Injury &amp; Liabilities</a></li>
+          <li><a href="{{ url_for('public.practice_area', slug='estate-business') }}">Crypto Estate Planning</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Clients</h5>
+        <ul>
+          {% if not public_site_only %}<li><a href="{{ url_for('auth.client_login') }}">Client Portal</a></li>{% endif %}
+          <li><a href="{{ url_for('intake.intake') }}">Start Intake</a></li>
+          {% if not public_site_only %}<li><a href="{{ url_for('auth.attorney_login') }}">Attorney Login</a></li>{% endif %}
+        </ul>
+      </div>
+      <div>
+        <h5>Contact</h5>
+        <ul>
+          <li>Nashville, Tennessee</li>
+          <li><a href="{{ url_for('intake.intake') }}">Book a consultation</a></li>
+          <li><a href="{{ url_for('public.meet_the_firm') }}">Meet Madison</a></li>
+          <li><a href="{{ url_for('public.emerging_tech') }}">Emerging Tech</a></li>
+          <li><a href="{{ url_for('public.why_nashville') }}">Why Nashville</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-legal">
+      <span>&copy; {{ current_year or 2026 }} {{ firm_name }} &middot; {{ partner.display }}, responsible attorney</span>
+      <span>Attorney advertising &middot; Prior results do not guarantee a similar outcome &middot; Contacting us does not create an attorney-client relationship</span>
+    </div>
+  </footer>
+
+
+
+  <script>
+  // Compact the fixed banner once the visitor scrolls. The body reserves the
+  // banner's full height (measured while expanded) so nothing below it moves.
+  (function () {
+    var header = document.querySelector(".site-header");
+    if (!header) return;
+    var root = document.documentElement;
+    // Measure the expanded height with transitions paused, so a resize mid-
+    // animation can't capture an in-between size.
+    function reserve() {
+      var compact = header.classList.contains("is-compact");
+      header.classList.add("is-measuring");
+      header.classList.remove("is-compact");
+      root.style.setProperty("--header-h", header.offsetHeight + "px");
+      if (compact) header.classList.add("is-compact");
+      void header.offsetHeight;
+      header.classList.remove("is-measuring");
+    }
+    var ticking = false;
+    function update() {
+      ticking = false;
+      var y = window.scrollY;
+      // Hysteresis so the banner doesn't flicker around the threshold.
+      if (y > 60) header.classList.add("is-compact");
+      else if (y < 10) header.classList.remove("is-compact");
+    }
+    window.addEventListener("scroll", function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    }, { passive: true });
+    window.addEventListener("resize", reserve);
+    window.addEventListener("load", reserve);   // web fonts can change the height
+    reserve();
+    update();
+  })();
+  </script>
+  <script>
+  // Self-scrolling blocks drop their bottom fade once read to the end.
+  document.querySelectorAll(".ed-scroll").forEach(function (box) {
+    function check() {
+      box.classList.toggle("is-end", box.scrollTop + box.clientHeight >= box.scrollHeight - 8);
+    }
+    box.addEventListener("scroll", check, { passive: true });
+    window.addEventListener("resize", check);
+    check();
+  });
+  </script>
+  <script>
+  // Expandable boxes act as an accordion: opening one closes any other open
+  // box in the same group (same parent), on every page.
+  document.addEventListener("toggle", function (e) {
+    var opened = e.target;
+    if (!(opened instanceof HTMLDetailsElement) || !opened.open || !opened.parentElement) return;
+    Array.prototype.forEach.call(opened.parentElement.children, function (sib) {
+      if (sib !== opened && sib.tagName === "DETAILS" && sib.open) sib.open = false;
+    });
+  }, true);
+  </script>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  {% block scripts %}{% endblock %}
+
+  <!-- ── Consultation CTA Modal ───────────────────────────────────────────── -->
+  <div id="consultation-modal" class="modal-overlay" style="display:none" onclick="handleConsultOverlay(event)">
+    <div class="modal-box consult-modal">
+      <div class="modal-header">
+        <h2 id="consult-title">Ready to Take the Next Step?</h2>
+        <button class="modal-close" onclick="closeConsultModal()" title="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="consult-icon">⚖</div>
+        <div class="consult-divider"></div>
+        <p id="consult-body" class="consult-body-text"></p>
+        <a href="/intake" class="btn btn-consult" style="display:inline-flex;text-decoration:none;margin-bottom:.75rem;font-size:1rem;padding:.8rem 2rem">
+          Schedule Free Consultation →
+        </a>
+        <br/>
+        <button class="btn btn-secondary" id="consult-dismiss" onclick="closeConsultModal()" style="margin-top:.4rem">
+          Continue Reviewing
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Schedule Meeting Modal ──────────────────────────────────────────── -->
+  <div id="calendar-modal" class="modal-overlay" style="display:none" onclick="handleModalOverlayClick(event)">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2>📞 Schedule Free Initial Call</h2>
+        <button class="modal-close" onclick="closeScheduleModal()" title="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <p id="modal-client-display" style="font-family:Arial,sans-serif;font-size:1rem;color:var(--navy);font-weight:bold;margin-bottom:1.25rem"></p>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="meeting-date">Date</label>
+            <input type="date" id="meeting-date" />
+          </div>
+          <div class="form-group">
+            <label for="meeting-time">Time</label>
+            <input type="time" id="meeting-time" />
+          </div>
+          <div class="form-group">
+            <label for="meeting-duration">Duration</label>
+            <select id="meeting-duration">
+              <option value="15">15 minutes</option>
+              <option value="30">30 minutes</option>
+              <option value="45">45 minutes</option>
+              <option value="60" selected>1 hour</option>
+              <option value="90">1.5 hours</option>
+              <option value="120">2 hours</option>
+            </select>
+          </div>
+          <div class="form-group full">
+            <label for="meeting-notes">Notes (optional)</label>
+            <textarea id="meeting-notes" rows="3" placeholder="Agenda, location, additional details…"></textarea>
+          </div>
+        </div>
+        <div id="calendar-modal-result"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-calendar" onclick="submitScheduleMeeting()">📞 Add to Calendar</button>
+        <button class="btn btn-secondary" onclick="closeScheduleModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Floating Legal Chat Widget ──────────────────────────────────────── -->
+  <div id="chat-widget">
+
+    <!-- Expanded chat window (hidden by default) -->
+    <div id="chat-window" style="display:none">
+      <div id="chat-header">
+        <div class="chat-avatar">⚖</div>
+        <div class="chat-hdr-text">
+          <div class="chat-hdr-name">{{ firm_name }} Assistant</div>
+          <div class="chat-hdr-status"><span class="chat-online-dot"></span>Online and here to help</div>
+        </div>
+        <button id="chat-close" onclick="toggleChat()" title="Close">✕</button>
+      </div>
+      <div id="chat-messages"></div>
+      <div id="chat-input-row">
+        <textarea id="chat-input" rows="1" placeholder="Ask a legal question…"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMsg();}"
+          oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'"></textarea>
+        <button id="chat-send" onclick="sendChatMsg()" title="Send">&#9658;</button>
+      </div>
+      <div id="chat-disclaimer">General information only, not legal advice. &nbsp;<a href="/intake" style="color:var(--accent)">Get a free consultation →</a></div>
+    </div>
+
+    <!-- Toggle pill (always visible) -->
+    <button id="chat-toggle" onclick="toggleChat()">
+      <span class="chat-toggle-icon">💬</span>
+      Hello, can I help with your legal issue?
+    </button>
+
+  </div>
+
+  <script>
+  (function() {
+    var _chatOpen    = false;
+    var _chatHistory = [];   // [{role, content}]
+    var _chatGreeted = false;
+
+    var GREETING = "Hi there! I'm the {{ firm_name }} virtual assistant. How can I help you with your legal question today?";
+
+    window.toggleChat = function() {
+      _chatOpen = !_chatOpen;
+      var win = document.getElementById("chat-window");
+      win.style.display = _chatOpen ? "flex" : "none";
+      win.style.flexDirection = "column";
+      if (_chatOpen && !_chatGreeted) {
+        _chatGreeted = true;
+        appendChatBubble("bot", GREETING);
+      }
+      if (_chatOpen) {
+        setTimeout(function() { document.getElementById("chat-input").focus(); }, 80);
+      }
+    };
+
+    window.sendChatMsg = function() {
+      var input = document.getElementById("chat-input");
+      var text  = input.value.trim();
+      if (!text) return;
+      input.value = "";
+      input.style.height = "auto";
+      appendChatBubble("user", text);
+      _chatHistory.push({ role: "user", content: text });
+      showTyping();
+      fetch("/chat/message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text, history: _chatHistory.slice(0, -1) })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        hideTyping();
+        var reply = d.reply || (d.error ? "Sorry, I hit a snag. Please try again or visit our intake form." : "");
+        if (reply) {
+          appendChatBubble("bot", reply);
+          _chatHistory.push({ role: "assistant", content: reply });
+        }
+      })
+      .catch(function() {
+        hideTyping();
+        appendChatBubble("bot", "Connection issue. Please complete our intake form and an attorney will reach out shortly.");
+      });
+    };
+
+    function appendChatBubble(role, text) {
+      var msgs = document.getElementById("chat-messages");
+      var div  = document.createElement("div");
+      div.className = "chat-bubble " + role;
+      div.textContent = text;
+      msgs.appendChild(div);
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    var _typingEl = null;
+    function showTyping() {
+      var msgs = document.getElementById("chat-messages");
+      _typingEl = document.createElement("div");
+      _typingEl.className = "chat-typing";
+      _typingEl.innerHTML = "<span></span><span></span><span></span>";
+      msgs.appendChild(_typingEl);
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+    function hideTyping() {
+      if (_typingEl && _typingEl.parentNode) _typingEl.parentNode.removeChild(_typingEl);
+      _typingEl = null;
+    }
+
+    // Hide on attorney/client portal pages
+    var path = window.location.pathname;
+    if (path.includes("portal") || path.includes("attorney-login") || path.includes("client-portal")) {
+      var w = document.getElementById("chat-widget");
+      if (w) w.style.display = "none";
+    }
+  })();
+  </script>
+
+  <script>
+  /* ── Page visit tracking (once per browser session per page) ── */
+  (function() {
+    var tracked = ["index","meet_the_firm","intake","research","drafting"];
+    var page = document.body.dataset.page;
+    if (!page || tracked.indexOf(page) === -1) return;
+    var key = "pv_" + page;
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, "1");
+    fetch("/api/track-visit", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({page: page})
+    });
+  })();
+  </script>
+
+
+  <!-- ── Intake Gate Modal (dismissable: ESC, overlay click, or ✕) ─────────── -->
+  <div id="forced-intake-modal" class="forced-modal-overlay" style="display:none"
+       onclick="handleForcedIntakeOverlay(event)">
+    <div class="forced-modal-box">
+      <button type="button" onclick="closeForcedIntakeModal()" aria-label="Close"
+              style="position:absolute;top:.6rem;right:.75rem;background:none;border:none;
+                     color:rgba(255,255,255,.65);font-size:1.35rem;line-height:1;cursor:pointer;
+                     padding:.15rem .4rem">&times;</button>
+      <div class="forced-modal-header">
+        <div class="forced-modal-icon">⚖</div>
+        <h2>One More Step</h2>
+        <p>Leave your contact info and your document will download instantly. Our attorneys may follow up to see how we can help.</p>
+      </div>
+      <div class="forced-modal-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="fi-name">Full Name *</label>
+            <input type="text" id="fi-name" placeholder="Jane A. Smith" />
+          </div>
+          <div class="form-group">
+            <label for="fi-phone">Phone *</label>
+            <input type="tel" id="fi-phone" placeholder="(555) 000-0000" />
+          </div>
+          <div class="form-group">
+            <label for="fi-email">Email</label>
+            <input type="email" id="fi-email" placeholder="client@example.com" />
+          </div>
+          <div class="form-group">
+            <label for="fi-case-type">Case Type</label>
+            <select id="fi-case-type">
+              <option value="">— Select —</option>
+              <option value="Criminal Defense">Criminal Defense</option>
+              <option value="Civil Litigation">Civil Litigation</option>
+              <option value="DeFi / Crypto Law">DeFi / Crypto Law</option>
+            </select>
+          </div>
+        </div>
+        <div id="forced-intake-result"></div>
+      </div>
+      <div class="forced-modal-footer">
+        <button class="btn btn-primary btn-lg" onclick="submitForcedIntake()" style="width:100%">Send &amp; Download →</button>
+        <p class="forced-modal-fine">Your information is private and will only be used to contact you about your legal matter.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

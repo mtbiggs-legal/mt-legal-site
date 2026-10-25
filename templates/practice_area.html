@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block title %}{{ area.name }} Attorney in Nashville, TN | {{ firm_name }}{% endblock %}
+{% block meta_description %}{{ area.tagline }} {{ firm_name }}, {{ partner.display }}, Nashville, Tennessee. Free consultation.{% endblock %}
+
+{% block styles %}
+<style>
+.main-content { max-width: 100%; padding: 0; }
+</style>
+{% if area.faqs %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [{% for f in area.faqs %}
+    {"@type": "Question", "name": {{ f.q | tojson }},
+     "acceptedAnswer": {"@type": "Answer", "text": {{ f.a | tojson }}}}{% if not loop.last %},{% endif %}{% endfor %}
+  ]
+}
+</script>
+{% endif %}
+{% endblock %}
+
+{% block hero %}
+<section class="ed-page-head">
+  <span class="eyebrow eyebrow--rule">Practice Area &middot; Nashville &amp; Middle Tennessee</span>
+  <h1>{{ area.name }}</h1>
+  <p>{{ area.tagline }}</p>
+</section>
+{% endblock %}
+
+{% block content %}
+
+{% if area.overview %}
+<section class="ed-section ed-section--tight">
+  <p class="ed-overview">{{ area.overview }}</p>
+</section>
+{% endif %}
+
+<!-- ── Everything about this area, as permanently open stacked layers ──────── -->
+<section class="ed-section ed-section--tight"{% if area.overview %} style="padding-top:0"{% endif %}>
+  <div class="ed-layers">
+
+    {% if area.helps %}
+    <section class="ed-layer">
+      <header class="ed-layer-head">
+        <span class="ed-box-label">Representation</span>
+        <h2>How an attorney helps</h2>
+        <p>What having a lawyer on your side changes.</p>
+      </header>
+      <div class="ed-layer-body">
+        <ul class="ed-points ed-points--single">{% for item in area.helps %}<li>{{ item }}</li>{% endfor %}</ul>
+      </div>
+    </section>
+    {% endif %}
+
+    <section class="ed-layer">
+      <header class="ed-layer-head">
+        <span class="ed-box-label">Scope</span>
+        <h2>What we handle</h2>
+        <p>The issues that come up most in these matters.</p>
+      </header>
+      <div class="ed-layer-body">
+        <ul class="ed-focus-list">{% for item in area.focus %}<li>{{ item }}</li>{% endfor %}</ul>
+      </div>
+    </section>
+
+    {% if area.local %}
+    <section class="ed-layer">
+      <header class="ed-layer-head">
+        <span class="ed-box-label">Local</span>
+        <h2>In Middle Tennessee</h2>
+        <p>How these matters play out in local courts.</p>
+      </header>
+      <div class="ed-layer-body"><p class="ed-layer-text">{{ area.local }}</p></div>
+    </section>
+    {% endif %}
+
+    {% if area.process %}
+    <section class="ed-layer">
+      <header class="ed-layer-head">
+        <span class="ed-box-label">Process</span>
+        <h2>How it works</h2>
+        <p>What to expect from start to finish.</p>
+      </header>
+      <div class="ed-layer-body">
+        <ul class="ed-points ed-points--single">
+          {% for step in area.process %}<li><b>{{ step.title }}.</b> {{ step.detail }}</li>{% endfor %}
+        </ul>
+      </div>
+    </section>
+    {% endif %}
+
+    {% if area.fees %}
+    <section class="ed-layer">
+      <header class="ed-layer-head">
+        <span class="ed-box-label">Fees</span>
+        <h2>Transparent fees</h2>
+        <p>Tiered by asset value, confirmed in writing.</p>
+      </header>
+      <div class="ed-layer-body">
+        <table class="ed-fees">
+          <thead><tr><th scope="col">Asset value</th><th scope="col">Legal fee</th></tr></thead>
+          <tbody>
+            {% for row in area.fees %}<tr><td>{{ row.tier }}</td><td>{{ row.fee }}</td></tr>{% endfor %}
+          </tbody>
+        </table>
+        {% if area.fees_note %}<p class="ed-fees-note">{{ area.fees_note }}</p>{% endif %}
+      </div>
+    </section>
+    {% endif %}
+
+    {% if area.faqs %}
+    <section class="ed-layer" id="faq">
+      <header class="ed-layer-head">
+        <span class="ed-box-label">Questions</span>
+        <h2>Common questions</h2>
+        <p>General information, not legal advice for your situation.</p>
+      </header>
+      <div class="ed-layer-body">
+        <dl class="ed-qa">
+          {% for f in area.faqs %}<dt>{{ f.q }}</dt><dd>{{ f.a }}</dd>{% endfor %}
+        </dl>
+      </div>
+    </section>
+    {% endif %}
+
+    <a href="{{ url_for('public.meet_the_firm') }}" class="ed-layer ed-layer--link">
+      <header class="ed-layer-head">
+        <span class="ed-box-label">Your attorney</span>
+        <h2>Meet Madison</h2>
+      </header>
+      <div class="ed-layer-body">
+        <p class="ed-layer-text">A solo practice: the lawyer you meet is the lawyer on your case.</p>
+      </div>
+    </a>
+
+  </div>
+</section>
+
+{% if area.structures %}
+<!-- ── Legal structures: expandable cards ───────────────────────────────────── -->
+<section class="ed-section ed-section--tight" style="padding-top:0">
+  <h2 class="ed-subhead">Structures we build</h2>
+  <div class="ed-boxes ed-boxes--three">
+    {% for s in area.structures %}
+    <details class="ed-box">
+      <summary>
+        <span class="ed-box-label">Structure</span>
+        <h3>{{ s.name }}</h3>
+        <p>Best for: {{ s.fits }}</p>
+      </summary>
+      <div class="ed-box-body"><p>{{ s.summary }}</p></div>
+    </details>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- ── Closing CTA: the whole band is the link ──────────────────────────────── -->
+<a href="{{ url_for('intake.intake') }}?case_type={{ area.case_types[0] | urlencode }}" class="ed-cta ed-cta--link">
+  <div>
+    <h2>Discuss your {{ area.name }} matter.</h2>
+    <p>A free, confidential consultation. No obligation, and no pressure to hire us.</p>
+  </div>
+  <span class="btn ed-cta-btn">Start your intake</span>
+</a>
+
+<!-- ── Other practice areas ────────────────────────────────────────────────── -->
+<section class="ed-section ed-section--tight">
+  <h2 class="ed-subhead">Other practice areas</h2>
+  <div class="ed-grid ed-grid--four ed-grid--compact">
+    {% for s, a in all_areas.items() if s != slug %}
+    <a href="{{ url_for('public.practice_area', slug=s) }}" class="ed-cell"><h3>{{ a.name }}</h3></a>
+    {% endfor %}
+  </div>
+</section>
+
+{% endblock %}

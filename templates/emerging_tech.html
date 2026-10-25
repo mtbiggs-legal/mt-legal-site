@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Emerging Tech Law in Nashville: AI, Blockchain &amp; Tokenization | {{ firm_name }}{% endblock %}
+{% block meta_description %}{{ firm_name }} advises Nashville and Middle Tennessee clients on the law around artificial intelligence, blockchain, real estate tokenization, and planning for digital and future assets.{% endblock %}
+
+{% block styles %}
+<style>
+.main-content { max-width: 100%; padding: 0; }
+</style>
+{% endblock %}
+
+{% block hero %}
+<section class="ed-page-head">
+  <span class="eyebrow eyebrow--rule">Emerging Tech</span>
+  <h1>The law is still being written.</h1>
+  <p>AI, blockchain, and stablecoins are moving faster than the rules that govern them. We help companies,
+     creators, investors, and families use these technologies with a legal structure chosen on
+     purpose, and a plan for the assets they create. Underneath it all is one principle: privacy,
+     ownership, and freedom from overreaching control are rights worth defending.</p>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── The emerging-tech practice areas ────────────────────────────────────── -->
+<section class="ed-section ed-section--tight">
+  <div class="ed-boxes ed-boxes--areas ed-boxes--titles">
+    {% for slug, area in areas.items() %}
+    <a href="{{ url_for('public.practice_area', slug=slug) }}" class="ed-box">
+      <h3>{{ area.name }}</h3>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- ── What's changing: one-line briefings ─────────────────────────────────── -->
+<section class="ed-section ed-section--tight" style="padding-top:0">
+  <h2 class="ed-subhead">What&rsquo;s changing</h2>
+  <ul class="ed-points ed-points--topics">
+    {% for t in topics %}
+    <li><b>{{ t.title }}</b><span>{{ t.teaser }}</span></li>
+    {% endfor %}
+  </ul>
+  <p class="ed-fees-note">General information, not legal advice for your situation. These areas
+    change quickly; we confirm current law for every engagement.</p>
+</section>
+
+<a href="{{ url_for('intake.intake') }}?case_type=AI%20%2F%20Technology%20Law" class="ed-cta ed-cta--link">
+  <div>
+    <h2>Building something new?</h2>
+    <p>A free, confidential consultation on your AI, blockchain, or tokenization project.</p>
+  </div>
+  <span class="btn ed-cta-btn">Start your intake</span>
+</a>
+
+{% endblock %}

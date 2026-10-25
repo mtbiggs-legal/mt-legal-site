@@ -1,0 +1,3925 @@
+{% extends "base.html" %}
+{% block title %}Attorney Portal — {{ firm_name }}{% endblock %}
+
+{% block styles %}
+<style>
+.cc-badge, .conflict-badge { display:inline-block; font-family:Arial,sans-serif; font-size:.62rem;
+  letter-spacing:.04em; text-transform:uppercase; padding:.05rem .35rem; border-radius:3px;
+  margin-left:.3rem; vertical-align:middle; }
+.cc-badge { background:rgba(255,255,255,.12); color:rgba(255,255,255,.75); }
+.conflict-badge { background:#f0c040; color:#3a2a00; }
+.leads-badge {
+  background: var(--red);
+  color: #fff;
+  font-size: .68rem;
+  font-weight: bold;
+  font-family: Arial, sans-serif;
+  border-radius: 10px;
+  padding: .1rem .45rem;
+  margin-left: .4rem;
+  vertical-align: middle;
+}
+/* ── Clickable stat cards ────────────────────────────── */
+.ov-stat-link {
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform .15s, box-shadow .15s;
+  display: block;
+}
+.ov-stat-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,.13);
+}
+.ov-stat-hint {
+  font-family: Arial, sans-serif;
+  font-size: .7rem;
+  color: var(--gold);
+  margin-top: .35rem;
+  opacity: .85;
+}
+/* ── Expandable lead cards ───────────────────────────── */
+.lead-card { margin-bottom:.75rem; }
+.lead-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  cursor: pointer;
+  user-select: none;
+}
+.lead-chevron {
+  font-size: .8rem;
+  color: var(--gray-3);
+  margin-left: .5rem;
+  flex-shrink: 0;
+  transition: transform .2s;
+}
+.lead-chevron.open { transform: rotate(180deg); }
+.lead-card-detail {
+  border-top: 1px solid var(--gray-1);
+  padding-top: .85rem;
+  margin-top: .65rem;
+  animation: fadeIn .15s ease;
+}
+@keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:none; } }
+.lead-detail-row {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: .22rem .6rem;
+  font-family: Arial, sans-serif;
+  font-size: .85rem;
+  margin-bottom: .3rem;
+}
+.lead-detail-lbl { color: var(--gray-3); font-size: .78rem; font-weight: bold; }
+.lead-detail-val { color: #222; }
+.lead-full-msg {
+  background: #f7f8fc;
+  border-left: 3px solid var(--gold);
+  border-radius: 0 6px 6px 0;
+  padding: .65rem .9rem;
+  font-family: Arial, sans-serif;
+  font-size: .85rem;
+  color: #333;
+  line-height: 1.6;
+  margin: .65rem 0 .85rem;
+  white-space: pre-wrap;
+}
+
+.res-section-label {
+  font-family: Georgia, serif;
+  font-size: .78rem;
+  font-weight: bold;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--gray-3);
+  margin: 1.4rem 0 .5rem;
+}
+/* ── Token Usage Card ───────────────────────────── */
+.tu-stat {
+  background: #f7f8fc;
+  border-radius: 6px;
+  padding: .55rem .7rem;
+  text-align: center;
+}
+.tu-stat-val {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--navy);
+  line-height: 1.2;
+}
+.tu-stat-lbl {
+  font-family: Arial, sans-serif;
+  font-size: .7rem;
+  color: var(--gray-3);
+  margin-top: .15rem;
+  line-height: 1.3;
+}
+#tu-breakdown-body tr:nth-child(even) { background: rgba(0,0,0,.025); }
+#tu-breakdown-body td { padding: .3rem .4rem; }
+
+/* ── Insights Panel ─────────────────────────────── */
+.ins-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: .65rem;
+  margin-bottom: 1.1rem;
+}
+@media (max-width: 900px) { .ins-stat-grid { grid-template-columns: repeat(2,1fr); } }
+.ins-stat {
+  background: #f7f8fc;
+  border-radius: 8px;
+  padding: .7rem .9rem;
+  text-align: center;
+  border: 1px solid #e8edf4;
+}
+.ins-stat-val {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--navy);
+  line-height: 1.1;
+}
+.ins-stat-val.gold { color: #a8883c; }
+.ins-stat-lbl {
+  font-family: Arial, sans-serif;
+  font-size: .72rem;
+  color: var(--gray-3);
+  margin-top: .2rem;
+  line-height: 1.3;
+}
+.ins-section-title {
+  font-family: Georgia, serif;
+  font-size: .8rem;
+  font-weight: bold;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--gray-3);
+  margin: 1.3rem 0 .65rem;
+  padding-bottom: .35rem;
+  border-bottom: 1px solid #e8edf4;
+}
+.ins-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: .5rem;
+}
+@media (max-width: 800px) { .ins-two-col { grid-template-columns: 1fr; } }
+.ins-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: Arial, sans-serif;
+  font-size: .84rem;
+}
+.ins-table th {
+  background: var(--navy);
+  color: #fff;
+  padding: .35rem .6rem;
+  text-align: left;
+  font-size: .76rem;
+  font-weight: 600;
+}
+.ins-table td {
+  padding: .35rem .6rem;
+  border-bottom: 1px solid #edf0f5;
+  vertical-align: middle;
+}
+.ins-table tr:nth-child(even) td { background: #f9fafd; }
+.ins-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.ins-bar-wrap { display: flex; align-items: center; gap: .5rem; font-size: .82rem; margin-bottom: .35rem; }
+.ins-bar-track { flex: 1; background: #e8edf4; border-radius: 4px; height: 8px; overflow: hidden; }
+.ins-bar-fill  { height: 8px; border-radius: 4px; background: var(--navy); }
+.ins-bar-fill.gold { background: #a8883c; }
+.ins-rate-ring {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 1.25rem;
+}
+.ins-rate-num { font-size: 2.8rem; font-weight: 700; color: var(--navy); line-height: 1; }
+.ins-rate-lbl { font-family: Arial,sans-serif; font-size: .8rem; color: var(--gray-3); margin-top: .3rem; }
+.ins-year-row { display: flex; align-items: center; gap: .75rem; margin-bottom: .5rem; flex-wrap: wrap; }
+.ins-year-row label { font-size: .82rem; color: var(--gray-3); }
+.ins-year-row select { font-size: .85rem; padding: .25rem .5rem; border: 1px solid #ccc; border-radius: 4px; }
+.ins-atty-card {
+  border: 1px solid #dde3ed;
+  border-radius: 8px;
+  padding: 1rem 1.1rem;
+  margin-bottom: .85rem;
+  background: #fafbfd;
+}
+.ins-atty-name { font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: .6rem; }
+.ins-atty-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: .5rem; margin-bottom: .75rem; }
+.ins-atty-stat { text-align: center; }
+.ins-atty-stat-val { font-size: 1.2rem; font-weight: 700; color: var(--navy); }
+.ins-atty-stat-lbl { font-size: .7rem; color: var(--gray-3); }
+.ins-export-row { display: flex; gap: .65rem; flex-wrap: wrap; margin-top: .75rem; }
+.res-issues-block {
+  background: #f7f8fc;
+  border-left: 3px solid var(--navy);
+  border-radius: 0 6px 6px 0;
+  padding: .85rem 1.1rem;
+  font-family: Arial, sans-serif;
+  font-size: .88rem;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  color: #222;
+  margin-bottom: .75rem;
+}
+.res-memo-block {
+  background: #f7f8fc;
+  border-left: 3px solid var(--gold);
+  border-radius: 0 6px 6px 0;
+  padding: .85rem 1.1rem;
+  font-family: Arial, sans-serif;
+  font-size: .88rem;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  color: #222;
+  max-height: 420px;
+  overflow-y: auto;
+}
+.res-spinner {
+  display: inline-block;
+  width: 16px; height: 16px;
+  border: 2px solid var(--gray-2);
+  border-top-color: var(--navy);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  vertical-align: middle;
+  margin-right: .4rem;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.res-draft-area {
+  width: 100%;
+  min-height: 320px;
+  font-family: "Courier New", monospace;
+  font-size: .84rem;
+  line-height: 1.65;
+  padding: .85rem 1rem;
+  border: 1px solid var(--gray-2);
+  border-radius: var(--radius);
+  resize: vertical;
+  color: #222;
+  background: #fafafa;
+}
+/* ── Document management ─────────────────────────────── */
+.doc-cat-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+  margin-bottom: 1.1rem;
+}
+.doc-cat-tab {
+  font-family: Arial, sans-serif;
+  font-size: .78rem;
+  padding: .32rem .85rem;
+  border-radius: 20px;
+  border: 1px solid var(--gray-2);
+  background: #fff;
+  color: var(--gray-4);
+  cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
+  white-space: nowrap;
+}
+.doc-cat-tab.active,
+.doc-cat-tab:hover {
+  background: var(--navy);
+  color: #fff;
+  border-color: var(--navy);
+}
+.doc-drop-zone {
+  border: 2px dashed var(--gray-2);
+  border-radius: var(--radius);
+  padding: 1.75rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+  background: var(--gray-1);
+  margin-bottom: 1.1rem;
+  user-select: none;
+}
+.doc-drop-zone.drag-over,
+.doc-drop-zone:hover {
+  border-color: var(--gold);
+  background: rgba(201,168,76,.05);
+}
+.doc-drop-title {
+  font-family: Georgia, serif;
+  font-weight: bold;
+  color: var(--navy);
+  font-size: .95rem;
+  margin-bottom: .3rem;
+  pointer-events: none;
+}
+.doc-drop-sub {
+  font-family: Arial, sans-serif;
+  font-size: .78rem;
+  color: var(--gray-3);
+  pointer-events: none;
+}
+.doc-upload-progress {
+  font-family: Arial, sans-serif;
+  font-size: .82rem;
+  color: var(--gray-3);
+  margin-top: .5rem;
+  min-height: 1.2em;
+}
+.doc-file-row {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  padding: .55rem .75rem;
+  border-radius: 6px;
+  border: 1px solid var(--gray-1);
+  margin-bottom: .45rem;
+  background: #fff;
+  transition: box-shadow .15s;
+}
+.doc-file-row:hover { box-shadow: 0 2px 6px rgba(0,0,0,.07); }
+.doc-file-icon { font-size: 1.2rem; flex-shrink: 0; }
+.doc-file-name {
+  flex: 1;
+  font-family: Arial, sans-serif;
+  font-size: .88rem;
+  color: var(--navy);
+  font-weight: 500;
+  word-break: break-word;
+}
+.doc-file-meta {
+  font-family: Arial, sans-serif;
+  font-size: .75rem;
+  color: var(--gray-3);
+  white-space: nowrap;
+}
+.doc-file-actions { display: flex; gap: .35rem; flex-shrink: 0; }
+.doc-btn {
+  font-family: Arial, sans-serif;
+  font-size: .75rem;
+  padding: .22rem .6rem;
+  border-radius: 4px;
+  border: 1px solid var(--gray-2);
+  background: #fff;
+  cursor: pointer;
+  color: var(--gray-4);
+  text-decoration: none;
+  transition: background .12s, color .12s, border-color .12s;
+  display: inline-flex;
+  align-items: center;
+  gap: .2rem;
+}
+.doc-btn:hover { background: var(--navy); color: #fff; border-color: var(--navy); }
+.doc-btn-del:hover { background: #c0392b; color: #fff; border-color: #c0392b; }
+.doc-empty {
+  font-family: Arial, sans-serif;
+  font-size: .87rem;
+  color: var(--gray-3);
+  text-align: center;
+  padding: 1.75rem 0;
+}
+/* ── Document preview modal ──────────────────────────── */
+.doc-preview-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.78);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.doc-preview-box {
+  background: #fff;
+  border-radius: var(--radius);
+  width: min(92vw, 1100px);
+  height: 88vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0,0,0,.45);
+}
+.doc-preview-header {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  padding: .75rem 1rem;
+  background: var(--navy);
+  flex-shrink: 0;
+  border-bottom: 2px solid var(--gold);
+}
+.doc-preview-title {
+  font-family: Georgia, serif;
+  font-size: .92rem;
+  color: #fff;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.doc-preview-body {
+  flex: 1;
+  overflow: auto;
+  background: #e8e8e8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.doc-preview-body iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+.doc-preview-body img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  padding: 1.25rem;
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(0,0,0,.15);
+}
+.doc-preview-body pre {
+  width: 100%;
+  align-self: flex-start;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: 'Courier New', monospace;
+  font-size: .84rem;
+  padding: 1.5rem;
+  color: var(--gray-4);
+  background: #fff;
+  margin: 0;
+  min-height: 100%;
+}
+.doc-preview-no-support {
+  text-align: center;
+  padding: 3rem 2rem;
+  font-family: Arial, sans-serif;
+}
+/* ── Sidebar recent clients ──────────────────────────────────────── */
+.sidebar-hidden { display: none; }
+.see-all-btn {
+  display: block; width: 100%;
+  background: none; border: none; cursor: pointer;
+  font-family: var(--font-sans); font-size: .75rem;
+  color: var(--accent); text-align: left;
+  padding: .3rem .2rem; letter-spacing: .03em;
+  transition: color .15s;
+}
+.see-all-btn:hover, .see-all-btn.active { color: var(--ink); }
+/* ── All clients master table ────────────────────────────────────── */
+.all-clients-table {
+  width: 100%; border-collapse: collapse;
+  font-family: Arial, sans-serif; font-size: .84rem;
+}
+.all-clients-table thead th {
+  position: sticky; top: 0; z-index: 1;
+  background: var(--navy); color: var(--gold);
+  font-size: .73rem; text-transform: uppercase; letter-spacing: .06em;
+  padding: .6rem .75rem; text-align: left; cursor: pointer;
+  white-space: nowrap; user-select: none;
+}
+.all-clients-table thead th:hover { background: #1a2f5a; }
+.all-clients-table thead th.sort-asc .sort-arrow::after  { content: " ▲"; }
+.all-clients-table thead th.sort-desc .sort-arrow::after { content: " ▼"; }
+.sort-arrow { font-size: .65rem; opacity: .5; }
+.all-clients-row { cursor: pointer; border-bottom: 1px solid var(--gray-1); transition: background .15s; }
+.all-clients-row:nth-child(odd)  { background: #ffffff; }
+.all-clients-row:nth-child(even) { background: #f0f5fb; }
+.all-clients-row:hover { background: #ddeaf7 !important; }
+.all-clients-row td { padding: .55rem .75rem; color: var(--gray-4); }
+.all-clients-row td:first-child { font-weight: 600; color: var(--navy); }
+/* ── Clerk Office Case Search Boxes (sidebar) ────────── */
+.sidebar-clerk-section {
+  border-top: 1px solid rgba(255,255,255,.08);
+  padding-bottom: .5rem;
+}
+.clerk-search-stack {
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+  padding: 0 .9rem;
+}
+.clerk-search-box {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: .55rem;
+  padding: .55rem .75rem;
+  border-radius: 7px;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: border-color .15s, box-shadow .15s;
+}
+.clerk-search-box:hover {
+  box-shadow: 0 3px 10px rgba(0,0,0,.25);
+  border-color: var(--gold);
+}
+.clerk-criminal { background: rgba(30,58,95,.7); }
+.clerk-civil    { background: rgba(21,40,64,.7); }
+.clerk-other    { background: rgba(30,53,80,.7); }
+.clerk-search-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.clerk-search-info {
+  flex: 1;
+  min-width: 0;
+}
+.clerk-search-label {
+  font-family: Arial, sans-serif;
+  font-size: .78rem;
+  font-weight: 700;
+  color: rgba(255,255,255,.88);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.clerk-search-court {
+  font-family: Arial, sans-serif;
+  font-size: .68rem;
+  color: rgba(255,255,255,.38);
+  margin-top: .08rem;
+}
+.clerk-search-arrow {
+  font-size: .8rem;
+  font-weight: 700;
+  /* Sits on the dark clerk card, so it needs a light colour, not the brass. */
+  color: rgba(247,245,240,.85);
+  flex-shrink: 0;
+  opacity: .7;
+  transition: opacity .15s;
+}
+.clerk-search-box:hover .clerk-search-arrow { opacity: 1; }
+.res-client-option {
+  padding: .45rem .75rem;
+  font-family: Arial, sans-serif;
+  font-size: .85rem;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(0,0,0,.05);
+  color: var(--navy);
+}
+.res-client-option:hover { background: #f0f4ff; }
+.res-client-option:last-child { border-bottom: none; }
+.sec-table { width:100%; border-collapse:collapse; font-family:Arial,sans-serif; font-size:.82rem; margin-top:.4rem; }
+.sec-table th, .sec-table td { text-align:left; padding:.35rem .5rem; border-bottom:1px solid var(--rule); vertical-align:top; }
+.sec-note { font-family:Arial,sans-serif; font-size:.85rem; color:var(--gray-3); }
+.sec-note.error { color:var(--red); }
+.sched-row { display:flex; flex-wrap:wrap; align-items:center; gap:.4rem .8rem; padding:.5rem .4rem; border-bottom:1px solid var(--rule); font-family:Arial,sans-serif; font-size:.85rem; }
+.sched-row > label { flex:0 0 11rem; font-weight:bold; }
+.sched-row .sched-evidence { flex:1 1 100%; color:var(--gray-3); font-size:.8rem; }
+.sched-low { background:#fff6dd; }
+.sched-was { color:var(--gray-3); font-size:.8rem; }
+.sched-conf { font-size:.72rem; padding:.05rem .45rem; border-radius:.7rem; }
+.sched-conf-high { background:#e3f4e6; color:#1e6b2e; }
+.sched-conf-medium { background:#fff0c9; color:#7a5a00; }
+.sched-conf-low { background:#fde2e2; color:#9b1c1c; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="portal-wrap">
+
+  <!-- ── Sidebar ─────────────────────────────────────────────────────────── -->
+  <aside class="portal-sidebar">
+    <div class="portal-sidebar-header">
+      <div class="sidebar-role">Attorney Portal</div>
+      <div class="sidebar-name">{{ attorney.display }}</div>
+    </div>
+
+    <!-- Permanent action buttons -->
+    <div style="border-top:1px solid rgba(255,255,255,.08)">
+      <button class="portal-tab-btn" onclick="showDashboard(this)" id="dashboard-btn">
+        Dashboard
+      </button>
+      <button class="portal-tab-btn" onclick="showInsights(this)" id="insights-tab-btn">
+        Insights
+      </button>
+      <button class="portal-tab-btn" onclick="showGlobalResearch(this)" id="global-research-btn">Research</button>
+      <a class="portal-tab-btn" href="{{ url_for('research.research') }}" style="display:block;text-decoration:none">Research Bot</a>
+      <a class="portal-tab-btn" href="{{ url_for('drafting.drafting') }}" style="display:block;text-decoration:none">Legal Documents</a>
+      <button class="portal-tab-btn" onclick="loadLeads(this)" id="leads-tab-btn">
+        Incoming Leads <span id="leads-badge" class="leads-badge" style="display:none"></span>
+      </button>
+      <button class="portal-tab-btn" onclick="showNewClientTab(this)" id="new-client-tab-btn">
+        + New Client
+      </button>
+      <button class="portal-tab-btn" onclick="showConflictCheck(this)" id="conflict-check-btn">
+        Conflict Check
+      </button>
+    </div>
+
+    <!-- Tab nav (hidden until client selected) -->
+    <nav id="atty-tabs" style="display:none">
+      <button class="portal-tab-btn active" onclick="showAttyTab('overview',   this)">Case Overview</button>
+      <button class="portal-tab-btn"        onclick="showAttyTab('client-info', this)">Client Info</button>
+      <button class="portal-tab-btn"        onclick="showAttyTab('time',        this)">Time &amp; Notes</button>
+      <button class="portal-tab-btn"        onclick="showAttyTab('messages',    this)">Messages</button>
+      <button class="portal-tab-btn"        onclick="showAttyTab('documents',   this)">Documents</button>
+      <button class="portal-tab-btn" onclick="showAttyTab('research', this)">Research</button>
+      <button class="portal-tab-btn" onclick="showAttyTab('security', this)">Parties &amp; Security</button>
+    </nav>
+
+    <div class="client-list-label">Recent Clients</div>
+    <div class="client-search-wrap">
+      <input class="client-search" id="client-search-input" type="search"
+             placeholder="&#128269; Search clients…"
+             oninput="filterClientList(this.value)">
+    </div>
+    <div class="client-list" id="client-list">
+      {% if clients %}
+        {% for c in clients %}
+        <button class="client-list-item{% if loop.index > 5 %} sidebar-hidden{% endif %}"
+                onclick="selectClient('{{ c.username }}')" id="cli-{{ c.username }}"
+                data-name="{{ (c.client_name or c.username)|lower }}">
+          {{ c.client_name or c.username }}{% if c.is_co_counsel %} <span class="cc-badge">Co-counsel</span>{% endif %}{% if c.conflict_unresolved %} <span class="conflict-badge" title="Unresolved conflict check">Conflict</span>{% endif %}
+        </button>
+        {% endfor %}
+      {% else %}
+        <p style="font-family:Arial,sans-serif;font-size:.8rem;color:rgba(255,255,255,.3);padding:.5rem 1.1rem">No clients yet.</p>
+      {% endif %}
+    </div>
+    <div style="padding:.3rem .9rem .6rem">
+      <button class="see-all-btn" id="see-all-clients-btn" onclick="showAllClients(this)">See all clients →</button>
+    </div>
+
+    <!-- Clerk Office Case Searches -->
+    <div class="sidebar-clerk-section">
+      <div class="client-list-label">Case Searches</div>
+      <div class="clerk-search-stack">
+
+        <a href="https://sci.ccc.nashville.gov/Search/Search"
+           target="_blank" rel="noopener"
+           class="clerk-search-box clerk-criminal">
+          <div class="clerk-search-icon">⚖</div>
+          <div class="clerk-search-info">
+            <div class="clerk-search-label">Criminal — Davidson Co.</div>
+            <div class="clerk-search-court">Criminal Court Clerk</div>
+          </div>
+          <div class="clerk-search-arrow">→</div>
+        </a>
+
+        <a href="https://caselink.nashville.gov/public/"
+           target="_blank" rel="noopener"
+           class="clerk-search-box clerk-civil">
+          <div class="clerk-search-icon">📜</div>
+          <div class="clerk-search-info">
+            <div class="clerk-search-label">Civil — Davidson Co.</div>
+            <div class="clerk-search-court">Civil Court Clerk</div>
+          </div>
+          <div class="clerk-search-arrow">→</div>
+        </a>
+
+        <a href="https://www.tncrtinfo.com/"
+           target="_blank" rel="noopener"
+           class="clerk-search-box clerk-other">
+          <div class="clerk-search-icon">🗺</div>
+          <div class="clerk-search-info">
+            <div class="clerk-search-label">Other Counties</div>
+            <div class="clerk-search-court">Tennessee Court Info</div>
+          </div>
+          <div class="clerk-search-arrow">→</div>
+        </a>
+
+      </div>
+    </div>
+
+    {% if archived_clients %}
+    <div class="archived-section-label" onclick="toggleArchivedList()" id="archived-label">
+      <span>Archived ({{ archived_clients|length }})</span>
+      <span id="archived-chevron">▸</span>
+    </div>
+    <div id="archived-client-list" style="display:none">
+      {% for c in archived_clients %}
+      <button class="client-list-item client-archived" onclick="selectClient('{{ c.username }}')" id="cli-{{ c.username }}"
+              data-name="{{ (c.client_name or c.username)|lower }}">
+        {{ c.client_name or c.username }}{% if c.is_co_counsel %} <span class="cc-badge">Co-counsel</span>{% endif %}{% if c.conflict_unresolved %} <span class="conflict-badge" title="Unresolved conflict check">Conflict</span>{% endif %}
+      </button>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="portal-sidebar-footer">
+      <a href="{{ url_for('auth.logout') }}" class="portal-logout-btn">Sign Out</a>
+    </div>
+  </aside>
+
+  <!-- ── Main panels ────────────────────────────────────────────────────── -->
+  <div id="portal-main">
+
+    <!-- ── Insights Panel ──────────────────────────────────────────────────── -->
+    <div id="tab-insights" class="portal-panel">
+      <div class="page-header" style="margin-bottom:1rem">
+        <h1 style="font-size:1.5rem">&#128202; Firm Insights</h1>
+        <p style="font-family:Arial,sans-serif;font-size:.88rem;color:var(--gray-3);margin:0">
+          Macro data, lead analytics, and tax reporting for {{ firm_name }}
+        </p>
+      </div>
+
+      <!-- Billing settings -->
+      <div class="card" id="bill-settings-card" style="margin-bottom:1rem">
+        <div class="ins-section-title" style="margin-top:0">Billing Settings</div>
+        <div class="form-group">
+          <label for="bill-threshold">Statement threshold ($)</label>
+          <input type="number" id="bill-threshold" min="100" max="100000" step="50" />
+        </div>
+        <button type="button" class="btn btn-secondary" id="bill-threshold-save">Save</button>
+        <div id="bill-settings-result"></div>
+        <p class="sec-note">A statement is issued automatically when a client's unbilled time reaches this amount.</p>
+      </div>
+
+      <!-- ── Site Traffic ────────────────────────────────────────── -->
+      <div class="card" style="margin-bottom:1rem">
+        <div class="ins-section-title" style="margin-top:0">Site Traffic — Page Views</div>
+        <div class="ins-stat-grid" id="ins-traffic-grid" style="grid-template-columns:repeat(5,1fr)">
+          <div class="ins-stat"><div class="ins-stat-val" id="pv-index">—</div><div class="ins-stat-lbl">Home</div></div>
+          <div class="ins-stat"><div class="ins-stat-val" id="pv-meet_the_firm">—</div><div class="ins-stat-lbl">Meet the Firm</div></div>
+          <div class="ins-stat"><div class="ins-stat-val" id="pv-intake">—</div><div class="ins-stat-lbl">Client Intake</div></div>
+          <div class="ins-stat"><div class="ins-stat-val" id="pv-research">—</div><div class="ins-stat-lbl">Research Bot</div></div>
+          <div class="ins-stat"><div class="ins-stat-val" id="pv-drafting">—</div><div class="ins-stat-lbl">Legal Documents</div></div>
+        </div>
+        <p style="font-family:Arial,sans-serif;font-size:.72rem;color:var(--gray-3);margin:.4rem 0 0">Counts one visit per browser session per page. Resets only if visitors clear their browser data.</p>
+      </div>
+
+      <!-- ── Firm Snapshot ───────────────────────────────────────── -->
+      <div class="card" style="margin-bottom:1rem">
+        <div class="ins-section-title" style="margin-top:0">Firm Snapshot — All Time</div>
+        <div class="ins-stat-grid" id="ins-snapshot-grid">
+          <div class="ins-stat"><div class="ins-stat-val" id="ins-total-clients">—</div><div class="ins-stat-lbl">Total Clients</div></div>
+          <div class="ins-stat"><div class="ins-stat-val" id="ins-total-hours">—</div><div class="ins-stat-lbl">Hours Billed (All Time)</div></div>
+          <div class="ins-stat"><div class="ins-stat-val gold" id="ins-revenue-billed">—</div><div class="ins-stat-lbl">Revenue Billed</div></div>
+          <div class="ins-stat"><div class="ins-stat-val gold" id="ins-revenue-collected">—</div><div class="ins-stat-lbl">Revenue Collected</div></div>
+          <div class="ins-stat"><div class="ins-stat-val" id="ins-court-dates">—</div><div class="ins-stat-lbl">Clients w/ Court Dates</div></div>
+          <div class="ins-stat"><div class="ins-stat-val" id="ins-meetings">—</div><div class="ins-stat-lbl">Meetings Scheduled</div></div>
+          <div class="ins-stat"><div class="ins-stat-val" id="ins-intakes">—</div><div class="ins-stat-lbl">Intake Forms Completed</div></div>
+          <div class="ins-stat"><div class="ins-stat-val" id="ins-messages">—</div><div class="ins-stat-lbl">Total Messages</div></div>
+          <div class="ins-stat"><div class="ins-stat-val" id="ins-time-logs">—</div><div class="ins-stat-lbl">Time Log Entries</div></div>
+          <div class="ins-stat"><div class="ins-stat-val" id="ins-client-files">—</div><div class="ins-stat-lbl">Client Documents</div></div>
+          <div class="ins-stat"><div class="ins-stat-val" id="ins-research-sessions">—</div><div class="ins-stat-lbl">Research Sessions</div></div>
+          <div class="ins-stat"><div class="ins-stat-val" id="ins-draft-sessions">—</div><div class="ins-stat-lbl">Draft Sessions</div></div>
+          <div class="ins-stat"><div class="ins-stat-val" id="ins-leads-total">—</div><div class="ins-stat-lbl">Total Leads Received</div></div>
+          <div class="ins-stat"><div class="ins-stat-val gold" id="ins-conversion">—</div><div class="ins-stat-lbl">Lead→Client Rate</div></div>
+          <div class="ins-stat"><div class="ins-stat-val" id="ins-overhead-reserve">—</div><div class="ins-stat-lbl">Overhead Reserve (est.)</div></div>
+          <div class="ins-stat"><div class="ins-stat-val" id="ins-net-profit">—</div><div class="ins-stat-lbl">Est. Net Profit</div></div>
+        </div>
+
+        <div class="ins-two-col">
+          <!-- Case Type Breakdown -->
+          <div>
+            <div class="ins-section-title" style="margin-top:.2rem">Case Type Breakdown</div>
+            <div id="ins-case-bars">—</div>
+          </div>
+          <!-- Lead Pipeline -->
+          <div>
+            <div class="ins-section-title" style="margin-top:.2rem">Lead Pipeline</div>
+            <div class="ins-two-col" style="gap:.5rem;margin-bottom:.75rem">
+              <div class="ins-stat" style="padding:.55rem .7rem">
+                <div class="ins-stat-val" id="ins-leads-active">—</div>
+                <div class="ins-stat-lbl">Active Leads</div>
+              </div>
+              <div class="ins-rate-ring">
+                <div class="ins-rate-num" id="ins-rate-num">—</div>
+                <div class="ins-rate-lbl">Conversion Rate</div>
+              </div>
+            </div>
+            <div class="ins-section-title" style="margin-top:.2rem">Leads by Source</div>
+            <div id="ins-source-bars">—</div>
+            <div class="ins-section-title" style="margin-top:.8rem">Leads by Case Type</div>
+            <div id="ins-lead-ct-bars">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Per-Attorney Breakdown ───────────────────────────────── -->
+      <div class="card" style="margin-bottom:1rem">
+        <div class="ins-section-title" style="margin-top:0">By Attorney — All Time</div>
+        <div id="ins-atty-breakdown">—</div>
+      </div>
+
+      <!-- ── Tax Reports ───────────────────────────────────────────── -->
+      <div class="card">
+        <div class="ins-section-title" style="margin-top:0">Tax Reports &amp; W-2 Summaries</div>
+        <div class="ins-year-row">
+          <label>Tax Year:</label>
+          <select id="ins-tax-year" onchange="loadInsights()"></select>
+          <button class="btn btn-primary" style="padding:.3rem .85rem;font-size:.84rem" onclick="loadInsights()">Refresh ↻</button>
+        </div>
+
+        <table class="ins-table" style="margin-bottom:1rem">
+          <thead>
+            <tr>
+              <th>Attorney</th>
+              <th class="num">Cases</th>
+              <th class="num">Hours (Year)</th>
+              <th class="num">Revenue Attributed</th>
+              <th class="num">Revenue Collected</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="ins-tax-tbody"></tbody>
+        </table>
+
+        <div class="ins-export-row">
+          <button class="btn btn-primary" style="font-size:.84rem" onclick="exportTaxAll()">
+            &#128438; Print All W-2 Summaries
+          </button>
+          <div id="ins-atty-export-btns"></div>
+        </div>
+        <p style="font-family:Arial,sans-serif;font-size:.75rem;color:var(--gray-3);margin:.6rem 0 0">
+          W-2 summaries are internal compensation reference documents only and are not official IRS filings.
+          Consult a licensed CPA for official tax preparation.
+        </p>
+      </div>
+
+      <!-- ── Liabilities & Overhead ───────────────────────────────────────── -->
+      <div class="card" style="margin-bottom:1rem">
+        <div class="ins-section-title" style="margin-top:0">Liabilities &amp; Overhead Estimate</div>
+        <p style="font-family:Arial,sans-serif;font-size:.8rem;color:var(--gray-3);margin:0 0 .75rem">
+          Based on monthly overhead configured in <code>.env</code>.
+          Set <code>OVERHEAD_RESERVE_PCT</code> (default 35%) to control how much of collected revenue is earmarked for expenses.
+        </p>
+        <table class="ins-table" style="margin-bottom:1rem" id="ins-overhead-table">
+          <thead>
+            <tr>
+              <th>Expense Category</th>
+              <th class="num">Monthly (est.)</th>
+              <th class="num">Annual (est.)</th>
+            </tr>
+          </thead>
+          <tbody id="ins-overhead-tbody"></tbody>
+          <tfoot id="ins-overhead-tfoot"></tfoot>
+        </table>
+        <div class="ins-stat-grid" style="grid-template-columns:repeat(3,1fr);gap:.75rem" id="ins-pl-grid">
+          <div class="ins-stat">
+            <div class="ins-stat-val gold" id="ins-pl-collected">—</div>
+            <div class="ins-stat-lbl">Revenue Collected</div>
+          </div>
+          <div class="ins-stat">
+            <div class="ins-stat-val" style="color:var(--red,#c0392b)" id="ins-pl-overhead">—</div>
+            <div class="ins-stat-lbl">Overhead Reserve (<span id="ins-pl-pct">—</span>%)</div>
+          </div>
+          <div class="ins-stat">
+            <div class="ins-stat-val" id="ins-pl-net">—</div>
+            <div class="ins-stat-lbl">Est. Net Profit</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /tab-insights -->
+
+    <!-- Leads panel -->
+    <div id="tab-leads" class="portal-panel">
+      <div class="page-header" style="margin-bottom:1.25rem">
+        <h1 style="font-size:1.5rem">Incoming Leads</h1>
+        <p style="font-size:.9rem">Follow-up requests and consultation inquiries assigned to you.</p>
+      </div>
+      <div id="leads-list-wrap">
+        <div class="card" style="text-align:center;padding:2rem;color:var(--gray-3)">
+          <p style="font-family:Arial,sans-serif">Loading leads…</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Global Attorney Dashboard ─────────────────────────────────────────── -->
+    <div id="atty-dashboard" class="portal-panel active">
+      <div class="page-header" style="margin-bottom:1.5rem">
+        <h1 style="font-size:1.5rem">Dashboard</h1>
+        <p style="font-family:Arial,sans-serif;font-size:.88rem;color:var(--gray-3);margin:0">
+          {{ attorney.display }} &mdash; All active clients
+        </p>
+      </div>
+      <div class="dash-grid">
+
+        <!-- Master Calendar — spans cols 1–2 -->
+        <div class="card dash-card" style="grid-column:1 / 3">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">
+            <div class="portal-section-title" style="margin-bottom:0">Master Calendar</div>
+            <div style="display:flex;gap:.4rem;align-items:center">
+              <button class="month-cal-nav-btn" onclick="calPrevMonth()" title="Previous month">&#8249;</button>
+              <span id="cal-month-label" style="font-family:Arial,sans-serif;font-size:.9rem;font-weight:700;color:var(--navy);min-width:130px;text-align:center"></span>
+              <button class="month-cal-nav-btn" onclick="calNextMonth()" title="Next month">&#8250;</button>
+              <button class="doc-btn" onclick="openAddEventModal()" style="margin-left:.4rem">+ Add Event</button>
+            </div>
+          </div>
+          <div class="month-cal-wrap">
+            <div id="month-cal-container" style="min-height:200px">
+              <p class="dash-empty">Loading…</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Master Billable Hours — col 3 row 1 -->
+        <div class="card dash-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.85rem">
+            <div class="portal-section-title" style="margin-bottom:0">Billable Hours</div>
+            <button class="doc-btn" onclick="openDashLogTimeModal()">+ Log Time</button>
+          </div>
+          <div class="dash-table-wrap">
+            <table class="dash-table">
+              <thead><tr><th>Client</th><th>Hours</th></tr></thead>
+              <tbody id="dash-billing-tbody"><tr><td colspan="2" class="dash-empty">Loading…</td></tr></tbody>
+              <tfoot>
+                <tr>
+                  <td style="font-family:Arial,sans-serif;font-size:.78rem;font-weight:bold;color:var(--gray-3);padding:.55rem .7rem">Total (all clients)</td>
+                  <td id="dash-billing-total" style="font-family:Georgia,serif;font-weight:bold;color:var(--navy);padding:.55rem .7rem">0</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <!-- Deadline Alerts — col 1 row 2 -->
+        <div class="card dash-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.85rem">
+            <div class="portal-section-title" style="margin-bottom:0">Deadline Alerts</div>
+            <span style="font-family:Arial,sans-serif;font-size:.72rem;color:var(--gray-3)">Next 90 days</span>
+          </div>
+          <div class="dash-table-wrap">
+            <table class="dash-table">
+              <thead><tr><th>Client</th><th>Legal Issue / Matter</th><th>Court Date</th><th>Days</th></tr></thead>
+              <tbody id="dash-deadlines-tbody"><tr><td colspan="4" class="dash-empty">Loading…</td></tr></tbody>
+            </table>
+          </div>
+
+          <!-- Follow-up needed sub-box -->
+          <div style="margin-top:1rem;border-top:1px solid var(--gray-2);padding-top:.85rem">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem">
+              <div style="font-family:Arial,sans-serif;font-size:.8rem;font-weight:700;color:#c0392b;display:flex;align-items:center;gap:.35rem">
+                <span>⚠</span> Follow-Up Needed
+              </div>
+              <span style="font-family:Arial,sans-serif;font-size:.7rem;color:var(--gray-3)">No contact in 30+ days</span>
+            </div>
+            <div class="dash-table-wrap">
+              <table class="dash-table">
+                <thead><tr><th>Client</th><th>Last Contact</th><th>Days</th></tr></thead>
+                <tbody id="dash-followup-tbody"><tr><td colspan="3" class="dash-empty">Loading…</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity — spans cols 2–3 row 2 -->
+        <div class="card dash-card" style="grid-column:2 / 4">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.85rem">
+            <div class="portal-section-title" style="margin-bottom:0">Recent Activity</div>
+            <span style="font-family:Arial,sans-serif;font-size:.72rem;color:var(--gray-3)">20 most recent</span>
+          </div>
+          <div id="dash-activity-list" style="max-height:280px;overflow-y:auto">
+            <p class="dash-empty">Loading...</p>
+          </div>
+          <div style="border-top:1px solid var(--gray-1);margin-top:.85rem;padding-top:.75rem">
+            <div style="font-family:Arial,sans-serif;font-size:.72rem;color:var(--gray-3);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.05em">Recent Files</div>
+            <div class="dash-table-wrap">
+              <table class="dash-table">
+                <thead><tr><th>File Name</th><th>Client</th><th>Category</th><th>Modified</th></tr></thead>
+                <tbody id="dash-files-tbody"><tr><td colspan="4" class="dash-empty">Loading...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+
+      </div><!-- end .dash-grid -->
+    </div>
+
+    <!-- ── All Clients Master List ──────────────────────────────────────────── -->
+    <div id="tab-all-clients" class="portal-panel">
+      <div class="page-header" style="margin-bottom:1.25rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem">
+        <div>
+          <h1 style="font-size:1.5rem;margin:0">All Clients</h1>
+          <p style="font-family:Arial,sans-serif;font-size:.88rem;color:var(--gray-3);margin:.2rem 0 0">{{ clients|length }} active client{{ 's' if clients|length != 1 }}</p>
+        </div>
+        <input type="search" id="all-clients-search" class="client-search"
+               placeholder="&#128269; Filter…"
+               oninput="filterAllClientsTable(this.value)"
+               style="width:200px;background:#fff;color:var(--navy);border:1px solid var(--gray-2)">
+      </div>
+      <div style="overflow-x:auto">
+        <table class="all-clients-table" id="all-clients-table">
+          <thead>
+            <tr>
+              <th onclick="sortAllClients('name',this)" style="min-width:160px">Client <span class="sort-arrow">↕</span></th>
+              <th onclick="sortAllClients('case',this)">Case Number <span class="sort-arrow">↕</span></th>
+              <th onclick="sortAllClients('court',this)">Court Date <span class="sort-arrow">↕</span></th>
+              <th onclick="sortAllClients('hours',this)" style="text-align:right;width:70px">Billed <span class="sort-arrow">↕</span></th>
+              <th onclick="sortAllClients('balance',this)" style="text-align:right">Amount Due ($) <span class="sort-arrow">↕</span></th>
+              <th onclick="sortAllClients('contact',this)">Last Contact <span class="sort-arrow">↕</span></th>
+              <th>Phone</th>
+              <th>Email</th>
+            </tr>
+          </thead>
+          <tbody id="all-clients-tbody">
+            {% for c in clients %}
+            <tr class="all-clients-row" onclick="selectClientAndTab('{{ c.username }}','overview')"
+                data-name="{{ (c.client_name or c.username)|lower }}"
+                data-username="{{ c.username }}">
+              <td data-col="name">{% set _nm = (c.client_name or c.username).split() %}{% if _nm|length >= 2 %}{{ _nm[-1] }}, {{ _nm[0] }}{% else %}{{ _nm[0] if _nm else c.username }}{% endif %}</td>
+              <td data-col="case">{{ c.case_no or '—' }}</td>
+              <td data-col="court">{% if c.next_court_date and '-' in c.next_court_date %}{% set _dp = c.next_court_date.split('-') %}{{ _dp[1] }}-{{ _dp[2] }}-{{ _dp[0] }}{% else %}{{ c.next_court_date or '—' }}{% endif %}</td>
+              <td data-col="hours" style="text-align:right;font-weight:600">{{ c.hours_billed or 0 }}</td>
+              <td data-col="balance" style="text-align:right;font-weight:600;color:{% if c.amount_due > 0 %}#c0392b{% else %}var(--navy){% endif %}">
+                {{ '%.2f'|format(c.amount_due) }}
+              </td>
+              <td data-col="contact">{{ c.last_communication or '—' }}</td>
+              <td>{{ c.phone or '—' }}</td>
+              <td>{{ c.email or '—' }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="8" class="dash-empty" style="text-align:center;padding:2rem">No clients yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Case Overview -->
+    <div id="tab-overview" class="portal-panel">
+      <div class="page-header" style="margin-bottom:1.25rem">
+        <h1 id="ov-name" style="font-size:1.5rem"></h1>
+        <p id="ov-case-type" style="font-size:.9rem;color:var(--gold)"></p>
+      </div>
+
+      <!-- Clickable stat cards -->
+      <div class="portal-stats">
+
+        <!-- Hours Billed → Time & Notes -->
+        <div class="portal-stat ov-stat-link" onclick="goToTab('time')" title="Go to Time &amp; Notes">
+          <div class="portal-stat-label">Hours Billed</div>
+          <div class="portal-stat-value" id="ov-hours">0</div>
+        </div>
+
+        <!-- Next Court Date → calendar picker -->
+        <div class="portal-stat ov-stat-link" id="ov-court-card"
+             onclick="openCourtDatePicker()" title="Click to set court date"
+             style="position:relative">
+          <div class="portal-stat-label">Next Court Date</div>
+          <div class="portal-stat-value" id="ov-court" style="font-size:1rem"></div>
+          <div class="ov-stat-hint">📅 click to change</div>
+          <input type="date" id="ov-court-date-picker"
+                 style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;top:0;left:0"
+                 onchange="saveCourtDateFromPicker(this.value)">
+        </div>
+
+        <!-- Last Communication → Messages -->
+        <div class="portal-stat ov-stat-link" onclick="goToTab('messages')" title="Go to Messages">
+          <div class="portal-stat-label">Last Communication</div>
+          <div class="portal-stat-value" id="ov-lastcomm" style="font-size:1rem"></div>
+        </div>
+
+        <!-- Next Meeting → scheduler modal -->
+        <div class="portal-stat ov-stat-link" onclick="openMeetingModal()" title="Schedule a meeting">
+          <div class="portal-stat-label">Next Meeting</div>
+          <div class="portal-stat-value" id="ov-meeting" style="font-size:.95rem"></div>
+        </div>
+
+      </div>
+
+      <div class="card" id="case-dates-card" style="margin-bottom:1.1rem">
+        <div class="portal-section-title">Case dates</div>
+        <div id="case-dates-list"></div>
+        <button type="button" class="btn btn-secondary" id="case-dates-history-btn" style="display:none"></button>
+        <div id="case-dates-history" style="display:none"></div>
+      </div>
+
+      <!-- Case Details card -->
+      <div class="card" style="margin-bottom:1.1rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+          <div class="portal-section-title" style="margin-bottom:0">Case Details</div>
+          <button class="doc-btn" onclick="saveCaseDetails()" style="font-size:.82rem;padding:.28rem .75rem">Save Changes</button>
+        </div>
+        <div class="form-grid" style="margin-bottom:.75rem">
+          <div class="form-group">
+            <label>Case No.</label>
+            <input type="text" id="ov-case-no" placeholder="e.g. 2026-CR-00142" />
+          </div>
+          <div class="form-group">
+            <label>Charge Level</label>
+            <select id="ov-charge-level">
+              <option value="">— Select —</option>
+              <option value="Felony">Felony</option>
+              <option value="Misdemeanor">Misdemeanor</option>
+              <option value="Civil">Civil</option>
+              <option value="Infraction">Infraction</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>County</label>
+            <div class="ss-wrap" id="ss-county-wrap">
+              <input class="ss-input" id="ov-county-input" type="text" placeholder="Type to search county…" autocomplete="off">
+              <div class="ss-dropdown" id="ss-county-dropdown"></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Court</label>
+            <div class="ss-wrap" id="ss-court-wrap">
+              <input class="ss-input" id="ov-court-input" type="text" placeholder="Select county first…" autocomplete="off">
+              <div class="ss-dropdown" id="ss-court-dropdown"></div>
+            </div>
+          </div>
+          <div class="form-group full">
+            <label>Legal Issue</label>
+            <input type="text" id="ov-charges" placeholder="e.g. DUI, Breach of Contract, Divorce Petition" />
+          </div>
+          <div class="form-group full">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap">
+              <label style="margin:0">Legal Issue Summary</label>
+              <button type="button" id="gen-summary-btn" onclick="generateLegalSummary()" style="font-size:.75rem;padding:.2rem .65rem;border:1px solid var(--accent);background:transparent;color:var(--accent);border-radius:4px;cursor:pointer;white-space:nowrap">⚡ Generate AI Summary</button>
+            </div>
+            <p id="ov-legal-issue" style="font-family:Arial,sans-serif;font-size:.93rem;line-height:1.7;color:var(--gray-4);margin:.4rem 0 0"></p>
+          </div>
+        </div>
+        <div id="ov-save-result"></div>
+      </div>
+
+      <!-- Last note preview card → Time & Notes -->
+      <div class="card ov-stat-link" onclick="goToTab('time')" title="Go to Time &amp; Notes" style="cursor:pointer">
+        <div class="portal-section-title">Last Note</div>
+        <div id="ov-last-note" style="font-family:Arial,sans-serif;font-size:.9rem;color:var(--gray-4);line-height:1.7">
+          <span style="color:var(--gray-3)">No notes yet.</span>
+        </div>
+      </div>
+
+      <!-- Archive actions -->
+      <div style="display:flex;gap:.75rem;align-items:center;margin-top:.5rem" id="ov-archive-bar">
+        <button class="btn-archive" id="ov-archive-btn" onclick="archiveClient()">Archive Client File</button>
+        <button class="btn-unarchive" id="ov-unarchive-btn" onclick="unarchiveClient()" style="display:none">Restore from Archive</button>
+        <span id="ov-archive-result" style="font-family:Arial,sans-serif;font-size:.8rem;color:var(--gray-3)"></span>
+      </div>
+    </div>
+
+    <!-- Client Info -->
+    <div id="tab-client-info" class="portal-panel">
+      <div class="page-header" style="margin-bottom:1.25rem">
+        <h1 style="font-size:1.5rem">Client Information</h1>
+      </div>
+      <div class="card">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="ci-name" />
+          </div>
+          <div class="form-group">
+            <label>Case Type</label>
+            <select id="ci-case-type">
+              <option value="Criminal Defense">Criminal Defense</option>
+              <option value="Civil Litigation">Civil Litigation</option>
+              <option value="Contract Dispute">Contract Dispute</option>
+              <option value="Personal Injury">Personal Injury</option>
+              <option value="Family Law — Divorce">Family Law — Divorce</option>
+              <option value="Family Law — Child Custody">Family Law — Child Custody</option>
+              <option value="Family Law — Other">Family Law — Other</option>
+              <option value="Real Estate">Real Estate</option>
+              <option value="Employment Law">Employment Law</option>
+              <option value="DeFi / Crypto Law">DeFi / Crypto Law</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Phone</label>
+            <input type="tel" id="ci-phone" />
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="ci-email" />
+          </div>
+          <div class="form-group">
+            <label>Next Court Date</label>
+            <input type="date" id="ci-court-date" />
+          </div>
+          <div class="form-group">
+            <label>Next Meeting</label>
+            <input type="text" id="ci-next-meeting" placeholder="e.g. March 10, 2026 at 2:00 PM" />
+          </div>
+          <div class="form-group full">
+            <label>Legal Issue Summary</label>
+            <textarea id="ci-legal-issue" rows="4" placeholder="Brief description of the legal matter…"></textarea>
+          </div>
+          <div class="form-group full">
+            <label>Google Drive Folder URL</label>
+            <input type="url" id="ci-drive-url" placeholder="https://drive.google.com/drive/folders/…" />
+          </div>
+        </div>
+        <div id="ci-result" style="margin-top:.75rem"></div>
+        <div class="btn-group" style="margin-top:1rem">
+          <button class="btn btn-primary" onclick="saveClientInfo()">Save Changes</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Time & Notes -->
+    <div id="tab-time" class="portal-panel">
+      <div class="page-header" style="margin-bottom:1.25rem">
+        <h1 style="font-size:1.5rem">Time &amp; Notes</h1>
+      </div>
+
+      <!-- Billing status -->
+      <div class="card" id="bill-status-card" style="margin-bottom:1.25rem">
+        <div class="portal-section-title">Billing Status</div>
+        <div id="bill-status-summary"></div>
+        <button type="button" class="btn btn-primary" id="bill-issue-btn">Issue statement now</button>
+        <div id="bill-status-result"></div>
+        <div id="bill-statements" style="overflow-x:auto"></div>
+      </div>
+
+      <!-- Unified entry card -->
+      <div class="card" style="margin-bottom:1.25rem">
+        <div class="portal-section-title">New Entry</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="be-date">Date</label>
+            <input type="date" id="be-date" />
+          </div>
+          <div class="form-group">
+            <label for="be-hours">Billable Hours</label>
+            <input type="number" id="be-hours" step="0.25" min="0" placeholder="e.g. 1.5" />
+          </div>
+          <div class="form-group full">
+            <label for="be-category">Category</label>
+            <select id="be-category">
+              <option value="Meeting">Meeting</option>
+              <option value="Court Appearance">Court Appearance</option>
+              <option value="Research">Research</option>
+              <option value="Drafting">Drafting</option>
+              <option value="Filing">Filing</option>
+              <option value="Phone/Email">Phone / Email</option>
+              <option value="Negotiation">Negotiation</option>
+              <option value="Witness/Investigation">Witness / Investigation</option>
+              <option value="Travel">Travel</option>
+              <option value="Overhead">Overhead</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group full">
+            <label for="be-note">Note / Description *</label>
+            <textarea id="be-note" rows="4" placeholder="Describe work performed, case notes, observations, strategy…"></textarea>
+          </div>
+        </div>
+        <div id="be-result" style="margin-top:.75rem"></div>
+        <button class="btn btn-primary" onclick="logBillingEntry()" style="margin-top:.75rem">Log Entry →</button>
+      </div>
+
+      <!-- Billing log + running total -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+          <div class="portal-section-title" style="margin-bottom:0">Billing Log</div>
+          <div id="be-total" style="font-family:Georgia,serif;font-size:1.1rem;font-weight:bold;color:var(--navy)">Total: 0 hrs</div>
+        </div>
+        <table class="time-log-table">
+          <thead><tr><th>Date</th><th>Category</th><th>Hours</th><th>Note</th></tr></thead>
+          <tbody id="billing-log-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div id="tab-messages" class="portal-panel">
+      <div class="page-header" style="margin-bottom:1.25rem">
+        <h1 style="font-size:1.5rem">Client Messages</h1>
+      </div>
+      <div class="card">
+        <div class="portal-section-title">Thread</div>
+        <div class="message-thread" id="atty-message-thread"></div>
+        <div class="form-group" style="margin-bottom:.75rem;margin-top:.75rem">
+          <label for="atty-reply-text">Reply</label>
+          <textarea id="atty-reply-text" rows="3" placeholder="Your reply to the client…"></textarea>
+        </div>
+        <div id="atty-reply-result" style="margin-bottom:.5rem"></div>
+        <button class="btn btn-primary" onclick="sendReply()">Send Reply →</button>
+      </div>
+    </div>
+
+    <!-- Documents -->
+    <div id="tab-documents" class="portal-panel">
+      <div class="page-header" style="margin-bottom:1.1rem">
+        <h1 style="font-size:1.5rem">Client Documents</h1>
+        <p style="font-size:.88rem">All files organized by category. Drag &amp; drop or click to upload.</p>
+      </div>
+
+      <!-- Category tabs -->
+      <div class="doc-cat-tabs">
+        <button class="doc-cat-tab active"  onclick="setDocCategory('Intake',this)">Intake</button>
+        <button class="doc-cat-tab"         onclick="setDocCategory('Generated Documents',this)">Generated Documents</button>
+        <button class="doc-cat-tab"         onclick="setDocCategory('Motions',this)">Motions</button>
+        <button class="doc-cat-tab"         onclick="setDocCategory('Litigation Drafts',this)">Litigation Drafts</button>
+        <button class="doc-cat-tab"         onclick="setDocCategory('Court Orders',this)">Court Orders</button>
+        <button class="doc-cat-tab"         onclick="setDocCategory('Scheduling Orders',this)">Scheduling Orders</button>
+        <button class="doc-cat-tab"         onclick="setDocCategory('Warrants &amp; Discovery',this)">Warrants &amp; Discovery</button>
+        <button class="doc-cat-tab"         onclick="setDocCategory('Research',this)">Research</button>
+        <button class="doc-cat-tab"         onclick="setDocCategory('Other',this)">Other</button>
+      </div>
+
+      <!-- Drop zone -->
+      <div class="doc-drop-zone" id="doc-drop-zone">
+        <div style="font-size:2rem;margin-bottom:.4rem">📂</div>
+        <div class="doc-drop-title" id="doc-drop-label">Drop files here for "Motions"</div>
+        <div class="doc-drop-sub">PDF, DOCX, JPG, PNG, XLS and more — or click to browse</div>
+        <input type="file" id="doc-file-input" style="display:none" multiple
+               accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.bmp,.txt,.rtf"
+               onchange="uploadFiles(this.files)" />
+        <div class="doc-upload-progress" id="doc-upload-progress"></div>
+      </div>
+
+      <!-- File list -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.85rem">
+          <div class="portal-section-title" style="margin-bottom:0" id="doc-list-title">Motions</div>
+          <div id="doc-file-count" style="font-family:Arial,sans-serif;font-size:.78rem;color:var(--gray-3)"></div>
+        </div>
+        <div id="doc-file-list">
+          <p class="doc-empty">Select a client from the sidebar to view documents.</p>
+        </div>
+      </div>
+
+      <div class="card" id="sched-review" style="display:none;margin-top:1rem">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="portal-section-title" style="margin-bottom:0">Scheduling order dates</div>
+          <button type="button" class="btn btn-secondary" id="sched-cancel">Cancel</button>
+        </div>
+        <div class="sec-note" id="sched-file"></div>
+        <div id="sched-status"></div>
+        <div id="sched-rows"></div>
+        <div id="sched-notes"></div>
+        <div class="btn-group" style="margin-top:.8rem">
+          <button type="button" class="btn btn-primary" id="sched-save">Save to calendar</button>
+        </div>
+        <div id="sched-result" style="margin-top:.6rem"></div>
+      </div>
+    </div>
+
+    <!-- Parties & Security -->
+    <div id="tab-security" class="portal-panel">
+      <div class="page-header" style="margin-bottom:1.1rem">
+        <h1 style="font-size:1.5rem">Parties &amp; Security</h1>
+        <p style="font-size:.88rem">Opposing and related parties feed the conflict checker. Access history is visible to attorneys only.</p>
+      </div>
+
+      <div class="card" style="margin-bottom:1rem">
+        <div class="portal-section-title">Parties</div>
+        <div class="form-grid">
+          <div class="form-group full">
+            <label for="sec-opposing">Opposing parties (one per line)</label>
+            <textarea id="sec-opposing" rows="3"></textarea>
+          </div>
+          <div class="form-group full">
+            <label id="sec-related-label">Related parties</label>
+            <div id="sec-related-list" role="group" aria-labelledby="sec-related-label"></div>
+            <button class="btn btn-secondary" type="button" id="sec-add-related">+ Add related party</button>
+          </div>
+        </div>
+        <div class="btn-group" style="margin-top:.8rem">
+          <button type="button" class="btn btn-primary" id="sec-save-parties">Save parties &amp; re-check</button>
+        </div>
+        <div id="sec-parties-result" style="margin-top:.6rem"></div>
+      </div>
+
+      <div class="card" style="margin-bottom:1rem">
+        <div class="portal-section-title">Conflict checks</div>
+        <div id="sec-checks"></div>
+      </div>
+
+      <div class="card" style="margin-bottom:1rem">
+        <div class="portal-section-title">Co-counsel</div>
+        <div id="sec-cocounsel-list" style="margin-bottom:.6rem"></div>
+        <div id="sec-cocounsel-add" style="display:flex;gap:.5rem;align-items:center">
+          <select id="sec-cocounsel-select" aria-label="Attorney to add as co-counsel"></select>
+          <button type="button" class="btn btn-secondary" id="sec-cocounsel-add-btn">Add</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="portal-section-title">Access history</div>
+        <button type="button" class="btn btn-secondary" id="sec-load-access">Load access history</button>
+        <div id="sec-access-log" style="margin-top:.6rem;overflow-x:auto"></div>
+      </div>
+
+      <datalist id="sec-rel-options">
+        <option value="Spouse"><option value="Co-defendant"><option value="Witness">
+        <option value="Business partner"><option value="Employer"><option value="Parent/Guardian"><option value="Other">
+      </datalist>
+    </div>
+
+    <!-- Conflict Check (firm-wide tool) -->
+    <div id="tab-conflict-check" class="portal-panel">
+      <div class="page-header" style="margin-bottom:1.1rem">
+        <h1 style="font-size:1.5rem">Conflict Check</h1>
+        <p style="font-size:.88rem">Search every client, former client, opposing party, related party, and lead. Every check is recorded.</p>
+      </div>
+      <div class="card">
+        <div class="form-group">
+          <label for="cc-names">Names to check (one per line)</label>
+          <textarea id="cc-names" rows="5" placeholder="Jane Doe&#10;Acme Roofing LLC"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="cc-attach">Attach result to client (optional)</label>
+          <select id="cc-attach"><option value="">— Not attached —</option></select>
+        </div>
+        <button type="button" class="btn btn-primary" id="cc-run">Run check</button>
+        <div id="cc-results" style="margin-top:1rem;overflow-x:auto"></div>
+      </div>
+    </div>
+
+    <!-- New Client Account -->
+    <div id="tab-new-client" class="portal-panel">
+      <div class="page-header" style="margin-bottom:1.25rem">
+        <h1 style="font-size:1.5rem">+ New Client</h1>
+        <p style="font-size:.9rem">Create a portal account. The client will be prompted to change their password on first login.</p>
+      </div>
+
+      <!-- Success credentials card (hidden until created) -->
+      <div id="nc-success-card" style="display:none;margin-bottom:1.1rem" class="card">
+        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.75rem">
+          <div style="font-size:1.4rem">✅</div>
+          <div style="font-family:Georgia,serif;font-size:1.05rem;font-weight:bold;color:var(--navy)">Account Created</div>
+        </div>
+        <div style="background:var(--gray-1);border-radius:var(--radius);padding:.85rem 1rem;font-family:'Courier New',monospace;font-size:.92rem;line-height:2">
+          <div><span style="color:var(--gray-3);font-family:Arial,sans-serif;font-size:.78rem">USERNAME</span><br><strong id="nc-success-username"></strong></div>
+          <div style="margin-top:.4rem"><span style="color:var(--gray-3);font-family:Arial,sans-serif;font-size:.78rem">TEMP PASSWORD</span><br><strong id="nc-success-password"></strong><div id="nc-success-pw-note" style="margin-top:.3rem;color:var(--gray-3);font-family:Arial,sans-serif;font-size:.78rem"></div></div>
+        </div>
+        <p style="font-family:Arial,sans-serif;font-size:.8rem;color:var(--gray-3);margin:.65rem 0 0">Share these credentials securely with the client. They must change their password on first login.</p>
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.85rem">
+          <button class="btn btn-primary" onclick="confirmNewClient()">Confirm &amp; Close</button>
+          <button class="btn btn-secondary" onclick="resetNewClientForm()">Create Another Client</button>
+        </div>
+      </div>
+
+      <!-- Form card -->
+      <div id="nc-form-card" class="card">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="nc-name">Full Name *</label>
+            <input type="text" id="nc-name" placeholder="Jane A. Smith"
+              oninput="autoFillUsername()" />
+          </div>
+          <div class="form-group">
+            <label for="nc-case-type">Case Type</label>
+            <select id="nc-case-type">
+              <option value="Criminal Defense">Criminal Defense</option>
+              <option value="Civil Litigation">Civil Litigation</option>
+              <option value="Contract Dispute">Contract Dispute</option>
+              <option value="Personal Injury">Personal Injury</option>
+              <option value="Family Law — Divorce">Family Law — Divorce</option>
+              <option value="Family Law — Child Custody">Family Law — Child Custody</option>
+              <option value="Family Law — Other">Family Law — Other</option>
+              <option value="Real Estate">Real Estate</option>
+              <option value="Employment Law">Employment Law</option>
+              <option value="DeFi / Crypto Law">DeFi / Crypto Law</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="nc-phone">Phone</label>
+            <input type="tel" id="nc-phone" placeholder="(555) 000-0000" />
+          </div>
+          <div class="form-group">
+            <label for="nc-email">Email</label>
+            <input type="email" id="nc-email" placeholder="client@example.com" />
+          </div>
+          <div class="form-group">
+            <label for="nc-username">Username <span style="color:var(--gray-3);font-weight:normal;font-size:.8rem">(auto-generated, editable)</span></label>
+            <input type="text" id="nc-username" placeholder="Auto-filled from name" style="width:100%;box-sizing:border-box" />
+          </div>
+          <div class="form-group">
+            <label for="nc-password">Temporary Password</label>
+            <input type="text" id="nc-password" value="" placeholder="Leave blank to generate one" style="width:100%;box-sizing:border-box" />
+          </div>
+          <div class="form-group full">
+            <label for="nc-legal-issue">Legal Issue Summary</label>
+            <textarea id="nc-legal-issue" rows="3" placeholder="Brief description of the matter…"></textarea>
+          </div>
+          <div class="form-group full">
+            <label for="nc-opposing">Opposing parties (one per line)</label>
+            <textarea id="nc-opposing" rows="2"></textarea>
+          </div>
+          <div class="form-group full">
+            <label id="nc-related-label">Related parties</label>
+            <div id="nc-related-list" role="group" aria-labelledby="nc-related-label"></div>
+            <button class="btn btn-secondary" type="button" id="nc-add-related">+ Add related party</button>
+          </div>
+        </div>
+        <div id="nc-result" style="margin-top:.75rem"></div>
+        <div class="btn-group" style="margin-top:1rem">
+          <button class="btn btn-primary" id="nc-create-btn" onclick="createClient()">Create Account →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Research -->
+    <div id="tab-research" class="portal-panel">
+      <div class="page-header" style="margin-bottom:1.1rem">
+        <h1 style="font-size:1.5rem">Legal Research</h1>
+        <p style="font-family:Arial,sans-serif;font-size:.88rem;color:var(--gray-3);margin:0">
+          AI-assisted issue analysis, authority research, and motion drafting. Always verify citations independently.
+        </p>
+      </div>
+
+      <!-- Client Picker — shown when accessing Research from global sidebar -->
+      <div id="res-client-picker" class="card" style="margin-bottom:1.1rem;padding:.85rem 1.1rem;display:none">
+        <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
+          <label style="font-size:.82rem;font-weight:700;color:var(--gray-3);white-space:nowrap">Link to Client:</label>
+          <input type="search" id="res-client-search" placeholder="Search clients by name…"
+                 oninput="filterResClientList(this.value)"
+                 style="flex:1;min-width:160px;font-size:.88rem;padding:.35rem .6rem;border:1px solid var(--gray-2);border-radius:4px">
+          <div id="res-client-badge" style="font-size:.82rem;font-weight:700;color:#2e7d32;display:none"></div>
+        </div>
+        <div id="res-client-dropdown" style="margin-top:.5rem;max-height:160px;overflow-y:auto;display:none;border:1px solid var(--gray-2);border-radius:4px;background:#fff"></div>
+      </div>
+      <!-- Token Usage Stats -->
+      <div id="token-usage-card" class="card" style="margin-bottom:1.1rem;padding:1rem 1.25rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+          <div style="font-size:.82rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gray-3)">AI Token Usage — This Account</div>
+          <button onclick="loadTokenUsage()" title="Refresh" style="background:none;border:none;color:var(--gray-3);cursor:pointer;font-size:.9rem;padding:0">↻</button>
+        </div>
+        <div id="token-usage-stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem">
+          <div class="tu-stat"><div class="tu-stat-val" id="tu-today-total">—</div><div class="tu-stat-lbl">Today's Tokens</div></div>
+          <div class="tu-stat"><div class="tu-stat-val" id="tu-total-all">—</div><div class="tu-stat-lbl">Total Tokens (All Time)</div></div>
+          <div class="tu-stat"><div class="tu-stat-val" id="tu-total-in">—</div><div class="tu-stat-lbl">Input Tokens (All Time)</div></div>
+          <div class="tu-stat"><div class="tu-stat-val" id="tu-total-out">—</div><div class="tu-stat-lbl">Output Tokens (All Time)</div></div>
+        </div>
+        <div id="tu-breakdown" style="margin-top:.85rem;display:none">
+          <div style="font-size:.75rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--gray-3);margin-bottom:.4rem">Breakdown by Operation</div>
+          <table id="tu-breakdown-table" style="width:100%;font-family:Arial,sans-serif;font-size:.82rem;border-collapse:collapse">
+            <thead>
+              <tr style="color:var(--gray-3);border-bottom:1px solid rgba(255,255,255,.07)">
+                <th style="text-align:left;padding:.25rem .4rem;font-weight:600">Operation</th>
+                <th style="text-align:right;padding:.25rem .4rem;font-weight:600">Calls</th>
+                <th style="text-align:right;padding:.25rem .4rem;font-weight:600">Input</th>
+                <th style="text-align:right;padding:.25rem .4rem;font-weight:600">Output</th>
+                <th style="text-align:right;padding:.25rem .4rem;font-weight:600">Total</th>
+              </tr>
+            </thead>
+            <tbody id="tu-breakdown-body"></tbody>
+          </table>
+        </div>
+        <div id="tu-error" style="font-size:.8rem;color:var(--red);display:none">Could not load token usage.</div>
+      </div>
+
+      <!-- Card 1: Legal Issue Analysis -->
+      <div class="card" style="margin-bottom:1.1rem">
+        <div class="portal-section-title">Legal Issue Analysis</div>
+
+        <div class="form-group" style="margin-bottom:.9rem">
+          <label style="font-size:.82rem">Case Summary <span style="color:var(--gray-3);font-weight:normal">(pulled from intake — edit as needed)</span></label>
+          <textarea id="res-legal-issue" rows="5"
+            placeholder="Select a client to load their case summary…"
+            style="font-family:Arial,sans-serif;font-size:.88rem;line-height:1.6"></textarea>
+        </div>
+
+        <button class="btn btn-primary" onclick="analyzeIssues()" id="res-analyze-btn">Identify Legal Issues →</button>
+        <span id="res-analyze-spinner" style="display:none"><span class="res-spinner"></span>Analyzing…</span>
+        <div id="res-analyze-err" style="color:var(--red);font-family:Arial,sans-serif;font-size:.85rem;margin-top:.5rem"></div>
+
+        <div id="res-issues-section" style="display:none">
+          <div class="res-section-label">Identified Issues</div>
+          <div id="res-issues-content" class="res-issues-block"></div>
+          <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.75rem">
+            <button class="btn btn-primary" onclick="saveResearchReport('analysis')" style="padding:.4rem .85rem;font-size:.84rem">&#8595; Save to Documents</button>
+            <span id="res-analysis-save-result" style="font-family:Arial,sans-serif;font-size:.84rem"></span>
+          </div>
+          <button class="btn btn-primary" onclick="findAuthority()" id="res-authority-btn" style="margin-top:.2rem">Research Legal Authority →</button>
+          <span id="res-authority-spinner" style="display:none"><span class="res-spinner"></span>Researching…</span>
+          <div id="res-authority-err" style="color:var(--red);font-family:Arial,sans-serif;font-size:.85rem;margin-top:.5rem"></div>
+        </div>
+
+        <div id="res-authority-section" style="display:none">
+          <div class="res-section-label">Legal Authority</div>
+          <div id="res-authority-content" class="res-memo-block"></div>
+          <div style="display:flex;align-items:center;gap:.6rem;margin-top:.6rem">
+            <button class="btn btn-primary" onclick="saveResearchReport('authority')" style="padding:.4rem .85rem;font-size:.84rem">&#8595; Save to Documents</button>
+            <span id="res-authority-save-result" style="font-family:Arial,sans-serif;font-size:.84rem"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Document Review & Motion Drafting -->
+      <div class="card">
+        <div class="portal-section-title">Document Review &amp; Motion Drafting</div>
+        <p style="font-family:Arial,sans-serif;font-size:.84rem;color:var(--gray-3);margin:.0 0 1rem">
+          Select a warrant, affidavit, or other document from the client's folder. The AI will read it, spot issues, and draft a motion.
+        </p>
+
+        <div class="form-grid" style="margin-bottom:.75rem">
+          <div class="form-group">
+            <label>Select Document</label>
+            <select id="res-doc-select" style="font-size:.88rem">
+              <option value="">— Select a document —</option>
+            </select>
+          </div>
+          <div class="form-group" style="display:flex;align-items:flex-end">
+            <button class="btn btn-primary" onclick="issueSpotDocument()">Read &amp; Issue Spot →</button>
+            <span id="res-spot-spinner" style="display:none;margin-left:.6rem"><span class="res-spinner"></span>Reading…</span>
+          </div>
+        </div>
+        <div id="res-spot-err" style="color:var(--red);font-family:Arial,sans-serif;font-size:.85rem;margin-bottom:.5rem"></div>
+
+        <div id="res-spot-section" style="display:none">
+          <div class="res-section-label">Issues Found in Document</div>
+          <div id="res-spot-content" class="res-issues-block"></div>
+        </div>
+
+        <!-- Drafting -->
+        <div style="margin-top:1.1rem">
+          <div class="res-section-label" style="margin-top:0">Draft a Motion</div>
+          <div class="form-grid" style="margin-bottom:.75rem">
+            <div class="form-group">
+              <label>Motion Type</label>
+              <select id="res-motion-type" style="font-size:.88rem">
+                <option>Motion to Suppress</option>
+                <option>Motion to Dismiss</option>
+                <option>Motion for Bond Reduction</option>
+                <option>Motion in Limine</option>
+                <option>Motion for Discovery</option>
+                <option>Response to State's Motion</option>
+                <option>Motion for New Trial</option>
+              </select>
+            </div>
+            <div class="form-group" style="display:flex;align-items:flex-end">
+              <button class="btn btn-primary" onclick="draftMotion()">Draft Motion →</button>
+              <span id="res-draft-spinner" style="display:none;margin-left:.6rem"><span class="res-spinner"></span>Drafting…</span>
+            </div>
+          </div>
+          <div id="res-draft-err" style="color:var(--red);font-family:Arial,sans-serif;font-size:.85rem;margin-bottom:.5rem"></div>
+
+          <div id="res-draft-section" style="display:none">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;margin-bottom:.6rem">
+              <div class="res-section-label" style="margin:0">Draft</div>
+              <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+                <select id="res-save-cat" style="font-size:.82rem;padding:.3rem .6rem;border:1px solid var(--gray-2);border-radius:4px">
+                  <option value="Motions">Save to: Motions</option>
+                  <option value="Litigation Drafts">Save to: Litigation Drafts</option>
+                </select>
+                <button class="btn btn-primary" onclick="saveResearchDraft()" style="padding:.4rem .85rem;font-size:.84rem">↓ Save to Documents</button>
+              </div>
+            </div>
+            <textarea id="res-draft-content" class="res-draft-area"></textarea>
+            <div id="res-save-result" style="margin-top:.5rem;font-family:Arial,sans-serif;font-size:.85rem"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end portal-main -->
+</div>
+
+<!-- ── Meeting Scheduler Modal ────────────────────────────────────────────── -->
+<div id="meeting-modal" class="modal-overlay" style="display:none" onclick="closeMeetingModal(event)">
+  <div class="modal-box consult-modal" style="max-width:460px">
+    <div class="modal-header">
+      <h2>Schedule Meeting</h2>
+      <button class="modal-close" onclick="closeMeetingModal()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:1.5rem">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="mtg-date">Date</label>
+          <input type="date" id="mtg-date" />
+        </div>
+        <div class="form-group">
+          <label for="mtg-time">Time</label>
+          <input type="time" id="mtg-time" />
+        </div>
+        <div class="form-group full">
+          <label for="mtg-note">Meeting Type / Note</label>
+          <input type="text" id="mtg-note" placeholder="e.g. Initial consultation, Deposition prep…" />
+        </div>
+      </div>
+      <div id="mtg-result" style="margin-top:.5rem"></div>
+      <div class="btn-group" style="margin-top:1.1rem">
+        <button class="btn btn-primary" onclick="saveMeeting()">Set Meeting →</button>
+        <button class="btn btn-secondary" onclick="closeMeetingModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Add Calendar Event Modal ──────────────────────────────────────────── -->
+<div id="dash-add-event-modal" class="modal-overlay" style="display:none" onclick="closeDashAddEventModal(event)">
+  <div class="modal-box consult-modal" style="max-width:480px">
+    <div class="modal-header">
+      <h2>Add Calendar Event</h2>
+      <button class="modal-close" onclick="closeDashAddEventModal()">&#x2715;</button>
+    </div>
+    <div class="modal-body" style="padding:1.5rem">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label for="dae-client">Client</label>
+          <select id="dae-client">{% for c in clients %}<option value="{{ c.username }}">{{ c.client_name or c.username }}</option>{% endfor %}</select>
+        </div>
+        <div class="form-group">
+          <label for="dae-type">Event Type</label>
+          <select id="dae-type">
+            <option value="Court Date">Court Date</option>
+            <option value="Meeting">Meeting</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="dae-date">Date</label>
+          <input type="date" id="dae-date" />
+        </div>
+        <div class="form-group">
+          <label for="dae-time">Time</label>
+          <input type="time" id="dae-time" />
+        </div>
+        <div class="form-group full">
+          <label for="dae-note">Note / Description</label>
+          <input type="text" id="dae-note" placeholder="e.g. Arraignment, Deposition prep…" />
+        </div>
+      </div>
+      <div id="dae-result" style="margin-top:.5rem"></div>
+      <div class="btn-group" style="margin-top:1.1rem">
+        <button class="btn btn-primary" onclick="saveDashEvent()">Save Event &#x2192;</button>
+        <button class="btn btn-secondary" onclick="closeDashAddEventModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Log Time Modal ─────────────────────────────────────────────────────── -->
+<div id="dash-log-time-modal" class="modal-overlay" style="display:none" onclick="closeDashLogTimeModal(event)">
+  <div class="modal-box consult-modal" style="max-width:480px">
+    <div class="modal-header">
+      <h2>Log Billable Time</h2>
+      <button class="modal-close" onclick="closeDashLogTimeModal()">&#x2715;</button>
+    </div>
+    <div class="modal-body" style="padding:1.5rem">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label for="dlt-client">Client</label>
+          <select id="dlt-client">{% for c in clients %}<option value="{{ c.username }}">{{ c.client_name or c.username }}</option>{% endfor %}</select>
+        </div>
+        <div class="form-group">
+          <label for="dlt-date">Date</label>
+          <input type="date" id="dlt-date" />
+        </div>
+        <div class="form-group">
+          <label for="dlt-hours">Billable Hours</label>
+          <input type="number" id="dlt-hours" step="0.25" min="0" placeholder="e.g. 1.5" />
+        </div>
+        <div class="form-group full">
+          <label for="dlt-note">Note / Description *</label>
+          <textarea id="dlt-note" rows="3" placeholder="Describe work performed…"></textarea>
+        </div>
+      </div>
+      <div id="dlt-result" style="margin-top:.5rem"></div>
+      <div class="btn-group" style="margin-top:1.1rem">
+        <button class="btn btn-primary" onclick="saveDashLogTime()">Log Entry &#x2192;</button>
+        <button class="btn btn-secondary" onclick="closeDashLogTimeModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Document Preview Modal ─────────────────────────────────────────────── -->
+<div id="doc-preview-overlay" class="doc-preview-overlay" style="display:none"
+     onclick="closeDocPreview(event)">
+  <div class="doc-preview-box">
+    <div class="doc-preview-header">
+      <div class="doc-preview-title" id="doc-preview-title">Document</div>
+      <a id="doc-preview-dl" href="#" class="doc-btn"
+         style="color:#fff;border-color:rgba(255,255,255,.3);background:transparent">
+        ↓ Download
+      </a>
+      <button onclick="closeDocPreview()" class="doc-btn"
+              style="color:#fff;border-color:rgba(255,255,255,.3);background:transparent">
+        ✕ Close
+      </button>
+    </div>
+    <div class="doc-preview-body" id="doc-preview-body"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// ── Leads ─────────────────────────────────────────────────────────────────────
+function loadLeads(btn) {
+  // Deselect client tabs, hide client tab nav
+  document.querySelectorAll(".client-list-item").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll("#portal-main .portal-panel").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".portal-tab-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("tab-leads").classList.add("active");
+  if (btn) btn.classList.add("active");
+
+  fetch("/portal/attorney/leads-list")
+    .then(r => r.json())
+    .then(leads => {
+      const wrap = document.getElementById("leads-list-wrap");
+      if (!leads.length) {
+        wrap.innerHTML = `<div class="card" style="text-align:center;padding:2.5rem;color:var(--gray-3)">
+          <div style="font-size:2rem;margin-bottom:.5rem">📬</div>
+          <p style="font-family:Arial,sans-serif">No leads yet. Follow-up requests and consultation inquiries will appear here.</p>
+        </div>`;
+        return;
+      }
+      // Update badge
+      const badge = document.getElementById("leads-badge");
+      badge.textContent = leads.length;
+      badge.style.display = "inline-block";
+
+      wrap.innerHTML = leads.map((l, i) => {
+        const accentColor = l.case_type === 'Civil Litigation' ? 'var(--navy)' : 'var(--gold)';
+        const date = (l.timestamp||'').slice(0,8).replace(/(\d{4})(\d{2})(\d{2})/,'$2/$3/$1');
+        const msg  = l.message || l.notes || '';
+        const preview = msg.length > 60 ? msg.slice(0,60) + '…' : msg;
+        const safe = escHtml(JSON.stringify(l)).replace(/'/g,"&#39;");
+        return `
+        <div class="card lead-card" style="border-left:4px solid ${accentColor}">
+          <div class="lead-card-header" onclick="toggleLead(this)">
+            <div style="flex:1;min-width:0">
+              <div style="font-family:Georgia,serif;font-size:1rem;font-weight:bold;color:var(--navy);margin-bottom:.2rem">${escHtml(l.name||'—')}</div>
+              <div style="display:flex;align-items:center;gap:.55rem;flex-wrap:wrap">
+                <span style="font-family:Arial,sans-serif;font-size:.72rem;font-weight:bold;text-transform:uppercase;letter-spacing:.06em;color:${accentColor}">${escHtml(l.case_type||'Unspecified')}</span>
+                ${l.type === 'follow_up' ? '<span style="font-family:Arial,sans-serif;font-size:.7rem;background:#e8f0fe;color:#1a2d5a;padding:.1rem .45rem;border-radius:10px">Follow-up</span>' : ''}
+                ${preview ? `<span style="font-family:Arial,sans-serif;font-size:.78rem;color:var(--gray-3);font-style:italic">"${escHtml(preview)}"</span>` : ''}
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:.4rem;flex-shrink:0;margin-left:.75rem">
+              <span style="font-family:Arial,sans-serif;font-size:.75rem;color:var(--gray-3)">${date}</span>
+              <span class="lead-chevron">▾</span>
+            </div>
+          </div>
+          <div class="lead-card-detail" style="display:none">
+            ${l.phone ? `<div class="lead-detail-row"><div class="lead-detail-lbl">Phone</div><div class="lead-detail-val">📞 ${escHtml(l.phone)}</div></div>` : ''}
+            ${l.email ? `<div class="lead-detail-row"><div class="lead-detail-lbl">Email</div><div class="lead-detail-val">✉ ${escHtml(l.email)}</div></div>` : ''}
+            ${l.source ? `<div class="lead-detail-row"><div class="lead-detail-lbl">Source</div><div class="lead-detail-val">${escHtml(l.source)}</div></div>` : ''}
+            ${msg ? `<div style="margin-top:.5rem"><div class="lead-detail-lbl" style="margin-bottom:.35rem">Message</div><div class="lead-full-msg">${escHtml(msg)}</div></div>` : ''}
+            <button class="btn btn-primary" style="font-size:.83rem;padding:.42rem 1rem"
+              onclick="convertLead(this)" data-lead='${safe}'>Convert to Client →</button>
+          </div>
+        </div>`;
+      }).join("");
+    });
+}
+
+// Close modals on Escape
+document.addEventListener("keydown", function(e) {
+  if (e.key === "Escape") {
+    closeDocPreview();
+    document.getElementById("meeting-modal").style.display          = "none";
+    document.getElementById("dash-add-event-modal").style.display   = "none";
+    document.getElementById("dash-log-time-modal").style.display    = "none";
+  }
+});
+
+// Auto-load leads count + init drop zone on page load
+// ── Client search ────────────────────────────────────────────────
+function filterClientList(q) {
+  q = q.toLowerCase().trim();
+  document.querySelectorAll("#client-list .client-list-item, #archived-client-list .client-list-item").forEach(btn => {
+    var name = btn.getAttribute("data-name") || btn.textContent.toLowerCase();
+    var matches = !q || name.includes(q);
+    if (!q) {
+      btn.style.display = ""; // let CSS class (sidebar-hidden) take over
+    } else {
+      btn.style.display = matches ? "block" : "none";
+    }
+  });
+  // auto-expand archived section if a match lives there
+  var archivedList = document.getElementById("archived-client-list");
+  if (archivedList && q) {
+    var hasVisible = Array.from(archivedList.querySelectorAll(".client-list-item")).some(b => b.style.display !== "none");
+    if (hasVisible) {
+      archivedList.style.display = "";
+      var chev = document.getElementById("archived-chevron");
+      if (chev) chev.textContent = "▾";
+    }
+  }
+}
+
+// ── Archived clients toggle ───────────────────────────────────────
+function toggleArchivedList() {
+  var list = document.getElementById("archived-client-list");
+  var chev = document.getElementById("archived-chevron");
+  if (!list) return;
+  var open = list.style.display !== "none";
+  list.style.display = open ? "none" : "";
+  if (chev) chev.textContent = open ? "▸" : "▾";
+}
+
+// ── Archive / Unarchive client ────────────────────────────────────
+function archiveClient() {
+  if (!_currentClient) return;
+  if (!confirm("Archive " + (_currentClient.client_name || _currentClient.username) + "? They will be moved to the Archived section.")) return;
+  fetch("/portal/attorney/archive-client", {
+    method: "POST", headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({username: _currentClient.username})
+  }).then(r => r.json()).then(d => {
+    if (d.success) location.reload();
+    else document.getElementById("ov-archive-result").textContent = d.error || "Error.";
+  }).catch(() => { document.getElementById("ov-archive-result").textContent = "Request failed."; });
+}
+
+function unarchiveClient() {
+  if (!_currentClient) return;
+  fetch("/portal/attorney/unarchive-client", {
+    method: "POST", headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({username: _currentClient.username})
+  }).then(r => r.json()).then(d => {
+    if (d.success) location.reload();
+    else document.getElementById("ov-archive-result").textContent = d.error || "Error.";
+  }).catch(() => { document.getElementById("ov-archive-result").textContent = "Request failed."; });
+}
+
+window.addEventListener("DOMContentLoaded", function() {
+  initDocDropZone();
+  loadDashboard();
+  fetch("/portal/attorney/leads-list")
+    .then(r => r.json())
+    .then(leads => {
+      if (leads.length) {
+        const badge = document.getElementById("leads-badge");
+        badge.textContent = leads.length;
+        badge.style.display = "inline-block";
+      }
+    }).catch(() => {});
+
+  // Initialise county + court searchable selects
+  _ssCounty = initSearchSelect("ov-county-input", "ss-county-dropdown", TN_COUNTIES, function(county) {
+    var courts = TN_COURTS[county] || [];
+    _ssCourt.setOptions(courts);
+  });
+  _ssCourt = initSearchSelect("ov-court-input", "ss-court-dropdown", [], null);
+});
+
+var _currentClient = null;
+window._ALL_CLIENTS_DATA = {{ clients | tojson }};
+
+// ── Tennessee county + court data ─────────────────────────────────────────────
+var TN_COUNTIES = ["Anderson","Bedford","Benton","Bledsoe","Blount","Bradley","Campbell","Cannon","Carroll","Carter","Cheatham","Chester","Claiborne","Clay","Cocke","Coffee","Crockett","Cumberland","Davidson","Decatur","DeKalb","Dickson","Dyer","Fayette","Fentress","Franklin","Gibson","Giles","Grainger","Greene","Grundy","Hamblen","Hamilton","Hancock","Hardeman","Hardin","Hawkins","Haywood","Henderson","Henry","Hickman","Houston","Humphreys","Jackson","Jefferson","Johnson","Knox","Lake","Lauderdale","Lawrence","Lewis","Lincoln","Loudon","Macon","Madison","Marion","Marshall","Maury","McMinn","McNairy","Meigs","Monroe","Montgomery","Moore","Morgan","Obion","Overton","Perry","Pickett","Polk","Putnam","Rhea","Roane","Robertson","Rutherford","Scott","Sequatchie","Sevier","Shelby","Smith","Stewart","Sullivan","Sumner","Tipton","Trousdale","Unicoi","Union","Van Buren","Warren","Washington","Wayne","Weakley","White","Williamson","Wilson"];
+
+var TN_COURTS = {
+  "Anderson":   ["Anderson County Criminal Court","Anderson County Circuit Court","Anderson County General Sessions Court","Anderson County Chancery Court","Anderson County Juvenile Court"],
+  "Bedford":    ["Bedford County Circuit Court","Bedford County General Sessions Court","Bedford County Chancery Court","Bedford County Juvenile Court"],
+  "Benton":     ["Benton County Circuit Court","Benton County General Sessions Court","Benton County Chancery Court","Benton County Juvenile Court"],
+  "Bledsoe":    ["Bledsoe County Circuit Court","Bledsoe County General Sessions Court","Bledsoe County Chancery Court","Bledsoe County Juvenile Court"],
+  "Blount":     ["Blount County Criminal Court","Blount County Circuit Court","Blount County General Sessions Court","Blount County Chancery Court","Blount County Juvenile Court"],
+  "Bradley":    ["Bradley County Criminal Court","Bradley County Circuit Court","Bradley County General Sessions Court","Bradley County Chancery Court","Bradley County Juvenile Court","Bradley County Drug Court"],
+  "Campbell":   ["Campbell County Criminal Court","Campbell County Circuit Court","Campbell County General Sessions Court","Campbell County Chancery Court","Campbell County Juvenile Court"],
+  "Cannon":     ["Cannon County Circuit Court","Cannon County General Sessions Court","Cannon County Chancery Court","Cannon County Juvenile Court"],
+  "Carroll":    ["Carroll County Circuit Court","Carroll County General Sessions Court","Carroll County Chancery Court","Carroll County Juvenile Court"],
+  "Carter":     ["Carter County Criminal Court","Carter County Circuit Court","Carter County General Sessions Court","Carter County Chancery Court","Carter County Juvenile Court"],
+  "Cheatham":   ["Cheatham County Circuit Court","Cheatham County General Sessions Court","Cheatham County Chancery Court","Cheatham County Juvenile Court"],
+  "Chester":    ["Chester County Circuit Court","Chester County General Sessions Court","Chester County Chancery Court","Chester County Juvenile Court"],
+  "Claiborne":  ["Claiborne County Criminal Court","Claiborne County Circuit Court","Claiborne County General Sessions Court","Claiborne County Chancery Court","Claiborne County Juvenile Court"],
+  "Clay":       ["Clay County Circuit Court","Clay County General Sessions Court","Clay County Chancery Court","Clay County Juvenile Court"],
+  "Cocke":      ["Cocke County Criminal Court","Cocke County Circuit Court","Cocke County General Sessions Court","Cocke County Chancery Court","Cocke County Juvenile Court"],
+  "Coffee":     ["Coffee County Criminal Court","Coffee County Circuit Court","Coffee County General Sessions Court","Coffee County Chancery Court","Coffee County Juvenile Court","Coffee County Drug Court"],
+  "Crockett":   ["Crockett County Circuit Court","Crockett County General Sessions Court","Crockett County Chancery Court","Crockett County Juvenile Court"],
+  "Cumberland": ["Cumberland County Criminal Court","Cumberland County Circuit Court","Cumberland County General Sessions Court","Cumberland County Chancery Court","Cumberland County Juvenile Court"],
+  "Davidson":   ["Davidson County Criminal Court — Division I","Davidson County Criminal Court — Division II","Davidson County Criminal Court — Division III","Davidson County Criminal Court — Division IV","Davidson County Circuit Court","Davidson County General Sessions Court — Division I","Davidson County General Sessions Court — Division II","Davidson County General Sessions Court — Division III","Davidson County General Sessions Court — Division IV","Davidson County Chancery Court","Davidson County Juvenile Court","Davidson County Drug Court","Davidson County DUI Court","Davidson County Mental Health Court","Davidson County Veterans Treatment Court","Davidson County Probate Court","Davidson County Environmental Court"],
+  "Decatur":    ["Decatur County Circuit Court","Decatur County General Sessions Court","Decatur County Chancery Court","Decatur County Juvenile Court"],
+  "DeKalb":     ["DeKalb County Circuit Court","DeKalb County General Sessions Court","DeKalb County Chancery Court","DeKalb County Juvenile Court"],
+  "Dickson":    ["Dickson County Criminal Court","Dickson County Circuit Court","Dickson County General Sessions Court","Dickson County Chancery Court","Dickson County Juvenile Court"],
+  "Dyer":       ["Dyer County Criminal Court","Dyer County Circuit Court","Dyer County General Sessions Court","Dyer County Chancery Court","Dyer County Juvenile Court"],
+  "Fayette":    ["Fayette County Circuit Court","Fayette County General Sessions Court","Fayette County Chancery Court","Fayette County Juvenile Court"],
+  "Fentress":   ["Fentress County Criminal Court","Fentress County Circuit Court","Fentress County General Sessions Court","Fentress County Chancery Court","Fentress County Juvenile Court"],
+  "Franklin":   ["Franklin County Criminal Court","Franklin County Circuit Court","Franklin County General Sessions Court","Franklin County Chancery Court","Franklin County Juvenile Court"],
+  "Gibson":     ["Gibson County Circuit Court","Gibson County General Sessions Court","Gibson County Chancery Court","Gibson County Juvenile Court"],
+  "Giles":      ["Giles County Circuit Court","Giles County General Sessions Court","Giles County Chancery Court","Giles County Juvenile Court"],
+  "Grainger":   ["Grainger County Circuit Court","Grainger County General Sessions Court","Grainger County Chancery Court","Grainger County Juvenile Court"],
+  "Greene":     ["Greene County Criminal Court","Greene County Circuit Court","Greene County General Sessions Court","Greene County Chancery Court","Greene County Juvenile Court"],
+  "Grundy":     ["Grundy County Circuit Court","Grundy County General Sessions Court","Grundy County Chancery Court","Grundy County Juvenile Court"],
+  "Hamblen":    ["Hamblen County Criminal Court","Hamblen County Circuit Court","Hamblen County General Sessions Court","Hamblen County Chancery Court","Hamblen County Juvenile Court"],
+  "Hamilton":   ["Hamilton County Criminal Court — Division I","Hamilton County Criminal Court — Division II","Hamilton County Criminal Court — Division III","Hamilton County Circuit Court","Hamilton County General Sessions Court — Division I","Hamilton County General Sessions Court — Division II","Hamilton County General Sessions Court — Division III","Hamilton County Chancery Court","Hamilton County Juvenile Court","Hamilton County Drug Court","Hamilton County DUI Court","Hamilton County Mental Health Court","Hamilton County Probate Court"],
+  "Hancock":    ["Hancock County Circuit Court","Hancock County General Sessions Court","Hancock County Chancery Court","Hancock County Juvenile Court"],
+  "Hardeman":   ["Hardeman County Circuit Court","Hardeman County General Sessions Court","Hardeman County Chancery Court","Hardeman County Juvenile Court"],
+  "Hardin":     ["Hardin County Circuit Court","Hardin County General Sessions Court","Hardin County Chancery Court","Hardin County Juvenile Court"],
+  "Hawkins":    ["Hawkins County Criminal Court","Hawkins County Circuit Court","Hawkins County General Sessions Court","Hawkins County Chancery Court","Hawkins County Juvenile Court"],
+  "Haywood":    ["Haywood County Circuit Court","Haywood County General Sessions Court","Haywood County Chancery Court","Haywood County Juvenile Court"],
+  "Henderson":  ["Henderson County Circuit Court","Henderson County General Sessions Court","Henderson County Chancery Court","Henderson County Juvenile Court"],
+  "Henry":      ["Henry County Circuit Court","Henry County General Sessions Court","Henry County Chancery Court","Henry County Juvenile Court"],
+  "Hickman":    ["Hickman County Circuit Court","Hickman County General Sessions Court","Hickman County Chancery Court","Hickman County Juvenile Court"],
+  "Houston":    ["Houston County Circuit Court","Houston County General Sessions Court","Houston County Chancery Court","Houston County Juvenile Court"],
+  "Humphreys":  ["Humphreys County Circuit Court","Humphreys County General Sessions Court","Humphreys County Chancery Court","Humphreys County Juvenile Court"],
+  "Jackson":    ["Jackson County Circuit Court","Jackson County General Sessions Court","Jackson County Chancery Court","Jackson County Juvenile Court"],
+  "Jefferson":  ["Jefferson County Criminal Court","Jefferson County Circuit Court","Jefferson County General Sessions Court","Jefferson County Chancery Court","Jefferson County Juvenile Court"],
+  "Johnson":    ["Johnson County Circuit Court","Johnson County General Sessions Court","Johnson County Chancery Court","Johnson County Juvenile Court"],
+  "Knox":       ["Knox County Criminal Court — Division I","Knox County Criminal Court — Division II","Knox County Criminal Court — Division III","Knox County Criminal Court — Division IV","Knox County Circuit Court","Knox County General Sessions Court","Knox County Chancery Court","Knox County Juvenile Court","Knox County Drug Court","Knox County DUI Court","Knox County Mental Health Court","Knox County Veterans Treatment Court","Knox County Probate Court"],
+  "Lake":       ["Lake County Circuit Court","Lake County General Sessions Court","Lake County Chancery Court","Lake County Juvenile Court"],
+  "Lauderdale": ["Lauderdale County Circuit Court","Lauderdale County General Sessions Court","Lauderdale County Chancery Court","Lauderdale County Juvenile Court"],
+  "Lawrence":   ["Lawrence County Circuit Court","Lawrence County General Sessions Court","Lawrence County Chancery Court","Lawrence County Juvenile Court"],
+  "Lewis":      ["Lewis County Circuit Court","Lewis County General Sessions Court","Lewis County Chancery Court","Lewis County Juvenile Court"],
+  "Lincoln":    ["Lincoln County Circuit Court","Lincoln County General Sessions Court","Lincoln County Chancery Court","Lincoln County Juvenile Court"],
+  "Loudon":     ["Loudon County Circuit Court","Loudon County General Sessions Court","Loudon County Chancery Court","Loudon County Juvenile Court"],
+  "Macon":      ["Macon County Circuit Court","Macon County General Sessions Court","Macon County Chancery Court","Macon County Juvenile Court"],
+  "Madison":    ["Madison County Criminal Court — Division I","Madison County Criminal Court — Division II","Madison County Circuit Court","Madison County General Sessions Court","Madison County Chancery Court","Madison County Juvenile Court","Madison County Drug Court"],
+  "Marion":     ["Marion County Circuit Court","Marion County General Sessions Court","Marion County Chancery Court","Marion County Juvenile Court"],
+  "Marshall":   ["Marshall County Circuit Court","Marshall County General Sessions Court","Marshall County Chancery Court","Marshall County Juvenile Court"],
+  "Maury":      ["Maury County Criminal Court","Maury County Circuit Court","Maury County General Sessions Court","Maury County Chancery Court","Maury County Juvenile Court","Maury County Drug Court"],
+  "McMinn":     ["McMinn County Criminal Court","McMinn County Circuit Court","McMinn County General Sessions Court","McMinn County Chancery Court","McMinn County Juvenile Court"],
+  "McNairy":    ["McNairy County Circuit Court","McNairy County General Sessions Court","McNairy County Chancery Court","McNairy County Juvenile Court"],
+  "Meigs":      ["Meigs County Circuit Court","Meigs County General Sessions Court","Meigs County Chancery Court","Meigs County Juvenile Court"],
+  "Monroe":     ["Monroe County Criminal Court","Monroe County Circuit Court","Monroe County General Sessions Court","Monroe County Chancery Court","Monroe County Juvenile Court"],
+  "Montgomery": ["Montgomery County Criminal Court — Division I","Montgomery County Criminal Court — Division II","Montgomery County Circuit Court","Montgomery County General Sessions Court","Montgomery County Chancery Court","Montgomery County Juvenile Court","Montgomery County Drug Court","Montgomery County Veterans Treatment Court"],
+  "Moore":      ["Moore County Circuit Court","Moore County General Sessions Court","Moore County Chancery Court","Moore County Juvenile Court"],
+  "Morgan":     ["Morgan County Criminal Court","Morgan County Circuit Court","Morgan County General Sessions Court","Morgan County Chancery Court","Morgan County Juvenile Court"],
+  "Obion":      ["Obion County Circuit Court","Obion County General Sessions Court","Obion County Chancery Court","Obion County Juvenile Court"],
+  "Overton":    ["Overton County Circuit Court","Overton County General Sessions Court","Overton County Chancery Court","Overton County Juvenile Court"],
+  "Perry":      ["Perry County Circuit Court","Perry County General Sessions Court","Perry County Chancery Court","Perry County Juvenile Court"],
+  "Pickett":    ["Pickett County Circuit Court","Pickett County General Sessions Court","Pickett County Chancery Court","Pickett County Juvenile Court"],
+  "Polk":       ["Polk County Criminal Court","Polk County Circuit Court","Polk County General Sessions Court","Polk County Chancery Court","Polk County Juvenile Court"],
+  "Putnam":     ["Putnam County Criminal Court","Putnam County Circuit Court","Putnam County General Sessions Court","Putnam County Chancery Court","Putnam County Juvenile Court","Putnam County Drug Court"],
+  "Rhea":       ["Rhea County Circuit Court","Rhea County General Sessions Court","Rhea County Chancery Court","Rhea County Juvenile Court"],
+  "Roane":      ["Roane County Criminal Court","Roane County Circuit Court","Roane County General Sessions Court","Roane County Chancery Court","Roane County Juvenile Court"],
+  "Robertson":  ["Robertson County Criminal Court","Robertson County Circuit Court","Robertson County General Sessions Court","Robertson County Chancery Court","Robertson County Juvenile Court"],
+  "Rutherford": ["Rutherford County Criminal Court — Division I","Rutherford County Criminal Court — Division II","Rutherford County Circuit Court","Rutherford County General Sessions Court — Division I","Rutherford County General Sessions Court — Division II","Rutherford County Chancery Court","Rutherford County Juvenile Court","Rutherford County Drug Court","Rutherford County DUI Court"],
+  "Scott":      ["Scott County Criminal Court","Scott County Circuit Court","Scott County General Sessions Court","Scott County Chancery Court","Scott County Juvenile Court"],
+  "Sequatchie": ["Sequatchie County Circuit Court","Sequatchie County General Sessions Court","Sequatchie County Chancery Court","Sequatchie County Juvenile Court"],
+  "Sevier":     ["Sevier County Criminal Court","Sevier County Circuit Court","Sevier County General Sessions Court","Sevier County Chancery Court","Sevier County Juvenile Court"],
+  "Shelby":     ["Shelby County Criminal Court — Division 1","Shelby County Criminal Court — Division 2","Shelby County Criminal Court — Division 3","Shelby County Criminal Court — Division 4","Shelby County Criminal Court — Division 5","Shelby County Criminal Court — Division 6","Shelby County Criminal Court — Division 7","Shelby County Criminal Court — Division 8","Shelby County Criminal Court — Division 9","Shelby County Criminal Court — Division 10","Shelby County Circuit Court — Division 1","Shelby County Circuit Court — Division 2","Shelby County Circuit Court — Division 3","Shelby County General Sessions Court","Shelby County Chancery Court — Division I","Shelby County Chancery Court — Division II","Shelby County Chancery Court — Division III","Shelby County Juvenile Court","Shelby County Drug Court","Shelby County DUI Court","Shelby County Mental Health Court","Shelby County Veterans Treatment Court","Shelby County Probate Court"],
+  "Smith":      ["Smith County Circuit Court","Smith County General Sessions Court","Smith County Chancery Court","Smith County Juvenile Court"],
+  "Stewart":    ["Stewart County Circuit Court","Stewart County General Sessions Court","Stewart County Chancery Court","Stewart County Juvenile Court"],
+  "Sullivan":   ["Sullivan County Criminal Court — Division I","Sullivan County Criminal Court — Division II","Sullivan County Circuit Court","Sullivan County General Sessions Court","Sullivan County Chancery Court","Sullivan County Juvenile Court","Sullivan County Drug Court"],
+  "Sumner":     ["Sumner County Criminal Court","Sumner County Circuit Court","Sumner County General Sessions Court","Sumner County Chancery Court","Sumner County Juvenile Court","Sumner County Drug Court"],
+  "Tipton":     ["Tipton County Criminal Court","Tipton County Circuit Court","Tipton County General Sessions Court","Tipton County Chancery Court","Tipton County Juvenile Court"],
+  "Trousdale":  ["Trousdale County Circuit Court","Trousdale County General Sessions Court","Trousdale County Chancery Court","Trousdale County Juvenile Court"],
+  "Unicoi":     ["Unicoi County Criminal Court","Unicoi County Circuit Court","Unicoi County General Sessions Court","Unicoi County Chancery Court","Unicoi County Juvenile Court"],
+  "Union":      ["Union County Criminal Court","Union County Circuit Court","Union County General Sessions Court","Union County Chancery Court","Union County Juvenile Court"],
+  "Van Buren":  ["Van Buren County Circuit Court","Van Buren County General Sessions Court","Van Buren County Chancery Court","Van Buren County Juvenile Court"],
+  "Warren":     ["Warren County Criminal Court","Warren County Circuit Court","Warren County General Sessions Court","Warren County Chancery Court","Warren County Juvenile Court","Warren County Drug Court"],
+  "Washington": ["Washington County Criminal Court — Division I","Washington County Criminal Court — Division II","Washington County Circuit Court","Washington County General Sessions Court","Washington County Chancery Court","Washington County Juvenile Court","Washington County Drug Court"],
+  "Wayne":      ["Wayne County Circuit Court","Wayne County General Sessions Court","Wayne County Chancery Court","Wayne County Juvenile Court"],
+  "Weakley":    ["Weakley County Circuit Court","Weakley County General Sessions Court","Weakley County Chancery Court","Weakley County Juvenile Court"],
+  "White":      ["White County Circuit Court","White County General Sessions Court","White County Chancery Court","White County Juvenile Court"],
+  "Williamson": ["Williamson County Criminal Court","Williamson County Circuit Court","Williamson County General Sessions Court","Williamson County Chancery Court","Williamson County Juvenile Court","Williamson County Drug Court","Williamson County DUI Court"],
+  "Wilson":     ["Wilson County Criminal Court","Wilson County Circuit Court","Wilson County General Sessions Court","Wilson County Chancery Court","Wilson County Juvenile Court","Wilson County Drug Court"]
+};
+
+// ── Searchable select component ───────────────────────────────────────────────
+function initSearchSelect(inputId, dropdownId, options, onSelect) {
+  var input    = document.getElementById(inputId);
+  var dropdown = document.getElementById(dropdownId);
+  var selected = "";
+
+  function render(filter) {
+    var q = (filter || "").toLowerCase().trim();
+    var hits = q ? options.filter(function(o){ return o.toLowerCase().includes(q); }) : options;
+    if (!hits.length) {
+      dropdown.innerHTML = '<div class="ss-empty">No results found.</div>';
+    } else {
+      dropdown.innerHTML = hits.map(function(o) {
+        var cls = "ss-option" + (o === selected ? " active" : "");
+        return '<div class="' + cls + '" data-val="' + escHtml(o) + '">' + escHtml(o) + '</div>';
+      }).join("");
+      dropdown.querySelectorAll(".ss-option").forEach(function(el) {
+        el.addEventListener("mousedown", function(e) {
+          e.preventDefault();
+          selected = el.getAttribute("data-val");
+          input.value = selected;
+          input.classList.add("has-value");
+          dropdown.classList.remove("open");
+          if (onSelect) onSelect(selected);
+        });
+      });
+    }
+    dropdown.classList.add("open");
+  }
+
+  input.addEventListener("focus", function()  { render(input.value); });
+  input.addEventListener("input", function()  { selected = ""; render(input.value); });
+  input.addEventListener("blur",  function()  {
+    setTimeout(function() { dropdown.classList.remove("open"); }, 150);
+    // if typed text doesn't match selection, clear it
+    if (input.value && input.value !== selected) { input.value = selected; }
+  });
+
+  return {
+    getValue: function()  { return selected; },
+    setValue: function(v) {
+      selected = v || "";
+      input.value = selected;
+      input.classList.toggle("has-value", !!selected);
+    },
+    setOptions: function(opts) {
+      options = opts;
+      selected = "";
+      input.value = "";
+      input.classList.remove("has-value");
+      input.placeholder = opts.length ? "Type to search court…" : "Select county first…";
+    }
+  };
+}
+
+var _ssCounty, _ssCourt;   // instances initialised after DOM ready
+
+// ── Tab switching ─────────────────────────────────────────────────────────────
+function showAttyTab(name, btn) {
+  document.querySelectorAll("#portal-main .portal-panel").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".portal-tab-btn").forEach(b => b.classList.remove("active"));
+  const panel = document.getElementById("tab-" + name);
+  if (panel) panel.classList.add("active");
+  if (btn) btn.classList.add("active");
+  if (name === "research") {
+    loadTokenUsage();
+    var picker = document.getElementById("res-client-picker");
+    if (picker) picker.style.display = "none";
+  }
+}
+
+// ── Client selection ──────────────────────────────────────────────────────────
+function selectClient(username) {
+  document.querySelectorAll(".client-list-item").forEach(b => b.classList.remove("active"));
+  const btn = document.getElementById("cli-" + username);
+  if (btn) btn.classList.add("active");
+
+  fetch("/portal/attorney/client/" + username)
+    .then(r => r.json())
+    .then(c => {
+      _currentClient = c;
+      document.getElementById("atty-tabs").style.display = "block";
+      populateOverview(c);
+      populateClientInfo(c);
+      populateBillingLog(c);
+      populateMessages(c);
+      populateDocuments(c);
+      populateResearch(c);
+      populateSecurity(c);
+      if (window.populateBilling) populateBilling(c);
+      if (window.populateCaseDates) populateCaseDates(c);
+      showAttyTab("overview", document.querySelector("#atty-tabs .portal-tab-btn"));
+    });
+}
+
+// ── Populate panels ───────────────────────────────────────────────────────────
+function populateOverview(c) {
+  document.getElementById("ov-name").textContent      = c.client_name || c.username;
+  document.getElementById("ov-case-type").textContent = c.case_type   || "";
+  document.getElementById("ov-hours").textContent     = c.hours_billed || 0;
+  document.getElementById("ov-court").textContent     = c.next_court_date    || "TBD";
+  document.getElementById("ov-lastcomm").textContent  = c.last_communication || "—";
+  document.getElementById("ov-meeting").textContent   = c.next_meeting       || "None scheduled";
+  document.getElementById("ov-legal-issue").textContent = c.legal_issue_summary || c.legal_issue || "No summary entered yet.";
+  // Case detail fields
+  document.getElementById("ov-case-no").value      = c.case_no      || "";
+  document.getElementById("ov-charges").value      = c.charges      || "";
+  document.getElementById("ov-charge-level").value = c.charge_level || "";
+  document.getElementById("ov-save-result").innerHTML = "";
+  // Last note preview — most recent billing_log entry
+  const logs = c.billing_log || [];
+  const lastNoteEl = document.getElementById("ov-last-note");
+  if (logs.length) {
+    const last = logs[logs.length - 1];
+    lastNoteEl.innerHTML = `
+      <div style="display:flex;gap:.6rem;align-items:flex-start">
+        <div style="font-size:1.1rem;flex-shrink:0">📝</div>
+        <div>
+          <div style="font-size:.76rem;color:var(--gray-3);margin-bottom:.25rem">
+            ${escHtml(last.date)}${last.hours ? " &middot; " + last.hours + " hrs" : ""}
+          </div>
+          <div style="white-space:pre-wrap">${escHtml(last.note)}</div>
+        </div>
+      </div>`;
+  } else {
+    lastNoteEl.innerHTML = '<span style="color:var(--gray-3)">No notes yet.</span>';
+  }
+  // County + court searchable selects
+  if (_ssCounty && _ssCourt) {
+    var savedCounty = c.county || "";
+    _ssCounty.setValue(savedCounty);
+    var courtOpts = savedCounty ? (TN_COURTS[savedCounty] || []) : [];
+    _ssCourt.setOptions(courtOpts);
+    _ssCourt.setValue(c.court || "");
+  }
+  // Archive / restore button visibility
+  var isArchived = !!c.archived;
+  document.getElementById("ov-archive-btn").style.display   = isArchived ? "none" : "";
+  document.getElementById("ov-unarchive-btn").style.display = isArchived ? "" : "none";
+  document.getElementById("ov-archive-result").textContent  = isArchived ? "This client file is archived." : "";
+}
+
+// Navigate to a tab by name, activating the correct sidebar button
+function goToTab(name) {
+  let targetBtn = null;
+  document.querySelectorAll("#atty-tabs .portal-tab-btn").forEach(b => {
+    if ((b.getAttribute("onclick") || "").includes("'" + name + "'")) targetBtn = b;
+  });
+  showAttyTab(name, targetBtn);
+}
+
+// ── Court date picker ─────────────────────────────────────────────────────────
+function openCourtDatePicker() {
+  if (!_currentClient) return;
+  var inp = document.getElementById("ov-court-date-picker");
+  inp.value = _currentClient.next_court_date || "";
+  try { inp.showPicker(); } catch(e) { inp.click(); }
+}
+
+function saveCourtDateFromPicker(val) {
+  if (!_currentClient || !val) return;
+  var username = _currentClient.username;
+  fetch("/portal/attorney/update-client", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      username:        username,
+      next_court_date: val,
+      client_name:     _currentClient.client_name     || "",
+      case_type:       _currentClient.case_type       || "",
+      phone:           _currentClient.phone           || "",
+      email:           _currentClient.email           || "",
+      next_meeting:    _currentClient.next_meeting    || "",
+      legal_issue:     _currentClient.legal_issue     || "",
+      google_drive_url:_currentClient.google_drive_url|| "",
+    }),
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.success) {
+      _currentClient.next_court_date = val;
+      document.getElementById("ov-court").textContent = val;
+      // also sync the client-info form date field
+      var ci = document.getElementById("ci-court-date");
+      if (ci) ci.value = val;
+      var hint = document.querySelector("#ov-court-card .ov-stat-hint");
+      if (hint) {
+        hint.textContent = "✓ Saved";
+        hint.style.color = "var(--green)";
+        setTimeout(() => { hint.textContent = "📅 click to change"; hint.style.color = ""; }, 2500);
+      }
+    }
+  })
+  .catch(() => {});
+}
+
+// ── Meeting scheduler ────────────────────────────────────────────────────────
+function openMeetingModal() {
+  if (!_currentClient) return;
+  // Pre-fill with today's date and a default time
+  const today = new Date().toISOString().split("T")[0];
+  document.getElementById("mtg-date").value = today;
+  document.getElementById("mtg-time").value = "10:00";
+  document.getElementById("mtg-note").value = "";
+  document.getElementById("mtg-result").innerHTML = "";
+  document.getElementById("meeting-modal").style.display = "flex";
+}
+
+function closeMeetingModal(e) {
+  if (e && e.target !== document.getElementById("meeting-modal")) return;
+  document.getElementById("meeting-modal").style.display = "none";
+}
+
+function saveMeeting() {
+  if (!_currentClient) return;
+  const date = document.getElementById("mtg-date").value;
+  const time = document.getElementById("mtg-time").value;
+  const note = document.getElementById("mtg-note").value.trim();
+  const res  = document.getElementById("mtg-result");
+  if (!date || !time) {
+    res.innerHTML = '<p style="color:var(--red);font-family:Arial,sans-serif;font-size:.88rem">Please select a date and time.</p>';
+    return;
+  }
+  // Format: "March 10, 2026 at 2:00 PM"
+  const dt = new Date(date + "T" + time);
+  const dateStr = dt.toLocaleDateString("en-US", {year:"numeric", month:"long", day:"numeric"});
+  const timeStr = dt.toLocaleTimeString("en-US", {hour:"numeric", minute:"2-digit"});
+  const formatted = dateStr + " at " + timeStr + (note ? " — " + note : "");
+  res.innerHTML = '<p style="font-family:Arial,sans-serif;font-size:.88rem;color:var(--gray-3)">Saving…</p>';
+  fetch("/portal/attorney/update-client", {
+    method: "POST", headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      username:         _currentClient.username,
+      next_meeting:     formatted,
+      client_name:      _currentClient.client_name      || "",
+      case_type:        _currentClient.case_type        || "",
+      phone:            _currentClient.phone            || "",
+      email:            _currentClient.email            || "",
+      next_court_date:  _currentClient.next_court_date  || "",
+      legal_issue:      _currentClient.legal_issue      || "",
+      google_drive_url: _currentClient.google_drive_url || "",
+    }),
+  }).then(r => r.json()).then(d => {
+    if (d.success) {
+      _currentClient.next_meeting = formatted;
+      populateOverview(_currentClient);
+      document.getElementById("ci-next-meeting").value = formatted;
+      document.getElementById("meeting-modal").style.display = "none";
+    } else {
+      res.innerHTML = `<p style="color:var(--red);font-family:Arial,sans-serif;font-size:.88rem">${d.error}</p>`;
+    }
+  });
+}
+
+// ── Save case detail fields (case_no, charges, charge_level) ─────────────────
+function saveCaseDetails() {
+  if (!_currentClient) return;
+  const payload = {
+    username:     _currentClient.username,
+    case_no:      document.getElementById("ov-case-no").value.trim(),
+    charges:      document.getElementById("ov-charges").value.trim(),
+    charge_level: document.getElementById("ov-charge-level").value,
+    county:       _ssCounty ? _ssCounty.getValue() : (_currentClient.county || ""),
+    court:        _ssCourt  ? _ssCourt.getValue()  : (_currentClient.court  || ""),
+    // preserve all existing fields
+    client_name:      _currentClient.client_name      || "",
+    case_type:        _currentClient.case_type        || "",
+    phone:            _currentClient.phone            || "",
+    email:            _currentClient.email            || "",
+    next_court_date:  _currentClient.next_court_date  || "",
+    next_meeting:     _currentClient.next_meeting     || "",
+    legal_issue:      _currentClient.legal_issue      || "",
+    google_drive_url: _currentClient.google_drive_url || "",
+  };
+  fetch("/portal/attorney/update-client", {
+    method: "POST", headers: {"Content-Type":"application/json"},
+    body: JSON.stringify(payload),
+  }).then(r => r.json()).then(d => {
+    const res = document.getElementById("ov-save-result");
+    if (d.success) {
+      Object.assign(_currentClient, payload);
+      res.innerHTML = '<p style="color:var(--green);font-family:Arial,sans-serif;font-size:.85rem">Case details saved.</p>';
+      setTimeout(() => { res.innerHTML = ""; }, 3000);
+    } else {
+      res.innerHTML = `<p style="color:var(--red);font-family:Arial,sans-serif;font-size:.85rem">${d.error}</p>`;
+    }
+  });
+}
+
+function populateClientInfo(c) {
+  document.getElementById("ci-name").value         = c.client_name      || "";
+  document.getElementById("ci-case-type").value    = c.case_type        || "Criminal Defense";
+  document.getElementById("ci-phone").value        = c.phone            || "";
+  document.getElementById("ci-email").value        = c.email            || "";
+  document.getElementById("ci-court-date").value   = c.next_court_date  || "";
+  document.getElementById("ci-next-meeting").value = c.next_meeting     || "";
+  document.getElementById("ci-legal-issue").value  = c.legal_issue      || "";
+  document.getElementById("ci-drive-url").value    = c.google_drive_url || "";
+  document.getElementById("ci-result").innerHTML   = "";
+}
+
+function _catClass(cat) {
+  var m = {
+    "Court Appearance": "court", "Research": "research", "Drafting": "drafting",
+    "Meeting": "meeting", "Filing": "filing", "Phone/Email": "phone",
+    "Negotiation": "negot", "Travel": "travel", "Overhead": "overhead",
+    "Intake": "intake", "Witness/Investigation": "research"
+  };
+  return m[cat] || "";
+}
+
+function populateBillingLog(c) {
+  var tbody = document.getElementById("billing-log-tbody");
+  var total = document.getElementById("be-total");
+  var logs  = c.billing_log || [];
+  while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
+  if (logs.length) {
+    logs.slice().reverse().forEach(function(e) {
+      var tr   = document.createElement("tr");
+      var tdDt = document.createElement("td"); tdDt.textContent = e.date || "";
+      var tdCt = document.createElement("td");
+      var cat  = e.category || e.type || "Other";
+      var badge = document.createElement("span");
+      badge.className = "cat-badge " + _catClass(cat);
+      badge.textContent = cat;
+      tdCt.appendChild(badge);
+      var tdHr = document.createElement("td"); tdHr.textContent = e.hours || 0;
+      var tdNt = document.createElement("td");
+      tdNt.style.whiteSpace = "pre-wrap";
+      tdNt.textContent = e.note || "—";
+      tr.appendChild(tdDt); tr.appendChild(tdCt); tr.appendChild(tdHr); tr.appendChild(tdNt);
+      tbody.appendChild(tr);
+    });
+  } else {
+    var tr = document.createElement("tr");
+    var td = document.createElement("td"); td.colSpan = 4;
+    td.style.cssText = "color:var(--gray-3);text-align:center;padding:.75rem";
+    td.textContent = "No entries yet.";
+    tr.appendChild(td); tbody.appendChild(tr);
+  }
+  total.textContent = "Total: " + (c.hours_billed || 0) + " hrs";
+  document.getElementById("be-date").value     = new Date().toISOString().split("T")[0];
+  document.getElementById("be-hours").value    = "";
+  document.getElementById("be-note").value     = "";
+  document.getElementById("be-category").value = "Meeting";
+}
+
+function populateMessages(c) {
+  const thread = document.getElementById("atty-message-thread");
+  const msgs   = c.messages || [];
+  thread.replaceChildren();
+  if (!msgs.length) {
+    thread.appendChild(_el("p", {
+      style: "font-family:Arial,sans-serif;font-size:.9rem;color:var(--gray-3);padding:1rem 0"
+    }, "No messages yet."));
+    thread.scrollTop = thread.scrollHeight;
+    return;
+  }
+  // m.text is client- or AI-sourced and must never be parsed as HTML — built
+  // with _el (DOM nodes + text nodes) rather than innerHTML, same pattern as
+  // the rest of this file. See docs/superpowers/specs/2026-10-02-voicemail-summaries-design.md
+  // for how this was found (a stored-XSS review ahead of the voicemail feature).
+  msgs.forEach(m => {
+    const senderLabel = m.from === "attorney" ? "You"
+      : m.from === "ai" ? "{{ firm_name }} Assistant"
+      : (c.client_name || c.username);
+    thread.appendChild(_el("div", {},
+      _el("div", {className: `message-bubble from-${m.from}`}, m.text),
+      _el("div", {
+        className: "message-meta",
+        style: `text-align:${m.from === "attorney" ? "right" : "left"}`
+      }, `${senderLabel} · ${m.date}`)
+    ));
+  });
+  thread.scrollTop = thread.scrollHeight;
+}
+
+function populateDocuments(c) {
+  // Reset category to first tab
+  _docCategory = "Intake";
+  document.querySelectorAll(".doc-cat-tab").forEach((b, i) => b.classList.toggle("active", i === 0));
+  document.getElementById("doc-drop-label").textContent = "Drop files here for \"Intake\"";
+  document.getElementById("doc-list-title").textContent = "Intake";
+  loadDocumentList();
+}
+
+// ── Research tab ───────────────────────────────────────────────────────────────
+
+var _resAnalyzedIssues = "";   // text from analyzeIssues()
+var _resSpottedIssues  = "";   // text from issueSpotDocument()
+
+function populateResearch(c) {
+  document.getElementById("res-legal-issue").value = c.legal_issue || "";
+  // Clear previous results
+  _resAnalyzedIssues = "";
+  _resSpottedIssues  = "";
+  ["res-issues-section","res-authority-section","res-spot-section","res-draft-section"].forEach(id => {
+    document.getElementById(id).style.display = "none";
+  });
+  ["res-analyze-err","res-authority-err","res-spot-err","res-draft-err","res-save-result",
+   "res-analysis-save-result","res-authority-save-result"].forEach(id => {
+    document.getElementById(id).textContent = "";
+  });
+  document.getElementById("res-draft-content").value = "";
+  // Load document list for the selector
+  loadResearchDocuments();
+}
+
+function loadResearchDocuments() {
+  if (!_currentClient) return;
+  const sel = document.getElementById("res-doc-select");
+  sel.innerHTML = '<option value="">— Select a document —</option>';
+  fetch("/portal/attorney/documents/" + encodeURIComponent(_currentClient.username))
+    .then(r => r.json())
+    .then(d => {
+      Object.entries(d.files).forEach(([cat, files]) => {
+        files.forEach(f => {
+          const opt = document.createElement("option");
+          opt.value = cat + "||" + f.name;
+          opt.textContent = "[" + cat + "] " + f.name;
+          sel.appendChild(opt);
+        });
+      });
+    });
+}
+
+function loadTokenUsage() {
+  document.getElementById("tu-error").style.display = "none";
+  ["tu-today-total","tu-total-all","tu-total-in","tu-total-out"].forEach(id => {
+    document.getElementById(id).textContent = "…";
+  });
+  fetch("/portal/attorney/token-usage")
+    .then(r => r.json())
+    .then(d => {
+      var todayTok = (d.today_input || 0) + (d.today_output || 0);
+      var allTok   = (d.total_input_tokens || 0) + (d.total_output_tokens || 0);
+      document.getElementById("tu-today-total").textContent = todayTok.toLocaleString();
+      document.getElementById("tu-total-all").textContent   = allTok.toLocaleString();
+      document.getElementById("tu-total-in").textContent    = (d.total_input_tokens || 0).toLocaleString();
+      document.getElementById("tu-total-out").textContent   = (d.total_output_tokens || 0).toLocaleString();
+
+      var byLabel = d.by_label || {};
+      var labels  = Object.keys(byLabel);
+      var tbody   = document.getElementById("tu-breakdown-body");
+      while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
+      if (labels.length > 0) {
+        labels.forEach(function(lbl) {
+          var entry = byLabel[lbl];
+          var row = document.createElement("tr");
+          [lbl,
+           entry.calls,
+           (entry.input  || 0).toLocaleString(),
+           (entry.output || 0).toLocaleString(),
+           ((entry.input || 0) + (entry.output || 0)).toLocaleString()
+          ].forEach(function(val, i) {
+            var td = document.createElement("td");
+            td.textContent = val;
+            td.style.textAlign = i === 0 ? "left" : "right";
+            row.appendChild(td);
+          });
+          tbody.appendChild(row);
+        });
+        document.getElementById("tu-breakdown").style.display = "block";
+      } else {
+        document.getElementById("tu-breakdown").style.display = "none";
+      }
+    })
+    .catch(function() {
+      ["tu-today-total","tu-total-all","tu-total-in","tu-total-out"].forEach(id => {
+        document.getElementById(id).textContent = "—";
+      });
+      document.getElementById("tu-error").style.display = "block";
+    });
+}
+
+function _resSetLoading(spinnerId, btnId, loading) {
+  document.getElementById(spinnerId).style.display = loading ? "inline" : "none";
+  const btn = document.getElementById(btnId);
+  if (btn) btn.disabled = loading;
+}
+
+function analyzeIssues() {
+  const issue = document.getElementById("res-legal-issue").value.trim();
+  if (!issue) { document.getElementById("res-analyze-err").textContent = "Please enter a case summary."; return; }
+  document.getElementById("res-analyze-err").textContent = "";
+  _resSetLoading("res-analyze-spinner", "res-analyze-btn", true);
+  fetch("/portal/attorney/research/analyze", {
+    method: "POST", headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ username: _currentClient.username, legal_issue: issue })
+  }).then(r => r.json()).then(d => {
+    _resSetLoading("res-analyze-spinner", "res-analyze-btn", false);
+    if (!d.success) { document.getElementById("res-analyze-err").textContent = d.error || "Error."; return; }
+    _resAnalyzedIssues = d.issues;
+    document.getElementById("res-issues-content").textContent = d.issues;
+    document.getElementById("res-issues-section").style.display = "block";
+    document.getElementById("res-authority-section").style.display = "none";
+    loadTokenUsage();
+  }).catch(e => {
+    _resSetLoading("res-analyze-spinner", "res-analyze-btn", false);
+    document.getElementById("res-analyze-err").textContent = "Request failed: " + e.message;
+  });
+}
+
+function findAuthority() {
+  if (!_resAnalyzedIssues) { document.getElementById("res-authority-err").textContent = "Analyze issues first."; return; }
+  document.getElementById("res-authority-err").textContent = "";
+  _resSetLoading("res-authority-spinner", "res-authority-btn", true);
+  fetch("/portal/attorney/research/authority", {
+    method: "POST", headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ issues: _resAnalyzedIssues, case_type: _currentClient.case_type || "Criminal Defense" })
+  }).then(r => r.json()).then(d => {
+    _resSetLoading("res-authority-spinner", "res-authority-btn", false);
+    if (!d.success) { document.getElementById("res-authority-err").textContent = d.error || "Error."; return; }
+    document.getElementById("res-authority-content").textContent = d.memo;
+    document.getElementById("res-authority-section").style.display = "block";
+    loadTokenUsage();
+  }).catch(e => {
+    _resSetLoading("res-authority-spinner", "res-authority-btn", false);
+    document.getElementById("res-authority-err").textContent = "Request failed: " + e.message;
+  });
+}
+
+function issueSpotDocument() {
+  const val = document.getElementById("res-doc-select").value;
+  if (!val) { document.getElementById("res-spot-err").textContent = "Select a document first."; return; }
+  const [category, filename] = val.split("||");
+  document.getElementById("res-spot-err").textContent = "";
+  document.getElementById("res-spot-spinner").style.display = "inline";
+  fetch("/portal/attorney/research/issue-spot", {
+    method: "POST", headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ username: _currentClient.username, category, filename })
+  }).then(r => r.json()).then(d => {
+    document.getElementById("res-spot-spinner").style.display = "none";
+    if (!d.success) { document.getElementById("res-spot-err").textContent = d.error || "Error."; return; }
+    _resSpottedIssues = d.issues;
+    document.getElementById("res-spot-content").textContent = d.issues;
+    document.getElementById("res-spot-section").style.display = "block";
+    loadTokenUsage();
+  }).catch(e => {
+    document.getElementById("res-spot-spinner").style.display = "none";
+    document.getElementById("res-spot-err").textContent = "Request failed: " + e.message;
+  });
+}
+
+function draftMotion() {
+  const issues = (_resSpottedIssues + "\n" + _resAnalyzedIssues).trim();
+  if (!issues) { document.getElementById("res-draft-err").textContent = "Run Issue Spot or Analyze Issues first."; return; }
+  const motionType = document.getElementById("res-motion-type").value;
+  const caseContext = document.getElementById("res-legal-issue").value.trim();
+  document.getElementById("res-draft-err").textContent = "";
+  _resSetLoading("res-draft-spinner", null, true);
+  document.getElementById("res-draft-spinner").style.display = "inline";
+  fetch("/portal/attorney/research/draft", {
+    method: "POST", headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ motion_type: motionType, issues, case_context: caseContext, username: _currentClient.username })
+  }).then(r => r.json()).then(d => {
+    document.getElementById("res-draft-spinner").style.display = "none";
+    if (!d.success) { document.getElementById("res-draft-err").textContent = d.error || "Error."; return; }
+    document.getElementById("res-draft-content").value = d.draft;
+    document.getElementById("res-draft-section").style.display = "block";
+    document.getElementById("res-save-result").textContent = "";
+    loadTokenUsage();
+  }).catch(e => {
+    document.getElementById("res-draft-spinner").style.display = "none";
+    document.getElementById("res-draft-err").textContent = "Request failed: " + e.message;
+  });
+}
+
+function saveResearchDraft() {
+  const draft = document.getElementById("res-draft-content").value.trim();
+  if (!draft || !_currentClient) return;
+  const motionType = document.getElementById("res-motion-type").value;
+  const category   = document.getElementById("res-save-cat").value;
+  const ts = new Date().toISOString().slice(0,10).replace(/-/g,"");
+  const filename = motionType.toLowerCase().replace(/[^a-z0-9]+/g,"_") + "_" + ts + ".txt";
+  const resEl = document.getElementById("res-save-result");
+  resEl.textContent = "Saving…";
+  fetch("/portal/attorney/research/save-draft", {
+    method: "POST", headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      username: _currentClient.username,
+      category, draft, filename, motion_type: motionType
+    })
+  }).then(r => r.json()).then(d => {
+    if (!d.success) { resEl.style.color = "var(--red)"; resEl.textContent = d.error || "Save failed."; return; }
+    resEl.style.color = "var(--green)";
+    resEl.textContent = "Saved as \"" + d.filename + "\" in " + d.category + ".";
+    // Update billing log with auto-entry
+    if (d.billing_entry && _currentClient) {
+      _currentClient.billing_log = _currentClient.billing_log || [];
+      _currentClient.billing_log.push(d.billing_entry);
+      if (d.total_hours !== null) _currentClient.hours_billed = d.total_hours;
+      populateBillingLog(_currentClient);
+      populateOverview(_currentClient);
+    }
+    // Refresh documents so new file appears
+    loadResearchDocuments();
+  }).catch(e => {
+    resEl.style.color = "var(--red)";
+    resEl.textContent = "Request failed: " + e.message;
+  });
+}
+
+function saveResearchReport(reportType) {
+  if (!_currentClient) return;
+  const text = reportType === "analysis"
+    ? _resAnalyzedIssues
+    : document.getElementById("res-authority-content").textContent;
+  if (!text.trim()) return;
+  const resElId = reportType === "analysis"
+    ? "res-analysis-save-result"
+    : "res-authority-save-result";
+  const resEl = document.getElementById(resElId);
+  resEl.style.color = "";
+  resEl.textContent = "Saving\u2026";
+  fetch("/portal/attorney/research/save-report", {
+    method: "POST", headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      username:    _currentClient.username,
+      report_type: reportType,
+      text
+    })
+  }).then(r => r.json()).then(d => {
+    if (!d.success) {
+      resEl.style.color = "var(--red)";
+      resEl.textContent = d.error || "Save failed.";
+      return;
+    }
+    resEl.style.color = "var(--green)";
+    resEl.textContent = "Saved as \u201c" + d.filename + "\u201d in " + d.category + ". 0.5 hrs billed.";
+    if (d.billing_entry && _currentClient) {
+      _currentClient.billing_log = _currentClient.billing_log || [];
+      _currentClient.billing_log.push(d.billing_entry);
+      if (d.total_hours !== null) _currentClient.hours_billed = d.total_hours;
+      populateBillingLog(_currentClient);
+      populateOverview(_currentClient);
+    }
+  }).catch(e => {
+    resEl.style.color = "var(--red)";
+    resEl.textContent = "Request failed: " + e.message;
+  });
+}
+
+// ── Generate AI legal issue summary ───────────────────────────────────────────
+function generateLegalSummary() {
+  if (!_currentClient) return;
+  var btn = document.getElementById("gen-summary-btn");
+  var el  = document.getElementById("ov-legal-issue");
+  btn.disabled = true;
+  btn.textContent = "Generating…";
+  fetch("/portal/attorney/generate-summary", {
+    method: "POST", headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ username: _currentClient.username })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    btn.disabled = false;
+    btn.textContent = "⚡ Generate AI Summary";
+    if (d.success) {
+      el.textContent = d.summary;
+      _currentClient.legal_issue_summary = d.summary;
+    } else {
+      el.textContent = d.error || "Error generating summary.";
+    }
+  })
+  .catch(function() {
+    btn.disabled = false;
+    btn.textContent = "⚡ Generate AI Summary";
+    el.textContent = "Network error.";
+  });
+}
+
+// ── Save client info ──────────────────────────────────────────────────────────
+function saveClientInfo() {
+  if (!_currentClient) return;
+  const payload = {
+    username:        _currentClient.username,
+    client_name:     document.getElementById("ci-name").value,
+    case_type:       document.getElementById("ci-case-type").value,
+    phone:           document.getElementById("ci-phone").value,
+    email:           document.getElementById("ci-email").value,
+    next_court_date: document.getElementById("ci-court-date").value,
+    next_meeting:    document.getElementById("ci-next-meeting").value,
+    legal_issue:     document.getElementById("ci-legal-issue").value,
+    google_drive_url:document.getElementById("ci-drive-url").value,
+  };
+  fetch("/portal/attorney/update-client", {
+    method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(payload)
+  }).then(r => r.json()).then(d => {
+    const res = document.getElementById("ci-result");
+    if (d.success) {
+      Object.assign(_currentClient, payload);
+      populateOverview(_currentClient);
+      populateDocuments(_currentClient);
+      // refresh sidebar label
+      const btn = document.getElementById("cli-" + _currentClient.username);
+      if (btn) btn.textContent = payload.client_name || _currentClient.username;
+      let saveMsg = "Saved.";
+      if (d.intake_pdf) saveMsg += ' Intake PDF \u201c' + d.intake_pdf + '\u201d saved to Documents.';
+      res.innerHTML = '<p style="color:var(--green);font-family:Arial,sans-serif;font-size:.88rem">' + saveMsg + '</p>';
+      setTimeout(() => { res.innerHTML = ""; }, 5000);
+    } else {
+      res.innerHTML = `<p style="color:var(--red);font-family:Arial,sans-serif;font-size:.88rem">${d.error}</p>`;
+    }
+  });
+}
+
+// ── Log billing entry ─────────────────────────────────────────────────────────
+function logBillingEntry() {
+  if (!_currentClient) return;
+  const note     = document.getElementById("be-note").value.trim();
+  const hours    = parseFloat(document.getElementById("be-hours").value) || 0;
+  const date     = document.getElementById("be-date").value;
+  const category = document.getElementById("be-category").value;
+  const res      = document.getElementById("be-result");
+  if (!note) {
+    res.innerHTML = '<p style="color:var(--red);font-family:Arial,sans-serif;font-size:.88rem">Note / description is required.</p>';
+    return;
+  }
+  fetch("/portal/attorney/billing-entry", {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ username: _currentClient.username, note, hours, date, category })
+  }).then(r => r.json()).then(d => {
+    if (d.success) {
+      _currentClient.billing_log = _currentClient.billing_log || [];
+      _currentClient.billing_log.push(d.entry);
+      _currentClient.hours_billed = d.total_hours;
+      populateBillingLog(_currentClient);
+      populateOverview(_currentClient);
+      if (d.billing_summary) _currentClient.billing_summary = d.billing_summary;
+      if (window.populateBilling) populateBilling(_currentClient);
+      var p = document.createElement("p"); p.style.cssText = "color:var(--green);font-family:Arial,sans-serif;font-size:.88rem"; p.textContent = "Entry saved \u2014 Total: " + d.total_hours + " hrs"; res.textContent = ""; res.appendChild(p);
+      setTimeout(() => { res.textContent = ""; }, 4000);
+    } else {
+      var ep = document.createElement("p"); ep.style.cssText = "color:var(--red);font-family:Arial,sans-serif;font-size:.88rem"; ep.textContent = d.error || "Error."; res.textContent = ""; res.appendChild(ep);
+    }
+  });
+}
+
+// ── Send reply ────────────────────────────────────────────────────────────────
+function sendReply() {
+  if (!_currentClient) return;
+  const text = document.getElementById("atty-reply-text").value.trim();
+  const res  = document.getElementById("atty-reply-result");
+  if (!text) { res.innerHTML = '<p style="color:var(--red);font-family:Arial,sans-serif;font-size:.88rem">Enter a reply.</p>'; return; }
+  fetch("/portal/attorney/reply", {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ username: _currentClient.username, text })
+  }).then(r => r.json()).then(d => {
+    if (d.success) {
+      const now = new Date().toLocaleDateString("en-US", { year:"numeric", month:"2-digit", day:"2-digit" });
+      _currentClient.messages = _currentClient.messages || [];
+      _currentClient.messages.push({ from:"attorney", date: now, text });
+      populateMessages(_currentClient);
+      document.getElementById("atty-reply-text").value = "";
+      res.innerHTML = '<p style="color:var(--green);font-family:Arial,sans-serif;font-size:.88rem">Reply sent.</p>';
+      setTimeout(() => { res.innerHTML = ""; }, 3000);
+    } else {
+      res.innerHTML = `<p style="color:var(--red);font-family:Arial,sans-serif;font-size:.88rem">${d.error}</p>`;
+    }
+  });
+}
+
+// ── Document management ───────────────────────────────────────────────────────
+var _docCategory = "Intake";
+
+function setDocCategory(cat, btn) {
+  _docCategory = cat;
+  document.querySelectorAll(".doc-cat-tab").forEach(b => b.classList.remove("active"));
+  if (btn) btn.classList.add("active");
+  document.getElementById("doc-drop-label").textContent = `Drop files here for "${cat}"`;
+  document.getElementById("doc-list-title").textContent = cat;
+  loadDocumentList();
+}
+
+function loadDocumentList() {
+  if (!_currentClient) return;
+  document.getElementById("doc-file-list").innerHTML =
+    '<p class="doc-empty" style="color:var(--gray-3)">Loading…</p>';
+  fetch("/portal/attorney/documents/" + encodeURIComponent(_currentClient.username))
+    .then(r => r.json())
+    .then(d => renderDocList(d.files[_docCategory] || []));
+}
+
+function renderDocList(files) {
+  const wrap  = document.getElementById("doc-file-list");
+  const count = document.getElementById("doc-file-count");
+  count.textContent = files.length ? files.length + " file" + (files.length > 1 ? "s" : "") : "";
+  if (!files.length) {
+    _show(wrap, _el("p", {className: "doc-empty"}, "No files in this category yet. Drag & drop above to upload."));
+    return;
+  }
+  const u   = encodeURIComponent(_currentClient.username);
+  const cat = encodeURIComponent(_docCategory);
+  _show(wrap, files.map(f => {
+    const name = f.name;
+    const ext  = (name.split(".").pop() || "").toLowerCase();
+    const fn   = encodeURIComponent(name);
+    return _el("div", {className: "doc-file-row"},
+      _el("div", {className: "doc-file-icon"}, docIcon(name)),
+      _el("div", {className: "doc-file-name"}, name),
+      _el("div", {className: "doc-file-meta"}, f.modified + " · " + fmtBytes(f.size)),
+      _el("div", {className: "doc-file-actions"},
+        _el("button", {type: "button", className: "doc-btn", title: "Preview",
+                       onclick: () => previewDocument(name, ext)}, "👁 Preview"),
+        _el("a", {className: "doc-btn", title: "Download",
+                  href: "/portal/attorney/document/" + u + "/" + cat + "/" + fn}, "↓ Download"),
+        _docCategory === "Scheduling Orders"
+          ? _el("button", {type: "button", className: "doc-btn", title: "Read dates",
+                           onclick: () => openSchedReview(name)}, "📅 Read dates")
+          : null,
+        _el("button", {type: "button", className: "doc-btn doc-btn-del", title: "Delete",
+                       onclick: () => deleteDocument(name)}, "🗑 Delete")));
+  }));
+}
+
+// ── Document preview ──────────────────────────────────────────────────────────
+function previewDocument(filename, ext) {
+  if (!_currentClient) return;
+  const u   = encodeURIComponent(_currentClient.username);
+  const cat = encodeURIComponent(_docCategory);
+  const fn  = encodeURIComponent(filename);
+  const previewUrl  = `/portal/attorney/preview/${u}/${cat}/${fn}`;
+  const downloadUrl = `/portal/attorney/document/${u}/${cat}/${fn}`;
+
+  document.getElementById("doc-preview-title").textContent = filename;
+  document.getElementById("doc-preview-dl").href = downloadUrl;
+
+  const body   = document.getElementById("doc-preview-body");
+  const images = ["jpg","jpeg","png","gif","bmp","webp"];
+  const texts  = ["txt","rtf"];
+
+  if (ext === "pdf" || ext === "html") {
+    body.innerHTML = `<iframe src="${previewUrl}" title="${escHtml(filename)}"></iframe>`;
+  } else if (ext === "docx") {
+    const docxUrl = previewUrl.replace("/preview/", "/docx-preview/");
+    body.innerHTML = `<iframe src="${docxUrl}" title="${escHtml(filename)}"></iframe>`;
+  } else if (images.includes(ext)) {
+    body.innerHTML = `<img src="${previewUrl}" alt="${escHtml(filename)}" />`;
+  } else if (texts.includes(ext)) {
+    body.innerHTML = `<pre style="color:var(--gray-3)">Loading…</pre>`;
+    fetch(previewUrl).then(r => r.text()).then(text => {
+      body.innerHTML = `<pre>${escHtml(text)}</pre>`;
+    });
+  } else {
+    body.innerHTML = `
+      <div class="doc-preview-no-support">
+        <div style="font-size:3.5rem;margin-bottom:.75rem">${docIcon(filename)}</div>
+        <div style="font-family:Georgia,serif;font-size:1.05rem;font-weight:bold;color:var(--navy);margin-bottom:.5rem">
+          ${escHtml(filename)}
+        </div>
+        <div style="font-family:Arial,sans-serif;font-size:.88rem;color:var(--gray-3);margin-bottom:1.5rem">
+          Browser preview is not available for .${ext} files.
+        </div>
+        <a href="${downloadUrl}" class="btn btn-primary">↓ Download to View</a>
+      </div>`;
+  }
+
+  document.getElementById("doc-preview-overlay").style.display = "flex";
+}
+
+function closeDocPreview(e) {
+  if (e && e.target !== document.getElementById("doc-preview-overlay")) return;
+  document.getElementById("doc-preview-overlay").style.display = "none";
+  // Clear iframe/img src to stop loading
+  document.getElementById("doc-preview-body").innerHTML = "";
+}
+
+function docIcon(name) {
+  const ext = (name.split(".").pop() || "").toLowerCase();
+  if (ext === "pdf")                             return "📄";
+  if (["doc","docx"].includes(ext))              return "📝";
+  if (["xls","xlsx"].includes(ext))              return "📊";
+  if (["ppt","pptx"].includes(ext))              return "📋";
+  if (["jpg","jpeg","png","gif","bmp","webp"].includes(ext)) return "🖼";
+  if (ext === "txt" || ext === "rtf")            return "📃";
+  if (ext === "html")                            return "🗒";
+  return "📎";
+}
+
+function fmtBytes(b) {
+  if (b < 1024)      return b + " B";
+  if (b < 1048576)   return (b / 1024).toFixed(1) + " KB";
+  return (b / 1048576).toFixed(1) + " MB";
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+function deleteDocument(filename) {
+  if (!_currentClient) return;
+  if (!confirm(`Delete "${filename}"?\n\nThis cannot be undone.`)) return;
+  fetch("/portal/attorney/delete-document", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      username: _currentClient.username,
+      category: _docCategory,
+      filename,
+    }),
+  }).then(r => r.json()).then(d => {
+    if (d.success) loadDocumentList();
+    else alert("Error: " + d.error);
+  });
+}
+
+function initDocDropZone() {
+  const zone  = document.getElementById("doc-drop-zone");
+  const input = document.getElementById("doc-file-input");
+  if (!zone) return;
+  zone.addEventListener("dragover",  e => { e.preventDefault(); zone.classList.add("drag-over"); });
+  zone.addEventListener("dragleave", ()  => zone.classList.remove("drag-over"));
+  zone.addEventListener("dragend",   ()  => zone.classList.remove("drag-over"));
+  zone.addEventListener("drop", e => {
+    e.preventDefault();
+    zone.classList.remove("drag-over");
+    if (!_currentClient) { alert("Please select a client first."); return; }
+    uploadFiles(e.dataTransfer.files);
+  });
+  zone.addEventListener("click", e => {
+    if (e.target === input) return;
+    if (!_currentClient) { alert("Please select a client first."); return; }
+    input.value = "";
+    input.click();
+  });
+}
+
+function uploadFiles(files) {
+  if (!_currentClient || !files || !files.length) return;
+  const progress = document.getElementById("doc-upload-progress");
+  const list = Array.from(files);
+  let done = 0;
+  let lastSchedFile = null;
+  const total = list.length;
+
+  function next() {
+    if (!list.length) {
+      progress.textContent = total === 1
+        ? "Upload complete."
+        : `${done} file${done > 1 ? "s" : ""} uploaded.`;
+      setTimeout(() => { progress.textContent = ""; }, 3000);
+      loadDocumentList();
+      if (window.openSchedReview && lastSchedFile) openSchedReview(lastSchedFile);
+      // Refresh billing log and case overview with auto-billed entries
+      if (_currentClient) {
+        populateBillingLog(_currentClient);
+        populateOverview(_currentClient);
+      }
+      return;
+    }
+    const file = list.shift();
+    progress.textContent = `Uploading "${file.name}" (${done + 1} of ${total})…`;
+    const form = new FormData();
+    form.append("username", _currentClient.username);
+    form.append("category", _docCategory);
+    form.append("file", file);
+    fetch("/portal/attorney/upload-document", { method: "POST", body: form })
+      .then(r => r.json())
+      .then(d => {
+        if (!d.success) { alert("Upload failed: " + (d.error || "unknown error")); }
+        if (d.success && _docCategory === "Scheduling Orders" && d.file && d.file.name) lastSchedFile = d.file.name;
+        // Accumulate auto-billing entries into the in-memory client
+        if (d.billing_entry && _currentClient) {
+          _currentClient.billing_log = _currentClient.billing_log || [];
+          _currentClient.billing_log.push(d.billing_entry);
+          if (d.total_hours !== null) _currentClient.hours_billed = d.total_hours;
+        }
+        done++;
+        next();
+      })
+      .catch(err => { progress.textContent = "Upload error: " + err.message; });
+  }
+  next();
+}
+
+// ── Lead helpers ───────────────────────────────────────────────────────────────
+function toggleLead(header) {
+  const detail  = header.nextElementSibling;
+  const chevron = header.querySelector(".lead-chevron");
+  const open    = detail.style.display !== "none";
+  detail.style.display = open ? "none" : "block";
+  chevron.classList.toggle("open", !open);
+}
+
+function convertLead(btn) {
+  const l = JSON.parse(btn.getAttribute("data-lead").replace(/&#39;/g,"'"));
+  // Archive the lead so it disappears from the leads list
+  if (l._filename) {
+    fetch("/portal/attorney/archive-lead", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({filename: l._filename})
+    }).then(() => populateLeads());
+  }
+  showNewClientTab(null);
+  document.getElementById("nc-name").value        = l.name       || "";
+  document.getElementById("nc-phone").value       = l.phone      || "";
+  document.getElementById("nc-email").value       = l.email      || "";
+  document.getElementById("nc-legal-issue").value = l.message || l.notes || "";
+  const ct = document.getElementById("nc-case-type");
+  if (l.case_type) {
+    for (let i = 0; i < ct.options.length; i++) {
+      if (ct.options[i].value === l.case_type) { ct.selectedIndex = i; break; }
+    }
+  }
+  autoFillUsername();
+  document.getElementById("nc-name").focus();
+}
+
+// ── New Client tab ─────────────────────────────────────────────────────────────
+function showNewClientTab(btn) {
+  document.querySelectorAll("#portal-main .portal-panel").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".portal-tab-btn").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".client-list-item").forEach(b => b.classList.remove("active"));
+  document.getElementById("atty-tabs").style.display = "none";
+  document.getElementById("tab-new-client").classList.add("active");
+  if (btn) btn.classList.add("active");
+  else document.getElementById("new-client-tab-btn").classList.add("active");
+  _currentClient = null;
+}
+
+function autoFillUsername() {
+  const name  = document.getElementById("nc-name").value.trim();
+  const parts = name.split(/\s+/);
+  if (!parts[0]) { document.getElementById("nc-username").value = ""; return; }
+  const first      = parts[0];
+  const lastInit   = parts.length > 1 ? parts[parts.length - 1][0].toUpperCase() : "";
+  const base       = (first + lastInit).replace(/[^a-zA-Z0-9]/g, "");
+  document.getElementById("nc-username").value = base;
+}
+
+function confirmNewClient() {
+  location.reload();
+}
+
+function resetNewClientForm() {
+  document.getElementById("nc-success-card").style.display = "none";
+  document.getElementById("nc-form-card").style.display    = "block";
+  ["nc-name","nc-phone","nc-email","nc-username","nc-legal-issue"].forEach(id => {
+    document.getElementById(id).value = "";
+  });
+  document.getElementById("nc-password").value   = "";
+  document.getElementById("nc-opposing").value = "";
+  document.getElementById("nc-related-list").replaceChildren();
+  document.getElementById("nc-form-card").appendChild(document.getElementById("nc-result"));
+  document.getElementById("nc-result").innerHTML = "";
+}
+
+// ── Create new client ─────────────────────────────────────────────────────────
+function createClient() {
+  const name     = document.getElementById("nc-name").value.trim();
+  const username = document.getElementById("nc-username").value.trim();
+  const password = document.getElementById("nc-password").value.trim();
+  const res      = document.getElementById("nc-result");
+  if (!name || !username) {
+    res.innerHTML = '<p style="color:var(--red);font-family:Arial,sans-serif;font-size:.88rem">Full name and username are required.</p>';
+    return;
+  }
+  res.innerHTML = '<p style="color:var(--gray-3);font-family:Arial,sans-serif;font-size:.88rem">Creating…</p>';
+  const createBtn = document.getElementById("nc-create-btn");
+  if (createBtn) createBtn.disabled = true;
+  fetch("/portal/attorney/create-client", {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({
+      client_name:          name,
+      username,
+      password,
+      must_change_password: true,
+      case_type:            document.getElementById("nc-case-type").value,
+      phone:                document.getElementById("nc-phone").value,
+      email:                document.getElementById("nc-email").value,
+      legal_issue:          document.getElementById("nc-legal-issue").value,
+      opposing_parties:     document.getElementById("nc-opposing").value.split("\n").map(s => s.trim()).filter(Boolean),
+      related_parties:      collectRelated(document.getElementById("nc-related-list")),
+    })
+  }).then(r => r.json()).then(d => {
+    if (d.success) {
+      // Show credentials card, hide form
+      document.getElementById("nc-form-card").style.display    = "none";
+      document.getElementById("nc-success-username").textContent = d.username || username;
+      document.getElementById("nc-success-password").textContent = d.temp_password || "";
+      const pwNote = document.getElementById("nc-success-pw-note");
+      if (pwNote) {
+        pwNote.textContent = d.password_replaced
+          ? "The password you entered was too weak, so a secure one was generated." : "";
+      }
+      document.getElementById("nc-success-card").style.display  = "block";
+      // Surface any conflict-of-interest matches
+      if (d.conflict_hits && d.conflict_hits.length) {
+        res.replaceChildren(
+          _note("⚠ Conflict check matches — review before proceeding.", true),
+          hitsTable(d.conflict_hits));
+        document.getElementById("nc-success-card").appendChild(res);
+      } else {
+        res.replaceChildren();
+      }
+    } else {
+      res.innerHTML = `<p style="color:var(--red);font-family:Arial,sans-serif;font-size:.88rem">${escHtml(d.error || 'Unknown error')}</p>`;
+    }
+  }).catch(() => {
+    res.innerHTML = '<p style="color:var(--red);font-family:Arial,sans-serif;font-size:.88rem">Request failed.</p>';
+  }).finally(() => { if (createBtn) createBtn.disabled = false; });
+}
+
+// ── All clients master list ───────────────────────────────────────────────────
+
+function showAllClients(btn) {
+  document.querySelectorAll(".client-list-item").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll("#portal-main .portal-panel").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".portal-tab-btn").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".see-all-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("atty-tabs").style.display = "none";
+  document.getElementById("tab-all-clients").classList.add("active");
+  if (btn) btn.classList.add("active");
+  _currentClient = null;
+  // clear any prior filter
+  var inp = document.getElementById("all-clients-search");
+  if (inp) inp.value = "";
+  filterAllClientsTable("");
+}
+
+function filterAllClientsTable(q) {
+  q = (q || "").toLowerCase().trim();
+  document.querySelectorAll("#all-clients-tbody .all-clients-row").forEach(row => {
+    var name = row.getAttribute("data-name") || "";
+    row.style.display = (!q || name.includes(q)) ? "" : "none";
+  });
+}
+
+var _acSortCol = null, _acSortDir = "asc";
+function sortAllClients(col, th) {
+  // toggle direction
+  if (_acSortCol === col) {
+    _acSortDir = _acSortDir === "asc" ? "desc" : "asc";
+  } else {
+    _acSortCol = col; _acSortDir = "asc";
+  }
+  // update header arrows
+  document.querySelectorAll(".all-clients-table thead th").forEach(h => {
+    h.classList.remove("sort-asc", "sort-desc");
+  });
+  th.classList.add(_acSortDir === "asc" ? "sort-asc" : "sort-desc");
+  // sort rows
+  var tbody = document.getElementById("all-clients-tbody");
+  var rows = Array.from(tbody.querySelectorAll(".all-clients-row"));
+  rows.sort(function(a, b) {
+    var av = (a.querySelector('td[data-col="' + col + '"]') || {}).textContent || "";
+    var bv = (b.querySelector('td[data-col="' + col + '"]') || {}).textContent || "";
+    av = av.trim(); bv = bv.trim();
+    // numeric columns
+    if (col === "hours" || col === "balance") {
+      var an = parseFloat(av) || 0, bn = parseFloat(bv) || 0;
+      return _acSortDir === "asc" ? an - bn : bn - an;
+    }
+    return _acSortDir === "asc" ? av.localeCompare(bv) : bv.localeCompare(av);
+  });
+  rows.forEach(r => tbody.appendChild(r));
+}
+
+// ── Global Attorney Dashboard ─────────────────────────────────────────────────
+
+function showDashboard(btn) {
+  document.querySelectorAll(".client-list-item").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll("#portal-main .portal-panel").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".portal-tab-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("atty-tabs").style.display = "none";
+  document.getElementById("atty-dashboard").classList.add("active");
+  if (btn) btn.classList.add("active");
+  _currentClient = null;
+  loadDashboard();
+}
+
+// ── Insights Panel ─────────────────────────────────────────────────────────────
+
+function showInsights(btn) {
+  document.querySelectorAll(".client-list-item").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll("#portal-main .portal-panel").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".portal-tab-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("atty-tabs").style.display = "none";
+  document.getElementById("tab-insights").classList.add("active");
+  if (btn) btn.classList.add("active");
+  _currentClient = null;
+  // Populate year selector if empty
+  var sel = document.getElementById("ins-tax-year");
+  if (!sel.options.length) {
+    var curYear = new Date().getFullYear();
+    for (var y = curYear; y >= curYear - 4; y--) {
+      var opt = document.createElement("option");
+      opt.value = y; opt.textContent = y;
+      if (y === curYear) opt.selected = true;
+      sel.appendChild(opt);
+    }
+  }
+  loadInsights();
+  fetch("/api/page-visits")
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      ["index","meet_the_firm","intake","research","drafting"].forEach(function(k){
+        var el = document.getElementById("pv-" + k);
+        if (el) el.textContent = (d[k] || 0).toLocaleString();
+      });
+    })
+    .catch(function(){});
+  if (window.loadBillingSettings) loadBillingSettings();
+}
+
+function showGlobalResearch(btn) {
+  document.querySelectorAll(".client-list-item").forEach(function(b) { b.classList.remove("active"); });
+  document.querySelectorAll("#portal-main .portal-panel").forEach(function(p) { p.classList.remove("active"); });
+  document.querySelectorAll(".portal-tab-btn").forEach(function(b) { b.classList.remove("active"); });
+  document.getElementById("atty-tabs").style.display = "none";
+  document.getElementById("tab-research").classList.add("active");
+  if (btn) btn.classList.add("active");
+  _currentClient = null;
+  document.getElementById("res-client-picker").style.display = "block";
+  document.getElementById("res-client-badge").style.display = "none";
+  document.getElementById("res-client-search").value = "";
+  document.getElementById("res-client-dropdown").style.display = "none";
+  loadTokenUsage();
+}
+
+function filterResClientList(query) {
+  var dropdown = document.getElementById("res-client-dropdown");
+  var q = query.trim().toLowerCase();
+  dropdown.style.display = q ? "block" : "none";
+  while (dropdown.firstChild) { dropdown.removeChild(dropdown.firstChild); }
+  if (!q) return;
+  var matches = (window._ALL_CLIENTS_DATA || []).filter(function(c) {
+    return (c.client_name || c.username || "").toLowerCase().indexOf(q) !== -1;
+  }).slice(0, 8);
+  if (!matches.length) {
+    var none = document.createElement("div");
+    none.className = "res-client-option";
+    none.textContent = "No clients found.";
+    dropdown.appendChild(none);
+    return;
+  }
+  matches.forEach(function(c) {
+    var opt = document.createElement("div");
+    opt.className = "res-client-option";
+    opt.textContent = (c.client_name || c.username) + (c.case_type ? " — " + c.case_type : "");
+    opt.addEventListener("click", function() { selectResClient(c); });
+    dropdown.appendChild(opt);
+  });
+}
+
+function selectResClient(c) {
+  _currentClient = c;
+  var badge = document.getElementById("res-client-badge");
+  badge.textContent = "Linked: " + (c.client_name || c.username);
+  badge.style.display = "inline";
+  document.getElementById("res-client-dropdown").style.display = "none";
+  document.getElementById("res-client-search").value = "";
+  var issueTa = document.getElementById("res-legal-issue");
+  if (issueTa && !issueTa.value.trim()) {
+    issueTa.value = c.legal_issue_summary || c.legal_issue || "";
+  }
+}
+
+function loadInsights() {
+  var year = document.getElementById("ins-tax-year").value || new Date().getFullYear();
+  fetch("/portal/attorney/insights?year=" + year)
+    .then(function(r) { return r.json(); })
+    .then(function(d) { renderInsights(d); })
+    .catch(function(e) { console.error("Insights error:", e); });
+}
+
+function _fmt$(n) { return "$" + Number(n).toLocaleString("en-US", {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function _fmtN(n) { return Number(n).toLocaleString(); }
+
+function _barRows(obj, total, cssClass) {
+  var wrap = document.createElement("div");
+  var keys = Object.keys(obj).sort(function(a,b){ return obj[b]-obj[a]; });
+  if (!keys.length) { wrap.textContent = "No data."; return wrap; }
+  keys.forEach(function(k) {
+    var pct = total ? Math.round(obj[k]/total*100) : 0;
+    var row = document.createElement("div");
+    row.className = "ins-bar-wrap";
+    var lbl = document.createElement("span");
+    lbl.style.cssText = "min-width:140px;font-size:.8rem;color:#444";
+    lbl.textContent = k;
+    var track = document.createElement("div");
+    track.className = "ins-bar-track";
+    var fill = document.createElement("div");
+    fill.className = "ins-bar-fill" + (cssClass ? " " + cssClass : "");
+    fill.style.width = pct + "%";
+    track.appendChild(fill);
+    var cnt = document.createElement("span");
+    cnt.style.cssText = "font-size:.8rem;color:var(--gray-3);white-space:nowrap";
+    cnt.textContent = obj[k] + " (" + pct + "%)";
+    row.appendChild(lbl); row.appendChild(track); row.appendChild(cnt);
+    wrap.appendChild(row);
+  });
+  return wrap;
+}
+
+function renderInsights(d) {
+  var f = d.firm, l = d.leads, attys = d.attorneys, year = d.year;
+
+  // Snapshot stats
+  document.getElementById("ins-total-clients").textContent     = _fmtN(f.total_clients);
+  document.getElementById("ins-total-hours").textContent       = f.total_hours_billed + " hrs";
+  document.getElementById("ins-revenue-billed").textContent    = _fmt$(f.total_revenue_billed);
+  document.getElementById("ins-revenue-collected").textContent = _fmt$(f.total_revenue_collected);
+  document.getElementById("ins-court-dates").textContent       = _fmtN(f.total_court_dates);
+  document.getElementById("ins-meetings").textContent          = _fmtN(f.total_meetings);
+  document.getElementById("ins-intakes").textContent           = _fmtN(f.intake_forms);
+  document.getElementById("ins-messages").textContent          = _fmtN(f.total_messages);
+  document.getElementById("ins-time-logs").textContent         = _fmtN(f.total_time_logs);
+  document.getElementById("ins-client-files").textContent      = _fmtN(f.total_client_files);
+  document.getElementById("ins-research-sessions").textContent = _fmtN(f.research_sessions);
+  document.getElementById("ins-draft-sessions").textContent    = _fmtN(f.draft_sessions);
+  document.getElementById("ins-leads-total").textContent       = _fmtN(l.total);
+  document.getElementById("ins-conversion").textContent        = l.conversion_rate + "%";
+  document.getElementById("ins-leads-active").textContent      = _fmtN(l.active);
+  document.getElementById("ins-rate-num").textContent          = l.conversion_rate + "%";
+
+  // Case type bars
+  var caseBarsEl = document.getElementById("ins-case-bars");
+  while (caseBarsEl.firstChild) caseBarsEl.removeChild(caseBarsEl.firstChild);
+  caseBarsEl.appendChild(_barRows(f.case_type_breakdown, f.total_clients, ""));
+
+  // Lead source bars
+  var srcEl = document.getElementById("ins-source-bars");
+  while (srcEl.firstChild) srcEl.removeChild(srcEl.firstChild);
+  srcEl.appendChild(_barRows(l.by_source, l.total, "gold"));
+
+  // Lead case type bars
+  var lctEl = document.getElementById("ins-lead-ct-bars");
+  while (lctEl.firstChild) lctEl.removeChild(lctEl.firstChild);
+  lctEl.appendChild(_barRows(l.by_case_type, l.total, "gold"));
+
+  // Per-attorney cards
+  var attyWrap = document.getElementById("ins-atty-breakdown");
+  while (attyWrap.firstChild) attyWrap.removeChild(attyWrap.firstChild);
+  Object.keys(attys).forEach(function(uname) {
+    var a = attys[uname];
+    var card = document.createElement("div");
+    card.className = "ins-atty-card";
+    var nm = document.createElement("div");
+    nm.className = "ins-atty-name";
+    nm.textContent = a.display;
+    var grid = document.createElement("div");
+    grid.className = "ins-atty-stats";
+    [
+      [a.total_clients,                   "Total Clients"],
+      [a.total_hours_billed + " hrs",     "Hours Billed"],
+      [_fmt$(a.total_revenue_billed),     "Revenue Billed"],
+      [_fmt$(a.total_revenue_collected),  "Revenue Collected"],
+      [a.clients_with_court_dates,        "Clients w/ Court Dates"],
+      [a.clients_with_meetings,           "Meetings Scheduled"],
+      [a.total_messages,                  "Messages"],
+      [a.total_time_logs,                 "Time Log Entries"],
+      [Object.keys(a.case_types).map(function(k){ return k+": "+a.case_types[k]; }).join(" · ") || "—", "Case Types"],
+    ].forEach(function(pair) {
+      var s = document.createElement("div");
+      s.className = "ins-atty-stat";
+      var v = document.createElement("div");
+      v.className = "ins-atty-stat-val";
+      v.style.fontSize = String(pair[0]).length > 8 ? ".82rem" : "1.2rem";
+      v.textContent = pair[0];
+      var lb = document.createElement("div");
+      lb.className = "ins-atty-stat-lbl";
+      lb.textContent = pair[1];
+      s.appendChild(v); s.appendChild(lb);
+      grid.appendChild(s);
+    });
+    card.appendChild(nm); card.appendChild(grid);
+    attyWrap.appendChild(card);
+  });
+
+  // Tax table
+  var tbody = document.getElementById("ins-tax-tbody");
+  while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
+  var exportBtns = document.getElementById("ins-atty-export-btns");
+  while (exportBtns.firstChild) exportBtns.removeChild(exportBtns.firstChild);
+
+  Object.keys(attys).forEach(function(uname) {
+    var a = attys[uname];
+    var tr = document.createElement("tr");
+    [
+      a.display,
+      a.total_clients,
+      a.year_hours_billed + " hrs",
+      _fmt$(a.year_revenue_billed),
+      _fmt$(a.year_revenue_collected),
+    ].forEach(function(val, i) {
+      var td = document.createElement("td");
+      td.className = i > 0 ? "num" : "";
+      td.textContent = val;
+      tr.appendChild(td);
+    });
+    // Print button cell
+    var tdBtn = document.createElement("td");
+    var pb = document.createElement("button");
+    pb.className = "btn btn-primary";
+    pb.style.cssText = "padding:.25rem .6rem;font-size:.78rem";
+    pb.textContent = "Print W-2";
+    pb.onclick = (function(u, y){ return function(){ exportTax(u, y); }; })(uname, year);
+    tdBtn.appendChild(pb);
+    tr.appendChild(tdBtn);
+    tbody.appendChild(tr);
+
+    // Individual export button row
+    var eb = document.createElement("button");
+    eb.className = "btn btn-primary";
+    eb.style.cssText = "font-size:.84rem";
+    eb.textContent = "W-2 Summary — " + a.display.split(",")[0];
+    eb.onclick = (function(u, y){ return function(){ exportTax(u, y); }; })(uname, year);
+    exportBtns.appendChild(eb);
+  });
+
+  // Overhead Reserve snapshot stats
+  if (d.overhead) {
+    var oh = d.overhead;
+    document.getElementById("ins-overhead-reserve").textContent = _fmt$(oh.overhead_reserve);
+    var netEl = document.getElementById("ins-net-profit");
+    netEl.textContent = _fmt$(oh.est_net_profit);
+    netEl.style.color = oh.est_net_profit >= 0 ? "var(--navy)" : "#c0392b";
+
+    // P&L summary
+    document.getElementById("ins-pl-collected").textContent = _fmt$(d.firm.total_revenue_collected);
+    document.getElementById("ins-pl-overhead").textContent  = _fmt$(oh.overhead_reserve);
+    document.getElementById("ins-pl-net").textContent       = _fmt$(oh.est_net_profit);
+    document.getElementById("ins-pl-pct").textContent       = Math.round(oh.reserve_pct * 100);
+    var plNetEl = document.getElementById("ins-pl-net");
+    plNetEl.style.color = oh.est_net_profit >= 0 ? "var(--navy)" : "#c0392b";
+
+    // Overhead line-item table
+    var ohTbody = document.getElementById("ins-overhead-tbody");
+    while (ohTbody.firstChild) ohTbody.removeChild(ohTbody.firstChild);
+    var lines = [
+      ["Rent / Lease",             oh.monthly_rent],
+      ["Salaries (non-billable)",  oh.monthly_salaries],
+      ["Software & Subscriptions", oh.monthly_software],
+      ["Insurance & Malpractice",  oh.monthly_insurance],
+      ["Marketing & Advertising",  oh.monthly_marketing],
+      ["Miscellaneous",            oh.monthly_misc],
+    ];
+    lines.forEach(function(row) {
+      if (row[1] <= 0) return; // skip zero entries
+      var tr = document.createElement("tr");
+      var tdName = document.createElement("td"); tdName.textContent = row[0];
+      var tdMo   = document.createElement("td"); tdMo.className = "num"; tdMo.textContent = _fmt$(row[1]);
+      var tdYr   = document.createElement("td"); tdYr.className = "num"; tdYr.textContent = _fmt$(row[1] * 12);
+      tr.appendChild(tdName); tr.appendChild(tdMo); tr.appendChild(tdYr);
+      ohTbody.appendChild(tr);
+    });
+    if (!ohTbody.firstChild) {
+      var tr = document.createElement("tr");
+      var td = document.createElement("td"); td.colSpan = 3;
+      td.style.cssText = "color:var(--gray-3);font-size:.82rem;text-align:center;padding:.6rem";
+      td.textContent = "No overhead configured. Set MONTHLY_* variables in .env to populate.";
+      tr.appendChild(td); ohTbody.appendChild(tr);
+    }
+    // Totals footer
+    var ohTfoot = document.getElementById("ins-overhead-tfoot");
+    while (ohTfoot.firstChild) ohTfoot.removeChild(ohTfoot.firstChild);
+    var tfr = document.createElement("tr");
+    tfr.style.fontWeight = "700";
+    var tfd = document.createElement("td"); tfd.textContent = "Total Estimated Overhead";
+    var tfm = document.createElement("td"); tfm.className = "num"; tfm.textContent = _fmt$(oh.monthly_total);
+    var tfy = document.createElement("td"); tfy.className = "num"; tfy.textContent = _fmt$(oh.annual_total);
+    tfr.appendChild(tfd); tfr.appendChild(tfm); tfr.appendChild(tfy);
+    ohTfoot.appendChild(tfr);
+  }
+}
+
+function exportTax(attorney, year) {
+  var url = "/portal/attorney/insights/export-tax?year=" + year + (attorney ? "&attorney=" + encodeURIComponent(attorney) : "");
+  window.open(url, "_blank", "noopener");
+}
+function exportTaxAll() {
+  var year = document.getElementById("ins-tax-year").value || new Date().getFullYear();
+  exportTax("", year);
+}
+
+function loadDashboard() {
+  fetch("/portal/attorney/dashboard")
+    .then(r => {
+      if (!r.ok || !r.headers.get("content-type")?.includes("application/json")) {
+        return Promise.reject(new Error("HTTP " + r.status + " — session may have expired, please reload."));
+      }
+      return r.json();
+    })
+    .then(d => {
+      renderDashCalendar(d.calendar || []);
+      renderDashDeadlines(d.deadlines || []);
+      renderFollowUps(d.follow_up_needed || []);
+      // recent activity — all values sanitized via escHtml before innerHTML insertion
+      const actList = document.getElementById("dash-activity-list");
+      const activity = d.recent_activity || [];
+      const ACTION_ICONS = {
+        intake: "📋", document_upload: "📄", document_delete: "🗑",
+        note_saved: "📝", info_updated: "✏️", message_sent: "💬",
+        time_logged: "⏱", meeting_scheduled: "📅"
+      };
+      if (activity.length) {
+        actList.innerHTML = activity.map(function(a) {
+          var icon = ACTION_ICONS[a.action_type] || "•";
+          var ts   = (a.timestamp || "").replace("T", " ").slice(0, 16);
+          var uAttr = escHtml(a.username || "").replace(/'/g, "&#39;");
+          return '<div style="display:flex;gap:.55rem;align-items:flex-start;padding:.45rem 0;border-bottom:1px solid var(--gray-1)">' 
+            + '<span style="flex-shrink:0;font-size:1rem">' + icon + '</span>'
+            + '<div style="flex:1;min-width:0">'
+            + '<div style="font-family:Arial,sans-serif;font-size:.82rem;color:var(--navy);font-weight:600;cursor:pointer" onclick="selectClient(\'' + uAttr + '\')">'
+            + escHtml(a.client_name) + '</div>'
+            + '<div style="font-family:Arial,sans-serif;font-size:.8rem;color:var(--gray-4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'
+            + escHtml(a.description) + '</div>'
+            + '</div>'
+            + '<div style="font-family:Arial,sans-serif;font-size:.72rem;color:var(--gray-3);white-space:nowrap;flex-shrink:0">'
+            + escHtml(ts) + '</div>'
+            + '</div>';
+        }).join("");
+      } else {
+        actList.innerHTML = '<p class="dash-empty">No activity yet.</p>';
+      }
+      renderDashRecentFiles(d.recent_files || []);
+      renderDashBilling(d.billing || [], d.billing_total || 0);
+    })
+    .catch(err => {
+      const msg = (err && err.message) ? err.message : String(err);
+      console.error("loadDashboard error:", err);
+      const calEl = document.getElementById("month-cal-container");
+      if (calEl) calEl.innerHTML = '<p class="dash-empty">Error: ' + escHtml(msg) + '</p>';
+      ["dash-deadlines-tbody","dash-followup-tbody","dash-files-tbody","dash-billing-tbody"]
+        .forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.innerHTML = '<tr><td colspan="5" class="dash-empty">Error: ' + escHtml(msg) + '</td></tr>';
+        });
+    });
+}
+
+var _calEvents = [];
+var _calYear  = new Date().getFullYear();
+var _calMonth = new Date().getMonth();
+
+function renderDashCalendar(events) {
+  _calEvents = events;
+  _calYear   = new Date().getFullYear();
+  _calMonth  = new Date().getMonth();
+  renderMonthCal();
+}
+
+function calPrevMonth() {
+  _calMonth--;
+  if (_calMonth < 0) { _calMonth = 11; _calYear--; }
+  renderMonthCal();
+}
+function calNextMonth() {
+  _calMonth++;
+  if (_calMonth > 11) { _calMonth = 0; _calYear++; }
+  renderMonthCal();
+}
+
+function renderMonthCal() {
+  var MONTHS = ["January","February","March","April","May","June",
+                "July","August","September","October","November","December"];
+  var DAYS   = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+  var labelEl = document.getElementById("cal-month-label");
+  if (labelEl) labelEl.textContent = MONTHS[_calMonth] + " " + _calYear;
+
+  var today = new Date(); today.setHours(0,0,0,0);
+
+  // index events by ISO date
+  var byDate = {};
+  _calEvents.forEach(function(e) {
+    var d = e.date || "";
+    if (!d) return;
+    if (!byDate[d]) byDate[d] = [];
+    byDate[d].push(e);
+  });
+
+  var firstDow    = new Date(_calYear, _calMonth, 1).getDay();
+  var daysInMonth = new Date(_calYear, _calMonth + 1, 0).getDate();
+  var totalCells  = Math.ceil((firstDow + daysInMonth) / 7) * 7;
+
+  var html = '<table class="month-cal-grid"><thead><tr>';
+  DAYS.forEach(function(d) { html += '<th>' + d + '</th>'; });
+  html += '</tr></thead><tbody>';
+
+  var day = 1;
+  for (var cell = 0; cell < totalCells; cell++) {
+    if (cell % 7 === 0) html += '<tr>';
+
+    if (cell < firstDow || day > daysInMonth) {
+      html += '<td class="month-cal-empty"></td>';
+    } else {
+      var mm     = String(_calMonth + 1).padStart(2, '0');
+      var dd     = String(day).padStart(2, '0');
+      var dateStr = _calYear + '-' + mm + '-' + dd;
+      var isToday = (new Date(_calYear, _calMonth, day).getTime() === today.getTime());
+      var evs    = byDate[dateStr] || [];
+
+      html += '<td class="month-cal-day' + (isToday ? ' month-cal-today' : '') + '">';
+      html += '<div class="month-cal-day-num' + (isToday ? ' month-cal-today-num' : '') + '">' + day + '</div>';
+
+      evs.slice(0, 3).forEach(function(e) {
+        var t   = e.type || "";
+        var tl  = t.toLowerCase();
+        var cls = "cal-pill-gcal";
+        if (tl.includes("court") || tl.includes("hearing") || tl.includes("arraignment")) {
+          var daysAway = Math.round((new Date(dateStr + 'T00:00:00') - today) / 86400000);
+          if      (daysAway <= 7)  cls = "cal-pill-red";
+          else if (daysAway <= 30) cls = "cal-pill-orange";
+          else if (daysAway <= 60) cls = "cal-pill-yellow";
+          else                     cls = "cal-pill-court";
+        } else if (tl.includes("meeting") || tl.includes("consult") || tl.includes("deposition")) {
+          cls = "cal-pill-meet";
+        }
+        var label  = e.client_name || e.matter || t;
+        if (e.time) label = e.time + " · " + label;
+        var uAttr  = escHtml(e.username || "").replace(/'/g, "&#39;");
+        var tip    = escHtml((e.client_name || "") + (e.matter ? " — " + e.matter : "") + (e.time ? " @ " + e.time : ""));
+        html += '<div class="cal-chip ' + cls + '" title="' + tip + '" onclick="event.stopPropagation();selectClientAndTab(\'' + uAttr + '\',\'overview\')">' + escHtml(label) + '</div>';
+      });
+      if (evs.length > 3) {
+        html += '<div class="cal-chip-more">+' + (evs.length - 3) + ' more</div>';
+      }
+      html += '</td>';
+      day++;
+    }
+
+    if (cell % 7 === 6) html += '</tr>';
+  }
+
+  html += '</tbody></table>';
+  document.getElementById("month-cal-container").innerHTML = html;
+}
+
+function renderDashDeadlines(alerts) {
+  const tbody = document.getElementById("dash-deadlines-tbody");
+  if (!alerts.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="dash-empty">No upcoming court dates within 90 days.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = alerts.map(a => {
+    let rowCls = "", badgeCls = "dash-days-normal";
+    if      (a.days_until <= 7)  { rowCls = "dash-deadline-red";    badgeCls = "dash-days-red"; }
+    else if (a.days_until <= 30) { rowCls = "dash-deadline-orange"; badgeCls = "dash-days-orange"; }
+    else if (a.days_until <= 60) { rowCls = "dash-deadline-yellow"; badgeCls = "dash-days-yellow"; }
+    var uAttr = escHtml(a.username || "").replace(/'/g, "&#39;");
+    return '<tr class="dash-row-link ' + rowCls + '" onclick="selectClientAndTab(\'' + uAttr + '\',\'overview\')">'
+      + '<td>' + escHtml(a.client_name) + '</td><td>' + escHtml(a.charges) + '</td>'
+      + '<td>' + escHtml(a.court_date) + '</td>'
+      + '<td><span class="dash-days-badge ' + badgeCls + '">' + a.days_until + 'd</span></td>'
+      + '</tr>';
+  }).join("");
+}
+
+function renderFollowUps(items) {
+  const tbody = document.getElementById("dash-followup-tbody");
+  if (!items.length) {
+    tbody.innerHTML = '<tr><td colspan="3" class="dash-empty">All clients contacted within 30 days.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = items.map(f => {
+    var uAttr = escHtml(f.username || "").replace(/'/g, "&#39;");
+    var dayCls = f.days_since >= 60 ? "dash-days-red" : "dash-days-orange";
+    return '<tr class="dash-row-link dash-deadline-orange" onclick="selectClientAndTab(\'' + uAttr + '\',\'messages\')">'
+      + '<td>' + escHtml(f.client_name) + '</td>'
+      + '<td>' + escHtml(f.last_contact) + '</td>'
+      + '<td><span class="dash-days-badge ' + dayCls + '">' + f.days_since + 'd</span></td>'
+      + '</tr>';
+  }).join("");
+}
+
+function renderDashRecentFiles(files) {
+  const tbody = document.getElementById("dash-files-tbody");
+  if (!files.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="dash-empty">No files found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = files.map(f => {
+    var uAttr = escHtml(f.username || "").replace(/'/g, "&#39;");
+    return '<tr class="dash-row-link" onclick="selectClientAndTab(\'' + uAttr + '\',\'documents\')">'
+      + '<td><span class="dash-filename" title="' + escHtml(f.filename) + '">' + escHtml(f.filename) + '</span></td>'
+      + '<td>' + escHtml(f.client_name) + '</td><td>' + escHtml(f.category) + '</td>'
+      + '<td>' + escHtml(f.modified) + '</td>'
+      + '</tr>';
+  }).join("");
+}
+
+function renderDashBilling(entries, total) {
+  const tbody   = document.getElementById("dash-billing-tbody");
+  const totalEl = document.getElementById("dash-billing-total");
+  totalEl.textContent = total + " hrs";
+  const active = entries.filter(e => e.hours > 0);
+  if (!active.length) {
+    tbody.innerHTML = '<tr><td colspan="2" class="dash-empty">No billable hours yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = active.map(e => {
+    var uAttr = escHtml(e.username || "").replace(/'/g, "&#39;");
+    return '<tr class="dash-row-link" onclick="selectClientAndTab(\'' + uAttr + '\',\'time\')">'
+      + '<td>' + escHtml(e.client_name) + '</td>'
+      + '<td style="font-weight:600;color:var(--navy)">' + (e.hours||0) + ' hrs</td>'
+      + '</tr>';
+  }).join("");
+}
+
+function selectClientAndTab(username, tabName) {
+  document.querySelectorAll(".client-list-item").forEach(b => b.classList.remove("active"));
+  const sideBtn = document.getElementById("cli-" + username);
+  if (sideBtn) sideBtn.classList.add("active");
+  fetch("/portal/attorney/client/" + encodeURIComponent(username))
+    .then(r => r.json())
+    .then(c => {
+      _currentClient = c;
+      document.getElementById("atty-tabs").style.display = "block";
+      populateOverview(c); populateClientInfo(c); populateBillingLog(c);
+      populateMessages(c); populateDocuments(c); populateResearch(c);
+      populateSecurity(c);
+      if (window.populateBilling) populateBilling(c);
+      if (window.populateCaseDates) populateCaseDates(c);
+      goToTab(tabName);
+    });
+}
+
+function openAddEventModal() {
+  document.getElementById("dae-date").value = new Date().toISOString().split("T")[0];
+  document.getElementById("dae-time").value = "09:00";
+  document.getElementById("dae-note").value = "";
+  document.getElementById("dae-result").innerHTML = "";
+  document.getElementById("dash-add-event-modal").style.display = "flex";
+}
+function closeDashAddEventModal(e) {
+  if (e && e.target !== document.getElementById("dash-add-event-modal")) return;
+  document.getElementById("dash-add-event-modal").style.display = "none";
+}
+function saveDashEvent() {
+  const username = document.getElementById("dae-client").value;
+  const type     = document.getElementById("dae-type").value;
+  const date     = document.getElementById("dae-date").value;
+  const time     = document.getElementById("dae-time").value;
+  const note     = document.getElementById("dae-note").value.trim();
+  const res      = document.getElementById("dae-result");
+  if (!username || !date) {
+    res.innerHTML = '<p style="color:var(--red);font-family:Arial,sans-serif;font-size:.88rem">Client and date are required.</p>';
+    return;
+  }
+  res.innerHTML = '<p style="color:var(--gray-3);font-family:Arial,sans-serif;font-size:.88rem">Saving…</p>';
+  fetch("/portal/attorney/client/" + encodeURIComponent(username))
+    .then(r => r.json())
+    .then(client => {
+      const payload = {
+        username: client.username, client_name: client.client_name||"",
+        case_type: client.case_type||"", phone: client.phone||"",
+        email: client.email||"", legal_issue: client.legal_issue||"",
+        google_drive_url: client.google_drive_url||"",
+      };
+      if (type === "Court Date") {
+        payload.next_court_date = date;
+        payload.next_meeting    = client.next_meeting || "";
+      } else {
+        const dt      = new Date(date + "T" + (time||"09:00"));
+        const dateStr = dt.toLocaleDateString("en-US", {year:"numeric",month:"long",day:"numeric"});
+        const timeStr = dt.toLocaleTimeString("en-US", {hour:"numeric",minute:"2-digit"});
+        payload.next_meeting    = dateStr + " at " + timeStr + (note ? " — " + note : "");
+        payload.next_court_date = client.next_court_date || "";
+      }
+      return fetch("/portal/attorney/update-client", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify(payload),
+      });
+    })
+    .then(r => r.json())
+    .then(d => {
+      if (d.success) {
+        document.getElementById("dash-add-event-modal").style.display = "none";
+        loadDashboard();
+      } else {
+        res.innerHTML = `<p style="color:var(--red);font-family:Arial,sans-serif;font-size:.88rem">${escHtml(d.error||"Error saving.")}</p>`;
+      }
+    })
+    .catch(() => { res.innerHTML = '<p style="color:var(--red);font-family:Arial,sans-serif;font-size:.88rem">Request failed.</p>'; });
+}
+
+function openDashLogTimeModal() {
+  document.getElementById("dlt-date").value  = new Date().toISOString().split("T")[0];
+  document.getElementById("dlt-hours").value = "";
+  document.getElementById("dlt-note").value  = "";
+  document.getElementById("dlt-result").innerHTML = "";
+  document.getElementById("dash-log-time-modal").style.display = "flex";
+}
+function closeDashLogTimeModal(e) {
+  if (e && e.target !== document.getElementById("dash-log-time-modal")) return;
+  document.getElementById("dash-log-time-modal").style.display = "none";
+}
+function saveDashLogTime() {
+  const username = document.getElementById("dlt-client").value;
+  const date     = document.getElementById("dlt-date").value;
+  const hours    = parseFloat(document.getElementById("dlt-hours").value) || 0;
+  const note     = document.getElementById("dlt-note").value.trim();
+  const res      = document.getElementById("dlt-result");
+  if (!note) {
+    res.innerHTML = '<p style="color:var(--red);font-family:Arial,sans-serif;font-size:.88rem">Note is required.</p>';
+    return;
+  }
+  if (!username) {
+    res.innerHTML = '<p style="color:var(--red);font-family:Arial,sans-serif;font-size:.88rem">Select a client.</p>';
+    return;
+  }
+  res.innerHTML = '<p style="color:var(--gray-3);font-family:Arial,sans-serif;font-size:.88rem">Saving…</p>';
+  fetch("/portal/attorney/billing-entry", {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({username, date, hours, note}),
+  }).then(r => r.json()).then(d => {
+    if (d.success) {
+      document.getElementById("dash-log-time-modal").style.display = "none";
+      loadDashboard();
+    } else {
+      res.innerHTML = `<p style="color:var(--red);font-family:Arial,sans-serif;font-size:.88rem">${escHtml(d.error||"Error.")}</p>`;
+    }
+  }).catch(() => { res.innerHTML = '<p style="color:var(--red);font-family:Arial,sans-serif;font-size:.88rem">Request failed.</p>'; });
+}
+
+// ── Back-navigation guard ─────────────────────────────────────────────────────
+(function() {
+  history.pushState({portalGuard: true}, '');
+
+  window.addEventListener('popstate', function(e) {
+    history.pushState({portalGuard: true}, '');
+    document.getElementById('nav-guard-modal').style.display = 'flex';
+  });
+
+  window.addEventListener('beforeunload', function(e) {
+    e.preventDefault();
+    e.returnValue = '';
+  });
+})();
+
+function navGuardStay() {
+  document.getElementById('nav-guard-modal').style.display = 'none';
+}
+
+function navGuardLogout() {
+  window.onbeforeunload = null;
+  window.location.href = '/logout';
+}
+</script>
+
+<!-- ── Back-navigation guard modal ─────────────────────────────────────────── -->
+<div id="nav-guard-modal" style="display:none;position:fixed;inset:0;z-index:9999;
+     background:rgba(10,20,40,.72);align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:12px;padding:2rem 2.25rem;max-width:380px;
+              width:90%;box-shadow:0 20px 60px rgba(0,0,0,.35);text-align:center">
+    <div style="font-size:2rem;margin-bottom:.6rem">⚠️</div>
+    <h2 style="font-family:Georgia,serif;font-size:1.25rem;color:#0c1828;margin:0 0 .6rem">
+      Leave the Portal?
+    </h2>
+    <p style="font-family:Arial,sans-serif;font-size:.9rem;color:#555;margin:0 0 1.5rem;line-height:1.6">
+      Your session is still active. Would you like to return to the portal or sign out?
+    </p>
+    <div style="display:flex;flex-direction:column;gap:.65rem">
+      <button onclick="navGuardStay()"
+              style="padding:.7rem 1rem;background:#1a3a5c;color:#fff;border:none;
+                     border-radius:7px;font-size:.95rem;cursor:pointer;font-weight:600">
+        Return to Portal
+      </button>
+      <button onclick="navGuardLogout()"
+              style="padding:.7rem 1rem;background:#fff;color:#c0392b;border:2px solid #c0392b;
+                     border-radius:7px;font-size:.95rem;cursor:pointer;font-weight:600">
+        Sign Out &amp; Go to Login
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  window._ATTORNEYS = {{ attorneys | tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/attorney_security.js') }}"></script>
+<script src="{{ url_for('static', filename='js/attorney_billing.js') }}"></script>
+<script>
+  window._CASE_DATE_LABELS = {{ case_date_labels | tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/attorney_schedule.js') }}"></script>
+{% endblock %}

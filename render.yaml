@@ -1,0 +1,44 @@
+# Render Blueprint for the MT Legal website.
+# Launch mode: public site + intake only (PUBLIC_SITE_ONLY=1). Secrets marked
+# sync: false are entered in the Render dashboard, never committed here.
+services:
+  - type: web
+    name: mt-legal
+    runtime: python
+    plan: starter                  # a persistent disk requires a paid instance
+    buildCommand: pip install -r requirements.txt
+    # One worker: client records are files on disk, so keep a single writer
+    # process; threads handle concurrent requests.
+    startCommand: gunicorn app:app --workers 1 --threads 4 --timeout 120 --bind 0.0.0.0:$PORT
+    healthCheckPath: /healthz
+    disk:
+      name: mt-legal-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.8"
+      - key: APP_ENV
+        value: production
+      - key: PUBLIC_SITE_ONLY
+        value: "1"
+      - key: DATA_DIR
+        value: /var/data
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATA_ENCRYPTION_KEY      # python scripts/generate_data_key.py — back it up
+        sync: false
+      - key: ANTHROPIC_API_KEY        # website chat assistant and intake summaries
+        sync: false
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: FROM_EMAIL
+        sync: false
+      - key: FIRM_EMAIL
+        sync: false
+      - key: FIRM_PHONE
+        sync: false
+      - key: FIRM_WEBSITE
+        sync: false
+      - key: CAL_BOOKING_URL
+        sync: false

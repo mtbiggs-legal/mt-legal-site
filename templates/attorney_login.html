@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Attorney Login — {{ firm_name }}{% endblock %}
+
+{% block content %}
+<div class="portal-login-wrap">
+  <div class="portal-login-card">
+    <div class="portal-login-header">
+      <div class="portal-icon">⚖</div>
+      <h2>Attorney Portal</h2>
+      <p>Authorized personnel only</p>
+    </div>
+    <div class="portal-login-body">
+      {% if error %}
+      <div class="portal-login-error">{{ error }}</div>
+      {% endif %}
+      <form method="POST" action="{{ url_for('auth.attorney_login') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" placeholder="Attorney username" required autocomplete="username" />
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="Password" required autocomplete="current-password" />
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;margin-top:.5rem">Sign In →</button>
+      </form>
+      <a href="{{ url_for('public.index') }}" class="portal-back-link">← Return to Main Site</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

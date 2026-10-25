@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}Client Portal — {{ firm_name }}{% endblock %}
+
+{% block content %}
+<div class="portal-login-wrap" style="max-width:460px">
+  <div class="portal-login-card">
+    <div class="portal-login-header">
+      <div class="portal-icon">👤</div>
+      <h2>Client Portal</h2>
+      <p>Access your case overview &amp; messages</p>
+    </div>
+
+    <!-- Tab switcher -->
+    <div class="login-tab-bar">
+      <button id="tab-signin-btn"   class="login-tab active" onclick="switchLoginTab('signin')">Sign In</button>
+      <button id="tab-register-btn" class="login-tab"        onclick="switchLoginTab('register')">Create Profile</button>
+    </div>
+
+    <!-- ── Sign In ─────────────────────────────────────────────────── -->
+    <div id="signin-panel" class="portal-login-body">
+      {% if error %}
+      <div class="portal-login-error">{{ error }}</div>
+      {% endif %}
+      <form method="POST" action="{{ url_for('auth.client_login') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" placeholder="Your username" required autocomplete="username" />
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="Password" required autocomplete="current-password" />
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;margin-top:.5rem">Sign In →</button>
+      </form>
+      <a href="{{ url_for('public.index') }}" class="portal-back-link">← Return to Main Site</a>
+    </div>
+
+    <!-- ── Create Profile ─────────────────────────────────────────── -->
+    <div id="register-panel" class="portal-login-body" style="display:none">
+      <p style="font-family:Arial,sans-serif;font-size:.85rem;color:var(--gray-4);margin-bottom:1.25rem;line-height:1.6">
+        Create your client account. You'll be automatically connected with the right attorney for your case type.
+      </p>
+      <div class="form-group" style="margin-bottom:.9rem">
+        <label for="r-name">Full Name *</label>
+        <input type="text" id="r-name" placeholder="Jane A. Smith" />
+      </div>
+      <div class="form-group" style="margin-bottom:.9rem">
+        <label for="r-phone">Phone</label>
+        <input type="tel" id="r-phone" placeholder="(555) 000-0000" />
+      </div>
+      <div class="form-group" style="margin-bottom:.9rem">
+        <label for="r-email">Email</label>
+        <input type="email" id="r-email" placeholder="you@example.com" />
+      </div>
+      <div class="form-group" style="margin-bottom:.9rem">
+        <label for="r-case-type">Case Type *</label>
+        <select id="r-case-type">
+          <option value="Criminal Defense">Criminal Defense</option>
+          <option value="Civil Litigation">Civil Litigation</option>
+          <option value="DeFi / Crypto Law">DeFi / Crypto Law</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:.9rem">
+        <label for="r-matter">Brief Description of Your Matter</label>
+        <textarea id="r-matter" rows="3" placeholder="Briefly describe the legal issue…"></textarea>
+      </div>
+      <div class="form-group" style="margin-bottom:.9rem">
+        <label for="r-password">Choose a Password *</label>
+        <input type="password" id="r-password" placeholder="Create a password" />
+      </div>
+      <div id="register-result" style="margin-bottom:.75rem"></div>
+      <button class="btn btn-primary" style="width:100%" onclick="submitRegister()">Create My Profile →</button>
+
+      <!-- Success state (hidden until submit) -->
+      <div id="register-success" style="display:none;margin-top:1.25rem;background:var(--green-lt);border:1px solid var(--green);border-radius:var(--radius);padding:1rem 1.1rem">
+        <p style="font-family:Arial,sans-serif;font-size:.9rem;color:var(--green);font-weight:bold;margin-bottom:.5rem">Account Created!</p>
+        <p id="success-detail" style="font-family:Arial,sans-serif;font-size:.85rem;color:var(--gray-4);line-height:1.6;margin-bottom:.85rem"></p>
+        <button class="btn btn-primary" style="width:100%" onclick="switchLoginTab('signin')">Sign In Now →</button>
+      </div>
+
+      <a href="{{ url_for('public.index') }}" class="portal-back-link">← Return to Main Site</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+.login-tab-bar {
+  display: flex;
+  border-bottom: 1px solid var(--gray-2);
+}
+.login-tab {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: .75rem;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: .88rem;
+  font-weight: bold;
+  color: var(--gray-3);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: color .15s, border-color .15s;
+}
+.login-tab.active { color: var(--navy); border-bottom-color: var(--gold); }
+.login-tab:hover:not(.active) { color: var(--navy); }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function switchLoginTab(tab) {
+  document.getElementById("signin-panel").style.display   = tab === "signin"   ? "block" : "none";
+  document.getElementById("register-panel").style.display = tab === "register" ? "block" : "none";
+  document.getElementById("tab-signin-btn").classList.toggle("active",   tab === "signin");
+  document.getElementById("tab-register-btn").classList.toggle("active", tab === "register");
+}
+
+function submitRegister() {
+  const name     = document.getElementById("r-name").value.trim();
+  const password = document.getElementById("r-password").value.trim();
+  const caseType = document.getElementById("r-case-type").value;
+  const res      = document.getElementById("register-result");
+
+  if (!name || !password) {
+    res.innerHTML = '<p style="color:var(--red);font-family:Arial,sans-serif;font-size:.85rem">Full name and password are required.</p>';
+    return;
+  }
+
+  res.innerHTML = '<p style="font-family:Arial,sans-serif;font-size:.85rem;color:var(--gray-3)">Creating account…</p>';
+
+  fetch("/client-register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      full_name:          name,
+      password:           password,
+      phone:              document.getElementById("r-phone").value,
+      email:              document.getElementById("r-email").value,
+      case_type:          caseType,
+      matter_description: document.getElementById("r-matter").value,
+    })
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.success) {
+      res.innerHTML = "";
+      document.getElementById("register-success").style.display = "block";
+      document.getElementById("success-detail").innerHTML =
+        `Your username is <strong>${d.username}</strong>.<br>` +
+        `You've been connected with <strong>${d.attorney}</strong>.<br>` +
+        `Use your username and password to sign in.`;
+      // hide the form fields
+      document.querySelectorAll("#register-panel .form-group, #register-panel p, #register-panel > .btn")
+        .forEach(el => el.style.display = "none");
+    } else {
+      res.innerHTML = `<p style="color:var(--red);font-family:Arial,sans-serif;font-size:.85rem">${d.error}</p>`;
+    }
+  })
+  .catch(() => {
+    res.innerHTML = '<p style="color:var(--red);font-family:Arial,sans-serif;font-size:.85rem">Network error. Please try again.</p>';
+  });
+}
+
+// Open to register tab if URL hash says so
+if (window.location.hash === "#register") switchLoginTab("register");
+</script>
+{% endblock %}

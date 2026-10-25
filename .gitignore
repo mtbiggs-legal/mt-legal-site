@@ -1,0 +1,35 @@
+# ── Secrets — never commit ────────────────────────────────────────────────────
+.env
+credentials.json
+calendar-token.json
+
+# ── Client data (attorney-client privileged — must stay off version control) ──
+client-accounts/
+client-data/
+client-files/
+security-state/
+client-billing/
+firm-settings/
+client-accounts-backup-*/
+leads/
+draft-history/
+research-history/
+case-searches/
+token-usage/
+page-visits.json
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+.pytest_cache/
+venv/
+.venv/
+
+# ── Logs & scratch ────────────────────────────────────────────────────────────
+flask.log
+*.log
+~$*
+.playwright-mcp/
+
+# Visual brainstorming session files
+.superpowers/

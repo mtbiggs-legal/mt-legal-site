@@ -1,0 +1,427 @@
+{% extends "base.html" %}
+{% block title %}Search Tennessee Court Records | {{ firm_name }}{% endblock %}
+{% block meta_description %}Find your case in official Tennessee court records by county. Free lookup from {{ firm_name }}, Nashville.{% endblock %}
+
+{% block styles %}
+<style>
+/* Homepage sections run edge to edge; the shell's inner padding would fight them. */
+.main-content { max-width: 100%; padding: 0; }
+
+/* ── Case search ──────────────────────────────────────────────────────────
+   Restyled to the editorial palette. Structure, ids, and the submit handler
+   are untouched — this posts to /api/case-search.
+   ───────────────────────────────────────────────────────────────────────── */
+.case-search-section {
+  background: var(--paper);
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 4.5rem 2.5rem;
+}
+.case-search-inner {
+  max-width: 1220px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: .95fr 1.05fr;
+  gap: 3rem;
+  align-items: start;
+}
+.case-search-text h2 { color: var(--ink); margin-bottom: .75rem; }
+.case-search-text p {
+  color: var(--muted);
+  font-size: .9rem;
+  line-height: 1.7;
+  margin-bottom: 1rem;
+  max-width: 46ch;
+}
+.case-search-text .cs-note {
+  font-size: .78rem;
+  color: var(--faint);
+  border-left: 2px solid var(--accent-lt);
+  padding-left: .9rem;
+  line-height: 1.65;
+}
+.case-search-card { max-width: 560px; }
+.case-search-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.case-search-grid .fg-full { grid-column: 1 / -1; }
+.cs-divider { grid-column: 1 / -1; height: 1px; background: var(--rule); margin: .35rem 0; }
+.case-search-section label {
+  color: var(--faint);
+  font-size: .6875rem;
+  font-weight: 500;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: .35rem;
+}
+#cs-error { color: var(--red); font-size: .85rem; margin-top: .6rem; }
+
+/* Case-search confirmation modal */
+.cs-overlay {
+  position: fixed; inset: 0;
+  background: rgba(20,24,31,.55);
+  z-index: 1200;
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem;
+}
+.cs-modal {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  padding: 1.9rem;
+  max-width: 460px;
+  width: 100%;
+  box-shadow: 0 24px 64px rgba(20,24,31,.22);
+}
+.cs-modal-icon { font-size: 2rem; margin-bottom: .5rem; }
+.cs-modal h3 { color: var(--ink); margin: 0 0 .75rem; font-size: 1.3rem; }
+.cs-modal p { color: var(--muted); font-size: .875rem; line-height: 1.7; margin: 0 0 1rem; }
+.cs-modal-dest {
+  background: var(--bg);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: .7rem .85rem;
+  margin-bottom: 1.1rem;
+}
+.cs-modal-dest-label {
+  font-size: .625rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-bottom: .25rem;
+}
+.cs-modal-dest-url { font-size: .8rem; color: var(--accent); word-break: break-all; }
+.cs-modal-actions { display: flex; gap: .75rem; justify-content: flex-end; flex-wrap: wrap; }
+
+@media (max-width: 900px) {
+  .case-search-section { padding: 3rem 1.5rem; }
+  .case-search-inner { grid-template-columns: 1fr; gap: 2rem; }
+  .case-search-grid { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block hero %}
+<section class="ed-page-head">
+  <span class="eyebrow eyebrow--rule">Court Records</span>
+  <h1>Search for your case.</h1>
+  <p>Look up your case in Tennessee&rsquo;s official court records. Choose your county and case
+     type and we&rsquo;ll send you to the official court clerk&rsquo;s website.</p>
+</section>
+{% endblock %}
+
+{% block content %}
+<section class="ed-section ed-section--tight">
+  <div class="ed-panels">
+    <div class="ed-panel ed-panel--light">
+    <div class="case-search-card">
+      <div id="cs-recent-wrap" style="display:none;margin-bottom:.85rem">
+        <div style="font-family:Arial,sans-serif;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(168,136,60,.7);margin-bottom:.4rem">Recent Searches</div>
+        <div id="cs-recent-chips" style="display:flex;flex-wrap:wrap;gap:.4rem"></div>
+      </div>
+      <form id="cs-form" onsubmit="submitCaseSearch(event)">
+        <div class="case-search-grid">
+
+          <div class="form-group fg-full">
+            <label for="cs-county">County *</label>
+            <select id="cs-county" required>
+              <option value="">— Select County —</option>
+              <option value="Davidson">Davidson (Nashville)</option>
+              <option disabled>─────────────────</option>
+              <option value="Anderson">Anderson</option>
+              <option value="Bedford">Bedford</option>
+              <option value="Benton">Benton</option>
+              <option value="Bledsoe">Bledsoe</option>
+              <option value="Blount">Blount</option>
+              <option value="Bradley">Bradley</option>
+              <option value="Campbell">Campbell</option>
+              <option value="Cannon">Cannon</option>
+              <option value="Carroll">Carroll</option>
+              <option value="Carter">Carter</option>
+              <option value="Cheatham">Cheatham</option>
+              <option value="Chester">Chester</option>
+              <option value="Claiborne">Claiborne</option>
+              <option value="Clay">Clay</option>
+              <option value="Cocke">Cocke</option>
+              <option value="Coffee">Coffee</option>
+              <option value="Crockett">Crockett</option>
+              <option value="Cumberland">Cumberland</option>
+              <option value="Decatur">Decatur</option>
+              <option value="DeKalb">DeKalb</option>
+              <option value="Dickson">Dickson</option>
+              <option value="Dyer">Dyer</option>
+              <option value="Fayette">Fayette</option>
+              <option value="Fentress">Fentress</option>
+              <option value="Franklin">Franklin</option>
+              <option value="Gibson">Gibson</option>
+              <option value="Giles">Giles</option>
+              <option value="Grainger">Grainger</option>
+              <option value="Greene">Greene</option>
+              <option value="Grundy">Grundy</option>
+              <option value="Hamblen">Hamblen</option>
+              <option value="Hamilton">Hamilton</option>
+              <option value="Hancock">Hancock</option>
+              <option value="Hardeman">Hardeman</option>
+              <option value="Hardin">Hardin</option>
+              <option value="Hawkins">Hawkins</option>
+              <option value="Haywood">Haywood</option>
+              <option value="Henderson">Henderson</option>
+              <option value="Henry">Henry</option>
+              <option value="Hickman">Hickman</option>
+              <option value="Houston">Houston</option>
+              <option value="Humphreys">Humphreys</option>
+              <option value="Jackson">Jackson</option>
+              <option value="Jefferson">Jefferson</option>
+              <option value="Johnson">Johnson</option>
+              <option value="Knox">Knox</option>
+              <option value="Lake">Lake</option>
+              <option value="Lauderdale">Lauderdale</option>
+              <option value="Lawrence">Lawrence</option>
+              <option value="Lewis">Lewis</option>
+              <option value="Lincoln">Lincoln</option>
+              <option value="Loudon">Loudon</option>
+              <option value="McMinn">McMinn</option>
+              <option value="McNairy">McNairy</option>
+              <option value="Macon">Macon</option>
+              <option value="Madison">Madison</option>
+              <option value="Marion">Marion</option>
+              <option value="Marshall">Marshall</option>
+              <option value="Maury">Maury</option>
+              <option value="Meigs">Meigs</option>
+              <option value="Monroe">Monroe</option>
+              <option value="Montgomery">Montgomery</option>
+              <option value="Moore">Moore</option>
+              <option value="Morgan">Morgan</option>
+              <option value="Obion">Obion</option>
+              <option value="Overton">Overton</option>
+              <option value="Perry">Perry</option>
+              <option value="Pickett">Pickett</option>
+              <option value="Polk">Polk</option>
+              <option value="Putnam">Putnam</option>
+              <option value="Rhea">Rhea</option>
+              <option value="Roane">Roane</option>
+              <option value="Robertson">Robertson</option>
+              <option value="Rutherford">Rutherford</option>
+              <option value="Scott">Scott</option>
+              <option value="Sequatchie">Sequatchie</option>
+              <option value="Sevier">Sevier</option>
+              <option value="Shelby">Shelby (Memphis)</option>
+              <option value="Smith">Smith</option>
+              <option value="Stewart">Stewart</option>
+              <option value="Sullivan">Sullivan</option>
+              <option value="Sumner">Sumner</option>
+              <option value="Tipton">Tipton</option>
+              <option value="Trousdale">Trousdale</option>
+              <option value="Unicoi">Unicoi</option>
+              <option value="Union">Union</option>
+              <option value="Van Buren">Van Buren</option>
+              <option value="Warren">Warren</option>
+              <option value="Washington">Washington</option>
+              <option value="Wayne">Wayne</option>
+              <option value="Weakley">Weakley</option>
+              <option value="White">White</option>
+              <option value="Williamson">Williamson</option>
+              <option value="Wilson">Wilson</option>
+            </select>
+          </div>
+
+          <div class="form-group fg-full">
+            <label for="cs-type">Case Type *</label>
+            <select id="cs-type" required>
+              <option value="">— Criminal or Civil —</option>
+              <option value="criminal">Criminal</option>
+              <option value="civil">Civil</option>
+            </select>
+          </div>
+
+        </div>
+
+        <div id="cs-error"></div>
+        <button type="submit" class="btn btn-consult" style="width:100%;justify-content:center">
+          Search Court Records →
+        </button>
+      </form>
+    </div>
+    </div>
+    <div class="ed-panel">
+      <span class="ed-box-label">Before you search</span>
+      <ul class="ed-points ed-points--single">
+        <li><b>Have your case number ready</b> if you have one. It is on your citation, bond
+          paperwork, or court notice.</li>
+        <li><b>Criminal cases</b> in Davidson County usually start in General Sessions Court.</li>
+        <li><b>Civil cases</b> may be in General Sessions, Circuit, or Chancery Court.</li>
+        <li><b>You will leave this site.</b> {{ firm_name }} is not affiliated with any
+          third-party court records system.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ── Case Search Warning Modal (injected by JS) ────────────────────────── -->
+<script>
+/* ── Case search history (localStorage) ── */
+var CS_HISTORY_KEY = 'cs_search_history';
+var CS_MAX = 5;
+
+function csLoadHistory() {
+  try { return JSON.parse(localStorage.getItem(CS_HISTORY_KEY) || '[]'); }
+  catch(e) { return []; }
+}
+
+function csSaveSearch(county, caseType) {
+  var history = csLoadHistory().filter(function(e) {
+    return !(e.county === county && e.caseType === caseType);
+  });
+  history.unshift({ county: county, caseType: caseType });
+  if (history.length > CS_MAX) history.length = CS_MAX;
+  localStorage.setItem(CS_HISTORY_KEY, JSON.stringify(history));
+  csRenderChips();
+}
+
+function csRenderChips() {
+  var history = csLoadHistory();
+  var wrap   = document.getElementById('cs-recent-wrap');
+  var chips  = document.getElementById('cs-recent-chips');
+  if (!wrap || !chips) return;
+  if (!history.length) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  while (chips.firstChild) chips.removeChild(chips.firstChild);
+  history.forEach(function(e) {
+    var label = e.county + ' \u2014 ' + e.caseType.charAt(0).toUpperCase() + e.caseType.slice(1);
+    var chip = document.createElement('button');
+    chip.type = 'button';
+    chip.textContent = label;
+    chip.style.cssText = 'background:rgba(168,136,60,.12);border:1px solid rgba(168,136,60,.35);color:rgba(196,164,80,.95);border-radius:20px;padding:.25rem .75rem;font-family:Arial,sans-serif;font-size:.78rem;cursor:pointer;transition:background .15s';
+    chip.onmouseover = function(){ this.style.background='rgba(168,136,60,.25)'; };
+    chip.onmouseout  = function(){ this.style.background='rgba(168,136,60,.12)'; };
+    chip.onclick = (function(county, caseType) {
+      return function() {
+        document.getElementById('cs-county').value = county;
+        document.getElementById('cs-type').value   = caseType;
+      };
+    })(e.county, e.caseType);
+    chips.appendChild(chip);
+  });
+}
+
+function submitCaseSearch(e) {
+  e.preventDefault();
+  var county   = document.getElementById('cs-county').value;
+  var caseType = document.getElementById('cs-type').value;
+  var errEl    = document.getElementById('cs-error');
+  errEl.textContent = '';
+
+  if (!county || !caseType) {
+    errEl.textContent = 'Please select a county and case type.';
+    return;
+  }
+
+  var btn = document.querySelector('#cs-form button[type="submit"]');
+  btn.disabled = true;
+  btn.textContent = 'Looking up\u2026';
+
+  fetch('/api/case-search', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ county: county, case_type: caseType })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    btn.disabled = false;
+    btn.textContent = 'Search Court Records \u2192';
+    if (d.error) { errEl.textContent = d.error; return; }
+    csSaveSearch(county, caseType);
+    showCaseSearchWarning(d.url, d.court_name);
+  })
+  .catch(function(){
+    btn.disabled = false;
+    btn.textContent = 'Search Court Records \u2192';
+    errEl.textContent = 'Something went wrong. Please try again.';
+  });
+}
+
+document.addEventListener('DOMContentLoaded', csRenderChips);
+
+/* Arriving from a county link (/case-search?county=Davidson) pre-selects the
+   county, so the visitor only has to choose criminal or civil. */
+document.addEventListener('DOMContentLoaded', function () {
+  var county = new URLSearchParams(location.search).get('county');
+  var sel = document.getElementById('cs-county');
+  if (!county || !sel) return;
+  var match = Array.prototype.some.call(sel.options, function (o) { return o.value === county; });
+  if (!match) return;
+  sel.value = county;
+  document.getElementById('cs-type').focus();
+});
+
+function showCaseSearchWarning(url, courtName) {
+  var overlay = document.createElement('div');
+  overlay.className = 'cs-overlay';
+
+  var modal = document.createElement('div');
+  modal.className = 'cs-modal';
+
+  var icon = document.createElement('div');
+  icon.className = 'cs-modal-icon';
+  icon.textContent = '⚠';
+
+  var title = document.createElement('h3');
+  title.textContent = 'You Are Leaving {{ firm_name }}';
+
+  var msg = document.createElement('p');
+  msg.textContent = 'You are about to be taken to ' + courtName +
+    ', an official third-party court records website not affiliated with ' +
+    '{{ firm_name }}. We are not responsible for the content, ' +
+    'accuracy, or availability of external websites.';
+
+  var destBox = document.createElement('div');
+  destBox.className = 'cs-modal-dest';
+  var destLabel = document.createElement('div');
+  destLabel.className = 'cs-modal-dest-label';
+  destLabel.textContent = 'Destination';
+  var destUrl = document.createElement('div');
+  destUrl.className = 'cs-modal-dest-url';
+  destUrl.textContent = url;
+  destBox.appendChild(destLabel);
+  destBox.appendChild(destUrl);
+
+  var actions = document.createElement('div');
+  actions.className = 'cs-modal-actions';
+
+  var cancelBtn = document.createElement('button');
+  cancelBtn.className = 'btn btn-outline-gold';
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.onclick = function(){ document.body.removeChild(overlay); };
+
+  var goBtn = document.createElement('button');
+  goBtn.className = 'btn btn-consult';
+  goBtn.textContent = 'Continue to Court Records →';
+  goBtn.onclick = function(){
+    document.body.removeChild(overlay);
+    window.open(url, '_blank', 'noopener');
+  };
+
+  actions.appendChild(cancelBtn);
+  actions.appendChild(goBtn);
+  modal.appendChild(icon);
+  modal.appendChild(title);
+  modal.appendChild(msg);
+  modal.appendChild(destBox);
+  modal.appendChild(actions);
+  overlay.appendChild(modal);
+
+  overlay.addEventListener('click', function(ev){
+    if (ev.target === overlay) document.body.removeChild(overlay);
+  });
+
+  document.body.appendChild(overlay);
+}
+</script>
+
+<a href="{{ url_for('intake.intake') }}" class="ed-cta ed-cta--link">
+  <div>
+    <h2>Found your case?</h2>
+    <p>Talk through it in a free, confidential consultation.</p>
+  </div>
+  <span class="btn ed-cta-btn">Start your intake</span>
+</a>
+{% endblock %}

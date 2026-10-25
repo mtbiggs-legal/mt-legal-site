@@ -1,0 +1,16 @@
+flask
+anthropic
+python-dotenv
+pyopenssl
+requests
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
+mammoth
+pypdf
+fpdf2
+stripe
+sendgrid
+bcrypt
+cryptography
+gunicorn

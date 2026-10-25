@@ -1,0 +1,379 @@
+{% extends "base.html" %}
+{% block title %}Meet {{ partner.name }} | Nashville AI, Blockchain &amp; Estate Attorney | {{ firm_name }}{% endblock %}
+{% block meta_description %}{{ partner.display }}, founder and managing partner of {{ firm_name }}: Belmont Law graduate, Fisk University adjunct professor of Business Law, and Nashville counsel for AI, blockchain, stablecoins, real estate tokenization, estate and future-asset planning, and criminal and civil representation.{% endblock %}
+
+{% block styles %}
+<style>
+  /* Sections run edge to edge on this page. */
+  .main-content { max-width: 100%; padding: 0; }
+
+  /* ── Page opening ─────────────────────────────────────────────────────── */
+  .firm-intro {
+    max-width: 1220px;
+    margin: 0 auto;
+    padding: 4.5rem 2.5rem 3rem;
+  }
+  .firm-intro-rule { width: 36px; height: 1px; background: var(--accent); margin-bottom: 1.25rem; }
+  .firm-intro-eyebrow {
+    display: block;
+    font-family: var(--font-sans);
+    font-size: .625rem;
+    font-weight: 500;
+    letter-spacing: .24em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+  .firm-intro h2 { max-width: 20ch; margin-bottom: 1rem; }
+  .firm-intro p { color: var(--muted); font-size: .95rem; line-height: 1.75; max-width: 56ch; }
+
+  /* ── Managing partner profile: portrait left, bio right ──────────────── */
+  .mp-profile {
+    max-width: 1220px;
+    margin: 0 auto;
+    padding: 0 2.5rem 4rem;
+    display: grid;
+    grid-template-columns: minmax(0, 380px) 1fr;
+    gap: 3.5rem;
+    align-items: stretch;
+  }
+  .mp-portrait { align-self: start; }
+
+  /* The bio scrolls inside its own box, matched to the portrait column's height,
+     so the page scroll moves past the photo and boxes instead of the whole bio.
+     No visible scrollbar or border: a soft fade at the bottom hints at more. */
+  .mp-bio { position: relative; }
+  .mp-bio-scroll {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    /* No taller than the portrait column, nor than the screen under the banner. */
+    height: min(100%, calc(100vh - 7rem));
+    overflow-y: auto;
+    overscroll-behavior: auto;
+    scrollbar-width: none;
+    padding-bottom: 3rem;
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 4rem), transparent);
+            mask-image: linear-gradient(to bottom, #000 calc(100% - 4rem), transparent);
+  }
+  .mp-bio-scroll::-webkit-scrollbar { display: none; }
+  .mp-bio-scroll.is-end { -webkit-mask-image: none; mask-image: none; }
+  .mp-portrait img {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+    background: var(--ink);
+    border: 1px solid var(--rule);
+  }
+  .mp-name { font-family: var(--font-display); font-size: 1.6rem; color: var(--ink); margin-top: 1.25rem; }
+  .mp-title {
+    font-size: .625rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: .4rem 0 1.25rem;
+  }
+  .mp-facts { list-style: none; margin: 0 0 1.5rem; padding: 0; border-top: 1px solid var(--rule); }
+  .mp-facts li { padding: .7rem 0; border-bottom: 1px solid var(--rule); font-size: .85rem; color: var(--ink-2); line-height: 1.5; }
+  .mp-facts span { display: block; font-size: .6rem; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); margin-bottom: .15rem; }
+
+  .mp-bio p { color: var(--muted); font-size: .98rem; line-height: 1.85; margin-bottom: 1.2rem; max-width: 66ch; }
+  .mp-bio p.mp-lead { font-family: var(--font-display); font-size: 1.25rem; line-height: 1.6; color: var(--ink-2); }
+  .mp-bio h2 { font-size: 1.35rem; margin: 2.5rem 0 1rem; }
+  .mp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.75rem 2.5rem; margin-top: 2.5rem; }
+  .mp-grid h3 {
+    font-family: var(--font-sans);
+    font-size: .65rem;
+    font-weight: 500;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .75rem;
+  }
+  .mp-grid ul { list-style: none; margin: 0; padding: 0; }
+  .mp-grid li { padding: .5rem 0; border-bottom: 1px solid var(--rule); font-size: .87rem; line-height: 1.55; color: var(--ink-2); }
+  .mp-grid li small { display: block; color: var(--faint); font-size: .78rem; margin-top: .1rem; }
+
+  /* ── Commitments (in place of testimonials) ───────────────────────────── */
+  .commit-section { max-width: 1220px; margin: 0 auto; padding: 4.5rem 2.5rem; border-top: 1px solid var(--rule); }
+  .commit-label {
+    font-family: var(--font-sans);
+    font-size: .625rem;
+    font-weight: 500;
+    letter-spacing: .24em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 2rem;
+  }
+  .commit-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+  }
+  .commit-item { background: var(--paper); padding: 1.9rem 1.6rem; }
+  .commit-item h3 { font-size: 1.1rem; margin-bottom: .6rem; }
+  .commit-item p { font-size: .87rem; line-height: 1.7; color: var(--muted); }
+
+  /* ── Pull-quote band ──────────────────────────────────────────────────── */
+  .law-quote-photo {
+    position: relative;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    min-height: 320px;
+    display: flex;
+    align-items: center;
+    background: var(--ink);
+  }
+  .law-quote-photo-content {
+    position: relative;
+    max-width: 1220px;
+    margin: 0 auto;
+    padding: 3.5rem 2.5rem;
+    width: 100%;
+  }
+  .law-quote-rule { width: 36px; height: 1px; background: var(--accent-lt); margin-bottom: 1.4rem; }
+  .law-quote-text {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: clamp(1.3rem, 2.4vw, 1.85rem);
+    line-height: 1.45;
+    color: #F7F5F0;
+    max-width: 30ch;
+    margin-bottom: 1rem;
+  }
+  .law-quote-cite { font-size: .78rem; letter-spacing: .1em; color: rgba(247,245,240,.72); }
+
+  @media (max-width: 900px) {
+    .firm-intro { padding: 3rem 1.5rem 2rem; }
+    .mp-profile { grid-template-columns: 1fr; padding: 0 1.5rem 3rem; gap: 2rem; }
+    .mp-portrait { max-width: 380px; }
+    .mp-bio-scroll { position: static; height: auto; overflow: visible; padding-bottom: 0; -webkit-mask-image: none; mask-image: none; }
+    .mp-grid { grid-template-columns: 1fr; }
+    .commit-section { padding: 3rem 1.5rem; }
+    .commit-grid { grid-template-columns: 1fr; }
+    .law-quote-photo-content { padding: 2.5rem 1.5rem; }
+  }
+</style>
+{% endblock %}
+
+{% block hero %}
+<section class="firm-intro">
+  <span class="firm-intro-eyebrow">{{ firm_name }} &middot; {{ firm_tagline }}</span>
+  <h1>Meet {{ partner.name.split(' ')[0] }}.</h1>
+  <div class="firm-intro-rule"></div>
+  <p>{{ firm_name }} is a solo practice. There is no chain of associates and no case handed
+     off after the consultation. The attorney you meet is the attorney who handles
+     your matter.</p>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── Managing partner profile ────────────────────────────────────────────── -->
+<div class="mp-profile">
+
+  <aside class="mp-portrait">
+    <img src="{{ url_for('static', filename='images/' + partner_photo) }}"
+         alt="{{ partner.display }}, {{ partner.title }} of {{ firm_name }}" />
+    <div class="mp-name">{{ partner.display }}</div>
+    <div class="mp-title">{{ partner.title }}</div>
+    <ul class="mp-facts">
+      <li><span>Education</span>J.D., Belmont University College of Law<br>B.A., Political Science, Middle Tennessee State University</li>
+      <li><span>Teaching</span>Adjunct Professor of Business Law, Fisk University</li>
+      <li><span>Leadership</span>Nashville Bar Foundation Leadership Law, 2025<br>Tennessee Bar Association Leadership Law, 2026</li>
+      <li><span>Previously</span>Public Defender&rsquo;s Office, Metropolitan Nashville &amp; Davidson County</li>
+      <li><span>Admitted</span>State of Tennessee</li>
+      <li><span>Office</span>Nashville, Tennessee</li>
+    </ul>
+  </aside>
+
+  <article class="mp-bio">
+    <div class="mp-bio-scroll" tabindex="0" aria-label="Biography">
+    <p class="mp-lead">{{ partner.name }} is the founder and managing partner of {{ firm_name }}.
+      Before opening the firm, he was an attorney with the Public Defender&rsquo;s Office of
+      Metropolitan Nashville &amp; Davidson County, representing indigent clients in criminal
+      cases and advocating for equitable access to justice.</p>
+
+    <p>His view of the courthouse started from the inside. After earning his B.A. in Political
+      Science from Middle Tennessee State University, he spent two years as a Deputy Court Clerk
+      in the Rutherford County circuit criminal court (2016&ndash;2018), seeing how cases move
+      from filing to disposition. At Belmont University College of Law he interned with the
+      Tennessee Justice Center and the Rutherford County District Attorney&rsquo;s Office,
+      giving him a view of both sides of a prosecution before he chose defense.</p>
+
+    <p>At the Nashville Defenders, Madison handled a wide range of misdemeanor and felony
+      cases, secured multiple non-convictions, and connected clients to the housing, treatment,
+      and employment resources that often decide whether a case is the last one. He knows the
+      Davidson County docket from the defense table: how charges are negotiated, when a
+      suppression motion has teeth, and when a case needs to be tried.</p>
+
+    <p>Madison also teaches. As an adjunct professor at Fisk University, he teaches Business
+      Law, giving the next generation of Nashville entrepreneurs a working grasp of contracts,
+      entities, and the rules that govern commerce.</p>
+
+    <p>He is active in Nashville&rsquo;s legal community as a graduate and member of the
+      Nashville Bar Foundation Leadership Law Class of 2025 and the Tennessee Bar Association
+      Leadership Law Class of 2026, and as a member of the Napier-Looby Bar Association, where
+      he served on the Judicial and Legislative Committee in 2024.</p>
+
+    <h2>AI, blockchain &amp; tokenization</h2>
+    <p>Madison&rsquo;s blockchain work grows out of time inside the community, not just the
+      case law. He is a member of Nashville&rsquo;s local Bitcoin community, has attended the
+      national Bitcoin conferences and DC Fintech Week, and has been involved with 1inch, the
+      DeFi exchange aggregator, and Groundwork. That
+      first-hand view of how builders, investors, and regulators actually think shapes the
+      advice he gives.</p>
+    <p>Today Madison&rsquo;s practice centers on the legal environment taking shape around
+      artificial intelligence and blockchain technology. He advises businesses and creators on AI
+      contracts, ownership of AI-generated work, and voice and likeness rights under
+      Tennessee&rsquo;s ELVIS Act, and counsels clients on blockchain, cryptocurrency, and
+      digital-asset law: entity structuring for DAOs and token issuers,
+      securities analysis under the Howey test and the Reg D, Reg A+, and Reg CF exemptions,
+      the tokenization of real-world assets, especially Nashville-area real estate, and
+      stablecoins: issuance and payment programs under the federal GENIUS Act, and helping
+      businesses grow by accepting and holding them. He also handles the questions that follow
+      the money: yield from staking and DeFi lending, and how crypto income, gains, and
+      transfers are taxed.
+      He brings the same approach to a token offering that he brings to a criminal case:
+      understand exactly how the system works, then make it work for the client.</p>
+    <p>The same thinking carries into estate and future-asset planning: wills and trusts
+      built to hold crypto, tokenized real estate, royalties, and digital IP. These are assets
+      most estate plans were never written for.</p>
+    <p>That combination lets {{ firm_name }} serve a founder fractionalizing a rental property,
+      a family planning for assets that didn&rsquo;t exist a decade ago, and a Nashville resident
+      facing a charge in General Sessions with the same care and the same direct access to their
+      lawyer.</p>
+
+    <h2>Why he practices</h2>
+    <p>For Madison, criminal defense and decentralization are one and the same. Both start from
+      the idea of personhood: that an individual deserves protection from overreaching power,
+      whether that power is a prosecutor, a corporation, or a platform that controls your data
+      and your money. Defending someone in a courtroom and helping someone hold their own keys
+      are two ways of protecting the same thing: privacy, due process, and fundamental rights.</p>
+    <p>Madison is committed to the belief that &ldquo;a person&rsquo;s worth cannot be measured
+      by their income.&rdquo; He focuses on representing underserved Nashville residents,
+      mentoring law students, and ensuring that access to justice is not determined by
+      financial circumstances.</p>
+
+    </div>
+  </article>
+</div>
+
+<!-- ── Details: expandable boxes ───────────────────────────────────────────── -->
+<section class="ed-section ed-section--tight" style="padding-top:0">
+  <div class="ed-boxes">
+    <details class="ed-box">
+      <summary>
+        <span class="ed-box-label">Career</span>
+        <h3>Legal experience</h3>
+        <p>Teaching, defense counsel, and court clerk.</p>
+      </summary>
+      <div class="ed-box-body">
+        <ul class="ed-points">
+          <li>Fisk University</li>
+          <li>Public Defender&rsquo;s Office of Metropolitan Nashville &amp; Davidson County</li>
+          <li>Rutherford County Circuit Criminal Court, 2016 to 2018</li>
+          <li>Tennessee Justice Center</li>
+          <li>Rutherford County District Attorney&rsquo;s Office</li>
+        </ul>
+      </div>
+    </details>
+    <details class="ed-box">
+      <summary>
+        <span class="ed-box-label">Community</span>
+        <h3>Bitcoin &amp; fintech</h3>
+        <p>Nashville&rsquo;s Bitcoin community, national conferences, DC Fintech Week, and 1inch.</p>
+      </summary>
+      <div class="ed-box-body">
+        <ul class="ed-points">
+          <li><b>Member</b> of Nashville&rsquo;s local Bitcoin community.</li>
+          <li><b>National Bitcoin conferences.</b> Attendee.</li>
+          <li><b>DC Fintech Week.</b> Attendee.</li>
+          <li><b>1inch.</b> Involved with the DeFi exchange aggregator.</li>
+          <li><b>Groundwork.</b> Involved.</li>
+        </ul>
+      </div>
+    </details>
+    <details class="ed-box">
+      <summary>
+        <span class="ed-box-label">Bar &amp; Belmont Law</span>
+        <h3>Leadership</h3>
+        <p>Nashville and Tennessee bar leadership programs, Napier-Looby, and Belmont Law.</p>
+      </summary>
+      <div class="ed-box-body">
+        <ul class="ed-points">
+          <li><b>Nashville Bar Foundation Leadership Law.</b> Class of 2025 graduate and member.</li>
+          <li><b>Tennessee Bar Association Leadership Law.</b> Class of 2026 graduate and member.</li>
+          <li><b>Napier-Looby Bar Association.</b> Member; Judicial and Legislative Committee, 2024.</li>
+          <li><b>President, Belmont Legal Aid Society.</b> Organized an annual fundraiser raising over $6,000.</li>
+          <li><b>President, Black Law Students Association.</b> Maintained a 100% retention rate for first-year Black law students.</li>
+          <li><b>American Constitution Society.</b> Leadership role.</li>
+        </ul>
+      </div>
+    </details>
+    <details class="ed-box">
+      <summary>
+        <span class="ed-box-label">Service</span>
+        <h3>Honors &amp; service</h3>
+        <p>Pro bono work and mentoring.</p>
+      </summary>
+      <div class="ed-box-body">
+        <ul class="ed-points">
+          <li><b>Law Students for Justice Award.</b> More than 200 hours of pro bono legal service.</li>
+          <li><b>Mentor</b> to Nashville law students.</li>
+        </ul>
+      </div>
+    </details>
+    <details class="ed-box">
+      <summary>
+        <span class="ed-box-label">Clients</span>
+        <h3>What you can expect</h3>
+        <p>Direct access, plain English, and fees in writing.</p>
+      </summary>
+      <div class="ed-box-body">
+        <ul class="ed-points">
+          <li><b>Your lawyer, directly.</b> No associates, no hand-offs, from consultation to close.</li>
+          <li><b>Plain-English advice.</b> Your options, the likely outcomes, and what each path costs, explained before you decide anything.</li>
+          <li><b>Fees in writing.</b> Every engagement starts with a written fee agreement.</li>
+          <li><b>A secure client portal.</b> Documents, messages, court dates, and billing in one encrypted place.</li>
+          <li><b>Local knowledge.</b> Years inside Middle Tennessee courthouses as a court clerk and as defense counsel.</li>
+          <li><b>An honest read.</b> If we aren&rsquo;t the right fit, we&rsquo;ll say so and point you somewhere better.</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ── Practice areas ──────────────────────────────────────────────────────── -->
+<section class="ed-section ed-section--tight" style="padding-top:0">
+  <div class="ed-boxes ed-boxes--compact">
+    {% for slug, area in all_areas.items() %}
+    <a href="{{ url_for('public.practice_area', slug=slug) }}" class="ed-box"><h3>{{ area.name }}</h3></a>
+    {% endfor %}
+  </div>
+</section>
+
+<a href="{{ url_for('intake.intake') }}" class="ed-cta ed-cta--link">
+  <div>
+    <h2>Talk to {{ partner.name.split(' ')[0] }} directly.</h2>
+    <p>A free, confidential consultation. No obligation, and no pressure to hire us.</p>
+  </div>
+  <span class="btn ed-cta-btn">Start your intake</span>
+</a>
+
+<script>
+(function () {
+  var box = document.querySelector(".mp-bio-scroll");
+  if (!box) return;
+  function check() {
+    box.classList.toggle("is-end", box.scrollTop + box.clientHeight >= box.scrollHeight - 8);
+  }
+  box.addEventListener("scroll", check, { passive: true });
+  window.addEventListener("resize", check);
+  check();
+})();
+</script>
+{% endblock %}

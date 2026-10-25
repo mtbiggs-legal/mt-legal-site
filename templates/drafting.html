@@ -1,0 +1,857 @@
+{% extends "base.html" %}
+{% block title %}Legal Documents — {{ firm_name }}{% endblock %}
+
+{% block styles %}
+<style>
+.page-header {
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 1.75rem;
+  margin-bottom: 2rem;
+}
+.page-header h1 { color: var(--ink); text-shadow: none; }
+.page-header p  { color: var(--muted); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Document Generator</h1>
+  <p>Select a template, fill in the details, and generate a professional draft in seconds.</p>
+</div>
+
+<div class="card">
+  <!-- Submit is handled by the listener at the bottom of this file. -->
+  <form id="drafting-form">
+
+    <div class="form-group" style="margin-bottom:1.25rem">
+      <label for="template-type">Document Template</label>
+      <select id="template-type" name="template_type" onchange="onTemplateChange()" required>
+        <option value="">— Select a template —</option>
+        <optgroup label="── General ──────────────────">
+          <option value="Demand Letter">Demand Letter</option>
+          <option value="LLC Operating Agreement">LLC Operating Agreement</option>
+          <option value="Last Will and Testament">Last Will and Testament</option>
+        </optgroup>
+        <optgroup label="── Family Law ───────────────">
+          <option value="Divorce Petition">Divorce Petition</option>
+          <option value="Parenting Plan">Parenting Plan</option>
+          <option value="Child Support Worksheet">Child Support Worksheet</option>
+          <option value="Property Settlement Agreement">Property Settlement Agreement</option>
+        </optgroup>
+        <optgroup label="── Personal Injury ──────────">
+          <option value="Personal Injury Demand Letter">Personal Injury Demand Letter</option>
+        </optgroup>
+        <optgroup label="── Employment Law ───────────">
+          <option value="Employment Separation Agreement">Employment Separation Agreement</option>
+          <option value="EEOC Charge Narrative">EEOC Charge Narrative</option>
+        </optgroup>
+        <optgroup label="── Real Estate ──────────────">
+          <option value="Landlord-Tenant Notice">Landlord-Tenant Notice</option>
+          <option value="Rental Agreement">Rental Agreement</option>
+          <option value="Real Estate Purchase Agreement">Real Estate Purchase Agreement</option>
+          <option value="Eviction Notice (Detainer Warrant)">Eviction Notice (Detainer Warrant)</option>
+        </optgroup>
+        <optgroup label="── Contract Disputes ────────">
+          <option value="Contract Breach Demand Letter">Contract Breach Demand Letter</option>
+        </optgroup>
+        <optgroup label="── DeFi / Crypto Law ────────">
+          <option value="DeFi Engagement Letter">DeFi Engagement Letter</option>
+          <option value="Token Offering Checklist">Token Offering Checklist</option>
+          <option value="Smart Contract Review Memo">Smart Contract Review Memo</option>
+          <option value="DAO Formation Checklist">DAO Formation Checklist</option>
+        </optgroup>
+      </select>
+    </div>
+
+    <!-- ── Demand Letter ──────────────────────────────────────────────────── -->
+    <div id="fields-demand-letter" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Demand Letter Details</div>
+
+      <div class="form-group">
+        <label for="dl-client-name">Client Name (Sender)</label>
+        <input type="text" id="dl-client-name" name="client_name" placeholder="Jane A. Smith" />
+      </div>
+
+      <div class="form-group">
+        <label for="dl-opposing">Opposing Party</label>
+        <input type="text" id="dl-opposing" name="opposing_party" placeholder="ACME Corp. / John Doe" />
+      </div>
+
+      <div class="form-group">
+        <label for="dl-demand">Demand Amount</label>
+        <input type="text" id="dl-demand" name="demand_amount" placeholder="e.g. $25,000" />
+      </div>
+
+      <div class="form-group">
+        <label for="dl-deadline">Response Deadline</label>
+        <input type="text" id="dl-deadline" name="response_deadline" placeholder="e.g. 30 days from date of letter" />
+      </div>
+
+      <div class="form-group full">
+        <label for="dl-matter">Matter Description</label>
+        <textarea id="dl-matter" name="matter_description" rows="4" placeholder="Describe the facts and legal basis for the claim…"></textarea>
+      </div>
+    </div>
+
+    <!-- ── Landlord-Tenant Notice ─────────────────────────────────────────── -->
+    <div id="fields-landlord-tenant-notice" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Landlord-Tenant Notice Details</div>
+
+      <div class="form-group">
+        <label for="lt-landlord">Landlord Name</label>
+        <input type="text" id="lt-landlord" name="landlord_name" placeholder="Michael Reyes" />
+      </div>
+
+      <div class="form-group">
+        <label for="lt-tenant">Tenant Name(s)</label>
+        <input type="text" id="lt-tenant" name="tenant_name" placeholder="Jane A. Smith" />
+      </div>
+
+      <div class="form-group full">
+        <label for="lt-address">Property Address</label>
+        <input type="text" id="lt-address" name="property_address" placeholder="123 Main St, Apt 4B, New York, NY 10001" />
+      </div>
+
+      <div class="form-group">
+        <label for="lt-notice-type">Notice Type</label>
+        <select id="lt-notice-type" name="notice_type">
+          <option value="Pay or Quit">Pay Rent or Quit</option>
+          <option value="Cure or Quit">Cure Violation or Quit</option>
+          <option value="Unconditional Quit">Unconditional Quit (Eviction)</option>
+          <option value="Notice to Vacate">Notice to Vacate (Lease End)</option>
+          <option value="Lease Renewal">Lease Renewal Notice</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="lt-amount">Amount Owed (if applicable)</label>
+        <input type="text" id="lt-amount" name="amount_owed" placeholder="e.g. $2,400 (2 months)" />
+      </div>
+
+      <div class="form-group">
+        <label for="lt-deadline">Cure / Compliance Deadline</label>
+        <input type="text" id="lt-deadline" name="cure_deadline" placeholder="e.g. 3 days, 14 days" />
+      </div>
+    </div>
+
+    <!-- ── Rental Agreement ───────────────────────────────────────────────── -->
+    <div id="fields-rental-agreement" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Rental Agreement Details</div>
+
+      <div class="form-group">
+        <label for="ra-landlord">Landlord Name</label>
+        <input type="text" id="ra-landlord" name="landlord_name" placeholder="Michael Reyes" />
+      </div>
+
+      <div class="form-group">
+        <label for="ra-tenant">Tenant Name(s)</label>
+        <input type="text" id="ra-tenant" name="tenant_name" placeholder="Jane A. Smith" />
+      </div>
+
+      <div class="form-group full">
+        <label for="ra-address">Property Address</label>
+        <input type="text" id="ra-address" name="property_address" placeholder="123 Main St, Apt 4B, New York, NY 10001" />
+      </div>
+
+      <div class="form-group">
+        <label for="ra-rent">Monthly Rent</label>
+        <input type="text" id="ra-rent" name="monthly_rent" placeholder="e.g. $1,800/month" />
+      </div>
+
+      <div class="form-group">
+        <label for="ra-deposit">Security Deposit</label>
+        <input type="text" id="ra-deposit" name="security_deposit" placeholder="e.g. $3,600 (2 months)" />
+      </div>
+
+      <div class="form-group">
+        <label for="ra-term">Lease Term</label>
+        <input type="text" id="ra-term" name="lease_term" placeholder="e.g. Jan 1, 2026 – Dec 31, 2026" />
+      </div>
+
+      <div class="form-group">
+        <label for="ra-utilities">Utilities Included</label>
+        <input type="text" id="ra-utilities" name="utilities_included" placeholder="e.g. Heat and hot water; tenant pays electric" />
+      </div>
+
+      <div class="form-group">
+        <label for="ra-pets">Pet Policy</label>
+        <input type="text" id="ra-pets" name="pet_policy" placeholder="e.g. No pets / cats only with deposit" />
+      </div>
+    </div>
+
+    <!-- ── LLC Operating Agreement ────────────────────────────────────────── -->
+    <div id="fields-llc-operating-agreement" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">LLC Operating Agreement Details</div>
+
+      <div class="form-group">
+        <label for="llc-name">LLC Name</label>
+        <input type="text" id="llc-name" name="llc_name" placeholder="Apex Ventures LLC" />
+      </div>
+
+      <div class="form-group">
+        <label for="llc-state">State of Formation</label>
+        <input type="text" id="llc-state" name="state_of_formation" placeholder="e.g. New York, Delaware" />
+      </div>
+
+      <div class="form-group full">
+        <label for="llc-members">Member(s) and Ownership Percentages</label>
+        <textarea id="llc-members" name="members_and_ownership" rows="3" placeholder="e.g. Jane Smith — 60%; John Doe — 40%"></textarea>
+      </div>
+
+      <div class="form-group full">
+        <label for="llc-purpose">Business Purpose</label>
+        <textarea id="llc-purpose" name="business_purpose" rows="2" placeholder="e.g. Real estate investment, property management, and related activities"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="llc-agent">Registered Agent</label>
+        <input type="text" id="llc-agent" name="registered_agent" placeholder="Name or registered agent service" />
+      </div>
+
+      <div class="form-group">
+        <label for="llc-mgmt">Management Structure</label>
+        <select id="llc-mgmt" name="management_structure">
+          <option value="Member-Managed">Member-Managed</option>
+          <option value="Manager-Managed">Manager-Managed</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ── Last Will and Testament ────────────────────────────────────────── -->
+    <div id="fields-last-will-and-testament" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Last Will and Testament Details</div>
+
+      <div class="form-group">
+        <label for="will-testator">Testator Full Legal Name</label>
+        <input type="text" id="will-testator" name="testator_name" placeholder="Jane Anne Smith" />
+      </div>
+
+      <div class="form-group">
+        <label for="will-executor">Executor Name</label>
+        <input type="text" id="will-executor" name="executor_name" placeholder="Robert T. Smith" />
+      </div>
+
+      <div class="form-group full">
+        <label for="will-beneficiaries">Beneficiaries</label>
+        <textarea id="will-beneficiaries" name="beneficiaries" rows="3" placeholder="e.g. Robert T. Smith (spouse), Emily Smith (daughter), Michael Smith (son)"></textarea>
+      </div>
+
+      <div class="form-group full">
+        <label for="will-distribution">Asset Distribution Instructions</label>
+        <textarea id="will-distribution" name="asset_distribution" rows="3" placeholder="e.g. All estate equally divided between spouse and children; house to spouse; investment accounts to children"></textarea>
+      </div>
+
+      <div class="form-group full">
+        <label for="will-bequests">Specific Bequests (optional)</label>
+        <textarea id="will-bequests" name="specific_bequests" rows="2" placeholder="e.g. 1965 Mustang to Michael; pearl necklace to Emily"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="will-guardian">Guardian for Minor Children (if applicable)</label>
+        <input type="text" id="will-guardian" name="guardian_name" placeholder="e.g. Sarah Johnson" />
+      </div>
+    </div>
+
+    <!-- ── Divorce Petition ───────────────────────────────────────────────── -->
+    <div id="fields-divorce-petition" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Divorce Petition Details</div>
+
+      <div class="form-group">
+        <label for="div-petitioner">Petitioner Name</label>
+        <input type="text" id="div-petitioner" name="petitioner_name" placeholder="Jane A. Smith" />
+      </div>
+
+      <div class="form-group">
+        <label for="div-respondent">Respondent Name</label>
+        <input type="text" id="div-respondent" name="respondent_name" placeholder="John B. Smith" />
+      </div>
+
+      <div class="form-group">
+        <label for="div-married">Date of Marriage</label>
+        <input type="date" id="div-married" name="date_of_marriage" />
+      </div>
+
+      <div class="form-group">
+        <label for="div-grounds">Grounds for Divorce</label>
+        <select id="div-grounds" name="grounds_for_divorce">
+          <option value="Irretrievable breakdown of marriage (no-fault)">Irretrievable Breakdown (No-Fault)</option>
+          <option value="Separation of at least one year">Legal Separation (1+ year)</option>
+          <option value="Cruel and inhuman treatment">Cruel and Inhuman Treatment</option>
+          <option value="Abandonment">Abandonment</option>
+          <option value="Adultery">Adultery</option>
+          <option value="Imprisonment">Imprisonment</option>
+        </select>
+      </div>
+
+      <div class="form-group full">
+        <label for="div-children">Minor Children (names and ages, or "None")</label>
+        <textarea id="div-children" name="minor_children" rows="2" placeholder="e.g. Emma Smith, age 8; Noah Smith, age 5 — or None"></textarea>
+      </div>
+
+      <div class="form-group full">
+        <label for="div-property">Property / Asset Overview</label>
+        <textarea id="div-property" name="property_division" rows="3" placeholder="e.g. Marital home at 123 Main St; joint savings account; two vehicles; retirement accounts"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="div-support">Spousal Support Request</label>
+        <input type="text" id="div-support" name="spousal_support" placeholder="e.g. Requesting maintenance / None" />
+      </div>
+    </div>
+
+    <!-- ── DeFi Engagement Letter ─────────────────────────────────────────── -->
+    <div id="fields-defi-engagement-letter" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">DeFi Engagement Letter Details</div>
+
+      <div class="form-group">
+        <label for="del-client-name">Client Name</label>
+        <input type="text" id="del-client-name" name="client_name" placeholder="Jane A. Smith" />
+      </div>
+
+      <div class="form-group">
+        <label for="del-jurisdiction">Jurisdiction</label>
+        <input type="text" id="del-jurisdiction" name="jurisdiction" placeholder="e.g. Tennessee / Delaware" />
+      </div>
+
+      <div class="form-group full">
+        <label for="del-matter">Matter Description</label>
+        <textarea id="del-matter" name="matter_description" rows="4" placeholder="Describe the DeFi/crypto matter…"></textarea>
+      </div>
+    </div>
+
+    <!-- ── Token Offering Checklist ───────────────────────────────────────── -->
+    <div id="fields-token-offering-checklist" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Token Offering Checklist Details</div>
+
+      <div class="form-group">
+        <label for="toc-client-name">Client Name</label>
+        <input type="text" id="toc-client-name" name="client_name" placeholder="Jane A. Smith" />
+      </div>
+
+      <div class="form-group">
+        <label for="toc-project-name">Project Name</label>
+        <input type="text" id="toc-project-name" name="project_name" placeholder="e.g. RealToken, AcmeDAO" />
+      </div>
+
+      <div class="form-group">
+        <label for="toc-token-type">Token Type</label>
+        <input type="text" id="toc-token-type" name="token_type" placeholder="e.g. ERC-20 security token, ERC-721 NFT" />
+      </div>
+
+      <div class="form-group full">
+        <label for="toc-matter">Project Description</label>
+        <textarea id="toc-matter" name="matter_description" rows="4" placeholder="Describe the token offering or project…"></textarea>
+      </div>
+    </div>
+
+    <!-- ── Smart Contract Review Memo ─────────────────────────────────────── -->
+    <div id="fields-smart-contract-review-memo" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Smart Contract Review Memo Details</div>
+
+      <div class="form-group">
+        <label for="scr-client-name">Client Name</label>
+        <input type="text" id="scr-client-name" name="client_name" placeholder="Jane A. Smith" />
+      </div>
+
+      <div class="form-group">
+        <label for="scr-contract-name">Contract Name / Description</label>
+        <input type="text" id="scr-contract-name" name="contract_name" placeholder="e.g. StakingVault.sol, TokenSale contract" />
+      </div>
+
+      <div class="form-group full">
+        <label for="scr-matter">Context</label>
+        <textarea id="scr-matter" name="matter_description" rows="4" placeholder="Describe what the smart contract does and what you need reviewed…"></textarea>
+      </div>
+    </div>
+
+    <!-- ── DAO Formation Checklist ────────────────────────────────────────── -->
+    <div id="fields-dao-formation-checklist" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">DAO Formation Checklist Details</div>
+
+      <div class="form-group">
+        <label for="dfc-client-name">Client Name</label>
+        <input type="text" id="dfc-client-name" name="client_name" placeholder="Jane A. Smith" />
+      </div>
+
+      <div class="form-group">
+        <label for="dfc-dao-name">DAO Name</label>
+        <input type="text" id="dfc-dao-name" name="dao_name" placeholder="e.g. MakerDAO, AcmeDAO" />
+      </div>
+
+      <div class="form-group">
+        <label for="dfc-jurisdiction">Jurisdiction</label>
+        <input type="text" id="dfc-jurisdiction" name="jurisdiction" placeholder="e.g. Wyoming / Cayman Islands" />
+      </div>
+
+      <div class="form-group full">
+        <label for="dfc-matter">DAO Purpose / Description</label>
+        <textarea id="dfc-matter" name="matter_description" rows="4" placeholder="Describe the DAO's purpose, membership structure, and goals…"></textarea>
+      </div>
+    </div>
+
+    <!-- ── Parenting Plan ─────────────────────────────────────────────────── -->
+    <div id="fields-parenting-plan" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Parenting Plan Details</div>
+      <div class="form-group"><label>Petitioner (Primary Parent)</label><input type="text" name="petitioner_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Respondent (Other Parent)</label><input type="text" name="respondent_name" placeholder="John B. Smith" /></div>
+      <div class="form-group full"><label>Minor Children (names &amp; ages)</label><input type="text" name="minor_children" placeholder="e.g. Emma, age 8; Noah, age 5" /></div>
+      <div class="form-group"><label>Proposed Primary Residence</label><input type="text" name="primary_residence" placeholder="Which parent / city" /></div>
+      <div class="form-group full"><label>Parenting Schedule</label><textarea name="parenting_schedule" rows="3" placeholder="Describe weekday / weekend schedule…"></textarea></div>
+      <div class="form-group full"><label>Holiday &amp; Vacation Schedule</label><textarea name="holiday_schedule" rows="2" placeholder="How are major holidays, school breaks, and vacations split?"></textarea></div>
+      <div class="form-group full"><label>Decision-Making Authority</label><input type="text" name="decision_making" placeholder="e.g. Joint legal custody / Petitioner has final say on education" /></div>
+    </div>
+
+    <!-- ── Child Support Worksheet ────────────────────────────────────────── -->
+    <div id="fields-child-support-worksheet" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Child Support Worksheet Details</div>
+      <div class="form-group"><label>Petitioner Name</label><input type="text" name="petitioner_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Respondent Name</label><input type="text" name="respondent_name" placeholder="John B. Smith" /></div>
+      <div class="form-group full"><label>Minor Children (names &amp; ages)</label><input type="text" name="minor_children" placeholder="e.g. Emma, age 8; Noah, age 5" /></div>
+      <div class="form-group"><label>Petitioner Gross Monthly Income</label><input type="text" name="petitioner_income" placeholder="e.g. $4,500/month" /></div>
+      <div class="form-group"><label>Respondent Gross Monthly Income</label><input type="text" name="respondent_income" placeholder="e.g. $6,000/month" /></div>
+      <div class="form-group"><label>Parenting Time Split (days/year each)</label><input type="text" name="parenting_time" placeholder="e.g. Petitioner 182 days / Respondent 183 days" /></div>
+      <div class="form-group"><label>Health Insurance Cost (monthly)</label><input type="text" name="health_insurance" placeholder="e.g. $350/month" /></div>
+      <div class="form-group"><label>Work-Related Childcare (monthly)</label><input type="text" name="childcare_cost" placeholder="e.g. $600/month" /></div>
+    </div>
+
+    <!-- ── Property Settlement Agreement ──────────────────────────────────── -->
+    <div id="fields-property-settlement-agreement" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Property Settlement Agreement Details</div>
+      <div class="form-group"><label>Petitioner Name</label><input type="text" name="petitioner_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Respondent Name</label><input type="text" name="respondent_name" placeholder="John B. Smith" /></div>
+      <div class="form-group"><label>Date of Marriage</label><input type="date" name="date_of_marriage" /></div>
+      <div class="form-group full"><label>Marital Assets to Divide</label><textarea name="marital_assets" rows="3" placeholder="e.g. Home at 123 Main St; joint savings account; two vehicles; 401(k)"></textarea></div>
+      <div class="form-group full"><label>Marital Debts to Divide</label><textarea name="marital_debts" rows="2" placeholder="e.g. Mortgage, credit cards, car loans"></textarea></div>
+      <div class="form-group full"><label>Separate Property Claims</label><input type="text" name="separate_property" placeholder="e.g. Wife's inheritance; Husband's pre-marital savings account" /></div>
+      <div class="form-group full"><label>Spousal Support / Alimony Terms</label><input type="text" name="spousal_support" placeholder="e.g. $1,200/month for 24 months / None" /></div>
+    </div>
+
+    <!-- ── Personal Injury Demand Letter ──────────────────────────────────── -->
+    <div id="fields-personal-injury-demand-letter" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Personal Injury Demand Letter Details</div>
+      <div class="form-group"><label>Client Name (Claimant)</label><input type="text" name="client_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>At-Fault Party / Defendant</label><input type="text" name="opposing_party" placeholder="John Doe / ABC Company" /></div>
+      <div class="form-group"><label>Insurance Company / Adjuster</label><input type="text" name="insurance_company" placeholder="e.g. State Farm — John Adjuster" /></div>
+      <div class="form-group"><label>Claim / Policy Number</label><input type="text" name="claim_number" placeholder="e.g. CLM-2026-00142" /></div>
+      <div class="form-group full"><label>Incident Date &amp; Description</label><textarea name="incident_description" rows="3" placeholder="Date and how the accident / injury occurred…"></textarea></div>
+      <div class="form-group full"><label>Injuries Sustained</label><input type="text" name="injuries" placeholder="e.g. Herniated disc at L4-L5, broken right wrist, concussion" /></div>
+      <div class="form-group full"><label>Medical Treatment Summary</label><textarea name="medical_treatment" rows="2" placeholder="Hospitals, surgeries, therapy, ongoing treatment…"></textarea></div>
+      <div class="form-group"><label>Total Special Damages</label><input type="text" name="special_damages" placeholder="e.g. $28,400 medical + $6,000 lost wages" /></div>
+      <div class="form-group"><label>Settlement Demand Amount</label><input type="text" name="demand_amount" placeholder="e.g. $95,000" /></div>
+      <div class="form-group"><label>Response Deadline</label><input type="text" name="response_deadline" placeholder="e.g. 30 days from date of letter" /></div>
+      <div class="form-group"><label>General Damages Description</label><input type="text" name="general_damages_demand" placeholder="e.g. Pain and suffering, loss of enjoyment of life" /></div>
+    </div>
+
+    <!-- ── Employment Separation Agreement ───────────────────────────────── -->
+    <div id="fields-employment-separation-agreement" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Employment Separation Agreement Details</div>
+      <div class="form-group"><label>Employee Name</label><input type="text" name="client_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Employer Name</label><input type="text" name="employer_name" placeholder="Acme Corporation" /></div>
+      <div class="form-group"><label>Last Day of Employment</label><input type="date" name="termination_date" /></div>
+      <div class="form-group full"><label>Severance Terms</label><input type="text" name="severance_terms" placeholder="e.g. 4 weeks pay lump sum / 2 months salary continuation" /></div>
+      <div class="form-group"><label>COBRA / Benefits Continuation</label><input type="text" name="benefits_continuation" placeholder="e.g. Employer pays COBRA for 2 months / Standard COBRA notice" /></div>
+      <div class="form-group"><label>Non-Disparagement</label><select name="non_disparagement"><option value="Mutual non-disparagement">Mutual non-disparagement</option><option value="Employee non-disparagement only">Employee only</option></select></div>
+      <div class="form-group"><label>Return of Company Property</label><input type="text" name="return_of_property" placeholder="e.g. Laptop, badge, confidential documents" /></div>
+      <div class="form-group"><label>Governing State</label><input type="text" name="jurisdiction" placeholder="e.g. Tennessee" /></div>
+    </div>
+
+    <!-- ── EEOC Charge Narrative ───────────────────────────────────────────── -->
+    <div id="fields-eeoc-charge-narrative" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">EEOC Charge Narrative Details</div>
+      <div class="form-group"><label>Employee Name</label><input type="text" name="client_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Employer Name</label><input type="text" name="employer_name" placeholder="Acme Corporation" /></div>
+      <div class="form-group"><label>Employment Dates</label><input type="text" name="employment_dates" placeholder="e.g. Jan 2022 – Mar 2026" /></div>
+      <div class="form-group"><label>Position / Title</label><input type="text" name="position" placeholder="e.g. Senior Analyst" /></div>
+      <div class="form-group"><label>Basis of Discrimination</label><input type="text" name="discrimination_basis" placeholder="e.g. Race, Sex, Disability, Age, Retaliation" /></div>
+      <div class="form-group full"><label>Description of Discriminatory Acts</label><textarea name="matter_description" rows="4" placeholder="Describe what happened, who was involved, dates, witnesses…"></textarea></div>
+      <div class="form-group"><label>Date of Most Recent Act</label><input type="date" name="last_act_date" /></div>
+      <div class="form-group full"><label>Prior Internal Complaints</label><input type="text" name="internal_complaints" placeholder="e.g. HR complaint filed Jan 2026, no action taken" /></div>
+    </div>
+
+    <!-- ── Real Estate Purchase Agreement ─────────────────────────────────── -->
+    <div id="fields-real-estate-purchase-agreement" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Real Estate Purchase Agreement Details</div>
+      <div class="form-group"><label>Buyer Name(s)</label><input type="text" name="buyer_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Seller Name(s)</label><input type="text" name="seller_name" placeholder="Robert T. Jones" /></div>
+      <div class="form-group full"><label>Property Address</label><input type="text" name="property_address" placeholder="123 Main St, Nashville, TN 37201" /></div>
+      <div class="form-group"><label>Purchase Price</label><input type="text" name="purchase_price" placeholder="e.g. $285,000" /></div>
+      <div class="form-group"><label>Earnest Money Deposit</label><input type="text" name="earnest_money" placeholder="e.g. $5,000" /></div>
+      <div class="form-group"><label>Financing Terms</label><input type="text" name="financing_terms" placeholder="e.g. 30-year conventional, 7% max rate, 21-day contingency" /></div>
+      <div class="form-group"><label>Inspection Period</label><input type="text" name="inspection_period" placeholder="e.g. 10 days from acceptance" /></div>
+      <div class="form-group"><label>Closing Date</label><input type="date" name="closing_date" /></div>
+      <div class="form-group full"><label>Personal Property Included</label><input type="text" name="personal_property" placeholder="e.g. Refrigerator, washer/dryer, window treatments" /></div>
+    </div>
+
+    <!-- ── Eviction Notice ─────────────────────────────────────────────────── -->
+    <div id="fields-eviction-notice-detainer-warrant" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Eviction Notice Details</div>
+      <div class="form-group"><label>Landlord / Property Owner</label><input type="text" name="landlord_name" placeholder="Michael Reyes" /></div>
+      <div class="form-group"><label>Tenant Name(s)</label><input type="text" name="tenant_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group full"><label>Property Address</label><input type="text" name="property_address" placeholder="123 Main St, Apt 4B, Nashville, TN 37201" /></div>
+      <div class="form-group"><label>Grounds for Eviction</label><select name="eviction_grounds"><option value="Non-payment of rent">Non-payment of rent</option><option value="Material lease violation">Material lease violation</option><option value="Illegal activity on premises">Illegal activity</option><option value="Holdover after lease expiration">Holdover tenancy</option></select></div>
+      <div class="form-group"><label>Amount of Rent Owed</label><input type="text" name="amount_owed" placeholder="e.g. $2,400 (2 months)" /></div>
+      <div class="form-group"><label>Notice Period Given</label><input type="text" name="notice_period" placeholder="e.g. 14 days (URLTA) / 3 days (non-URLTA)" /></div>
+      <div class="form-group full"><label>Prior Notices / History</label><input type="text" name="prior_notices" placeholder="e.g. Written warning sent Feb 1, 2026" /></div>
+    </div>
+
+    <!-- ── Contract Breach Demand Letter ─────────────────────────────────── -->
+    <div id="fields-contract-breach-demand-letter" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Contract Breach Demand Letter Details</div>
+      <div class="form-group"><label>Client Name (Non-Breaching Party)</label><input type="text" name="client_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Breaching Party</label><input type="text" name="opposing_party" placeholder="Acme Corp. / John Doe" /></div>
+      <div class="form-group"><label>Contract Description</label><input type="text" name="contract_description" placeholder="e.g. Construction contract, services agreement" /></div>
+      <div class="form-group"><label>Contract Date</label><input type="date" name="contract_date" /></div>
+      <div class="form-group full"><label>Description of Breach</label><textarea name="matter_description" rows="3" placeholder="What the breaching party failed to do or did in violation of the contract…"></textarea></div>
+      <div class="form-group"><label>Damages Suffered</label><input type="text" name="damages" placeholder="e.g. $18,500 in direct losses + $4,200 cover costs" /></div>
+      <div class="form-group"><label>Demand Amount</label><input type="text" name="demand_amount" placeholder="e.g. $22,700 or specific performance" /></div>
+      <div class="form-group"><label>Response Deadline</label><input type="text" name="response_deadline" placeholder="e.g. 14 days from date of this letter" /></div>
+    </div>
+
+    <div class="btn-group" style="margin-top:1.25rem">
+      <button type="submit" class="btn btn-primary">Generate Document →</button>
+      <button type="reset" class="btn btn-secondary" onclick="resetDrafting()">Clear</button>
+    </div>
+  </form>
+</div>
+
+<!-- Result area (preview shown after generation, before account creation) -->
+<div id="drafting-result" style="display:none"></div>
+
+<!-- ── Account Creation Modal (shown after document is generated) ─────────── -->
+<div id="claim-modal" class="modal-overlay" style="display:none" onclick="handleClaimOverlay(event)">
+  <div class="modal-box" style="max-width:520px">
+    <div class="modal-header">
+      <h2>⚖ Save &amp; Download Your Document</h2>
+      <button class="modal-close" onclick="closeClaimModal()" title="Close">✕</button>
+    </div>
+    <div class="modal-body" style="padding:1.5rem 2rem 2rem">
+
+      <!-- Step 1: account form -->
+      <div id="claim-step-form">
+        <p style="font-family:Arial,sans-serif;font-size:.93rem;color:var(--gray-4);margin-bottom:1.2rem;line-height:1.6">
+          Your document is ready. <strong>Create a free client account</strong> to download it —
+          it will also be saved to your secure client portal for future access.<br>
+          <span style="font-size:.82rem;color:var(--gold)">A document generation fee of
+          <strong>0.5 billable hours</strong> will be applied to your account.</span>
+        </p>
+
+        <div class="form-grid" style="gap:.8rem">
+          <div class="form-group">
+            <label for="claim-name">Full Name *</label>
+            <input type="text" id="claim-name" placeholder="Jane A. Smith" required />
+          </div>
+          <div class="form-group">
+            <label for="claim-case-type">Case Type</label>
+            <select id="claim-case-type">
+              <option value="Other">Other / General</option>
+              <option value="Criminal Defense">Criminal Defense</option>
+              <option value="Civil Litigation">Civil Litigation</option>
+              <option value="Contract Dispute">Contract Dispute</option>
+              <option value="Personal Injury">Personal Injury</option>
+              <option value="Family Law — Divorce">Family Law — Divorce</option>
+              <option value="Family Law — Child Custody">Family Law — Child Custody</option>
+              <option value="Family Law — Other">Family Law — Other</option>
+              <option value="Real Estate">Real Estate</option>
+              <option value="Employment Law">Employment Law</option>
+              <option value="DeFi / Crypto Law">DeFi / Crypto Law</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="claim-email">Email</label>
+            <input type="email" id="claim-email" placeholder="jane@example.com" />
+          </div>
+          <div class="form-group">
+            <label for="claim-phone">Phone</label>
+            <input type="tel" id="claim-phone" placeholder="(555) 000-0000" />
+          </div>
+          <div class="form-group full">
+            <label for="claim-password">Choose a Portal Password *</label>
+            <input type="password" id="claim-password" placeholder="At least 8 characters" />
+          </div>
+        </div>
+
+        <div id="claim-error" style="display:none;color:#c0392b;font-size:.88rem;margin:.6rem 0;padding:.5rem .75rem;background:#fdf0ef;border-radius:6px"></div>
+
+        <div class="btn-group" style="margin-top:1.2rem">
+          <button class="btn btn-primary" onclick="submitClaim()" id="claim-submit-btn">
+            Create Account &amp; Download →
+          </button>
+          <button class="btn btn-secondary" onclick="closeClaimModal()">Cancel</button>
+        </div>
+
+        <p style="font-size:.78rem;color:var(--gray-3);margin-top:1rem;text-align:center">
+          Already have an account?
+          <a href="/client-login" style="color:var(--gold)">Log in to your portal</a>
+        </p>
+      </div>
+
+      <!-- Step 2: success state -->
+      <div id="claim-step-success" style="display:none;text-align:center">
+        <div style="font-size:3rem;margin-bottom:.75rem">✅</div>
+        <h3 style="color:var(--navy);margin-bottom:.5rem">Account Created!</h3>
+        <p id="claim-success-msg" style="font-family:Arial,sans-serif;font-size:.93rem;color:var(--gray-4);line-height:1.6;margin-bottom:1.2rem"></p>
+        <div class="btn-group" style="justify-content:center;flex-wrap:wrap;gap:.6rem">
+          <button class="btn btn-primary" onclick="downloadDocument()" id="claim-download-btn">
+            ⬇ Download Document
+          </button>
+          <a href="/client-login" class="btn btn-secondary">Go to Portal →</a>
+        </div>
+        <p style="font-size:.78rem;color:var(--gray-3);margin-top:.9rem">
+          Your username: <strong id="claim-username-display" style="color:var(--navy)"></strong>
+        </p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+// ── State ──────────────────────────────────────────────────────────────────
+var _generatedDraft    = "";   // raw document content from AI
+var _generatedTemplate = "";   // template type string
+
+// ── Drafting form reset ────────────────────────────────────────────────────
+function resetDrafting() {
+  document.querySelectorAll(".template-fields").forEach(function(s){ s.style.display = "none"; });
+  document.getElementById("template-type").value = "";
+  const r = document.getElementById("drafting-result");
+  r.innerHTML = "";
+  r.style.display = "none";
+  _generatedDraft    = "";
+  _generatedTemplate = "";
+}
+
+// ── Claim modal helpers ───────────────────────────────────────────────────
+function openClaimModal() {
+  document.getElementById("claim-step-form").style.display    = "";
+  document.getElementById("claim-step-success").style.display = "none";
+  document.getElementById("claim-error").style.display        = "none";
+  document.getElementById("claim-modal").style.display        = "flex";
+}
+function closeClaimModal() {
+  document.getElementById("claim-modal").style.display = "none";
+}
+function handleClaimOverlay(e) {
+  if (e.target === document.getElementById("claim-modal")) closeClaimModal();
+}
+
+// ── Submit account creation + save doc ───────────────────────────────────
+function submitClaim() {
+  var name     = document.getElementById("claim-name").value.trim();
+  var password = document.getElementById("claim-password").value.trim();
+  var email    = document.getElementById("claim-email").value.trim();
+  var phone    = document.getElementById("claim-phone").value.trim();
+  var caseType = document.getElementById("claim-case-type").value;
+  var errEl    = document.getElementById("claim-error");
+
+  errEl.style.display = "none";
+
+  if (!name) {
+    errEl.textContent = "Please enter your full name.";
+    errEl.style.display = "";
+    return;
+  }
+  if (!password || password.length < 8) {
+    errEl.textContent = "Password must be at least 8 characters.";
+    errEl.style.display = "";
+    return;
+  }
+  if (!_generatedDraft) {
+    errEl.textContent = "No document found. Please generate a document first.";
+    errEl.style.display = "";
+    return;
+  }
+
+  var btn = document.getElementById("claim-submit-btn");
+  btn.disabled = true;
+  btn.textContent = "Saving…";
+
+  fetch("/drafting/claim-document", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      full_name:     name,
+      password:      password,
+      email:         email,
+      phone:         phone,
+      case_type:     caseType,
+      template_type: _generatedTemplate,
+      draft_content: _generatedDraft,
+    })
+  })
+  .then(function(r) {
+    if (!r.ok) {
+      return r.text().then(function(txt) {
+        try { var j = JSON.parse(txt); throw new Error(j.error || "Server error (" + r.status + ")"); }
+        catch(e) { if (e.message) throw e; throw new Error("Server error (" + r.status + ")"); }
+      });
+    }
+    return r.json();
+  })
+  .then(function(data) {
+    btn.disabled = false;
+    btn.textContent = "Create Account & Download \u2192";
+    if (data.error) {
+      errEl.textContent = data.error;
+      errEl.style.display = "";
+      return;
+    }
+    // Show success step
+    document.getElementById("claim-success-msg").textContent = data.message || "Account created successfully.";
+    document.getElementById("claim-username-display").textContent = data.username || "";
+    document.getElementById("claim-step-form").style.display    = "none";
+    document.getElementById("claim-step-success").style.display = "";
+  })
+  .catch(function(err) {
+    btn.disabled = false;
+    btn.textContent = "Create Account & Download \u2192";
+    errEl.textContent = err.message || "A network error occurred. Please try again.";
+    errEl.style.display = "";
+  });
+}
+
+// ── Download document as HTML file ────────────────────────────────────────
+function downloadDocument() {
+  if (!_generatedDraft) return;
+  var safe = _generatedTemplate.replace(/[^a-zA-Z0-9]/g, "_");
+  var filename = safe + "_" + new Date().toISOString().slice(0,10) + ".html";
+
+  var html = "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>"
+    + _generatedTemplate + "</title>"
+    + "<style>body{font-family:Georgia,serif;max-width:860px;margin:2rem auto;padding:1.5rem;"
+    + "line-height:1.7;color:#1a1a2e}h1,h2,h3{color:#1B2A4A}pre{white-space:pre-wrap}"
+    + "p{margin:.6rem 0}</style></head><body>"
+    + "<p style='color:#999;font-size:.8rem;margin-bottom:2rem'>Generated: "
+    + new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"})
+    + " &nbsp;|&nbsp; {{ firm_name }}</p>"
+    + _generatedDraft
+    + "</body></html>";
+
+  var blob = new Blob([html], { type: "text/html" });
+  var a    = document.createElement("a");
+  a.href   = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+}
+
+// Render an error into the drafting result panel as text, never as markup.
+function showDraftingError(message) {
+  var resultDiv = document.getElementById("drafting-result");
+  resultDiv.textContent = "";
+  var box = document.createElement("div");
+  box.className = "alert alert-error";
+  box.textContent = message;
+  resultDiv.appendChild(box);
+  resultDiv.style.display = "";
+}
+
+// ── Drafting form submit: generate the document, then offer the claim flow ──
+document.addEventListener("DOMContentLoaded", function() {
+  var form = document.getElementById("drafting-form");
+  if (!form) return;
+
+  form.addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    var templateType = document.getElementById("template-type").value;
+    if (!templateType) { alert("Please select a template first."); return; }
+
+    // Collect the named fields from the selected template's block.
+    // Look it up by id: matching on the inline style broke as soon as
+    // onTemplateChange() rewrote it to "display: none" (with a space), after
+    // which this always picked up the first block instead of the chosen one.
+    var variables = {};
+    var activeBlock = document.getElementById(templateFieldsId(templateType));
+    if (activeBlock) {
+      activeBlock.querySelectorAll("input,select,textarea").forEach(function(el) {
+        if (el.name) variables[el.name] = el.value;
+      });
+    }
+
+    var resultDiv = document.getElementById("drafting-result");
+    resultDiv.innerHTML = "<div class='loading-spinner' style='text-align:center;padding:2rem'>"
+      + "<div class='spinner'></div><p style='color:var(--gray-3);margin-top:.75rem'>Generating your document…</p></div>";
+    resultDiv.style.display = "";
+
+    fetch("/drafting/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ template_type: templateType, variables: variables })
+    })
+    .then(function(r) {
+      if (!r.ok) {
+        return r.text().then(function(txt) {
+          try { var j = JSON.parse(txt); throw new Error(j.error || "Server error (" + r.status + ")"); }
+          catch(e) { if (e.message) throw e; throw new Error("Server error (" + r.status + ")"); }
+        });
+      }
+      return r.json();
+    })
+    .then(function(data) {
+      if (data.error) {
+        showDraftingError(data.error);
+        return;
+      }
+
+      // Store globally for claim flow
+      _generatedDraft    = data.draft;
+      _generatedTemplate = templateType;
+
+      // Build the card structurally. The model returns plain document text, so
+      // it goes in via textContent — never parsed as markup — with the line
+      // breaks preserved by white-space:pre-wrap.
+      resultDiv.textContent = "";
+
+      var card = document.createElement("div");
+      card.className = "card";
+      card.style.cssText = "border:2px solid var(--gold);margin-top:1.5rem";
+
+      var head = document.createElement("div");
+      head.style.cssText = "display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1rem";
+
+      var titleWrap = document.createElement("div");
+      var h3 = document.createElement("h3");
+      h3.style.cssText = "margin:0;color:var(--navy)";
+      h3.textContent = templateType;
+      var sub = document.createElement("p");
+      sub.style.cssText = "margin:.25rem 0 0;font-size:.85rem;color:var(--gray-3)";
+      sub.textContent = "Document generated — create a free account to save & download it.";
+      titleWrap.appendChild(h3);
+      titleWrap.appendChild(sub);
+
+      var claimBtn = document.createElement("button");
+      claimBtn.className = "btn btn-primary";
+      claimBtn.style.whiteSpace = "nowrap";
+      claimBtn.textContent = "⬇ Save & Download →";
+      claimBtn.addEventListener("click", openClaimModal);
+
+      head.appendChild(titleWrap);
+      head.appendChild(claimBtn);
+
+      var body = document.createElement("div");
+      body.style.cssText = "max-height:320px;overflow:auto;background:#f9f9fc;border-radius:8px;" +
+                           "padding:1rem;border:1px solid #e5e7eb;font-size:.88rem;color:#374151;" +
+                           "line-height:1.65;white-space:pre-wrap";
+      body.textContent = data.draft.substring(0, 3000) +
+        (data.draft.length > 3000 ? "…  (preview truncated — save to see the full document)" : "");
+
+      card.appendChild(head);
+      card.appendChild(body);
+      resultDiv.appendChild(card);
+
+      resultDiv.scrollIntoView({ behavior: "smooth", block: "start" });
+    })
+    .catch(function(err) {
+      showDraftingError("Network error. Please try again.");
+    });
+  });
+});
+</script>
+{% endblock %}

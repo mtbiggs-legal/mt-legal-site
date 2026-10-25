@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}How It Works | {{ firm_name }}{% endblock %}
+{% block meta_description %}How working with {{ firm_name }} works, from your first message to a written engagement and a secure client portal.{% endblock %}
+
+{% block styles %}
+<style>.main-content { max-width: 100%; padding: 0; }</style>
+{% endblock %}
+
+{% block hero %}
+<section class="ed-page-head">
+  <span class="eyebrow eyebrow--rule">Process</span>
+  <h1>How it works.</h1>
+  <p>From your first message to a signed engagement, with no phone tree and no hand-offs.</p>
+</section>
+{% endblock %}
+
+{% block content %}
+<section class="ed-section ed-section--tight">
+  <div class="ed-panels">
+    <div class="ed-panel ed-panel--light">
+      <span class="ed-box-label">Getting started</span>
+      <ul class="ed-points ed-points--single">
+        <li><b>Tell us what happened.</b> Fill out the confidential intake form or use the
+          chat. It takes about five minutes.</li>
+        <li><b>Free consultation.</b> We review your matter, run a conflict check, and talk
+          through options, costs, and timelines in plain English.</li>
+        <li><b>Engagement letter.</b> If we&rsquo;re a fit, you get a written fee agreement
+          before any work begins.</li>
+        <li><b>Your client portal.</b> Documents, messages, court dates, and billing in one
+          secure, encrypted place.</li>
+      </ul>
+    </div>
+    <div class="ed-panel">
+      <span class="ed-box-label">What to have ready</span>
+      <ul class="ed-points ed-points--single">
+        <li><b>Paperwork.</b> Citations, court notices, contracts, letters, or anything you
+          have received.</li>
+        <li><b>Dates.</b> Upcoming court dates or deadlines, and when key events happened.</li>
+        <li><b>For digital assets.</b> Wallet and exchange names, token or project details,
+          and any property involved. Never send private keys or seed phrases.</li>
+        <li><b>Questions.</b> Write down what you most want to know.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<a href="{{ url_for('intake.intake') }}" class="ed-cta ed-cta--link">
+  <div>
+    <h2>Ready when you are.</h2>
+    <p>A free, confidential consultation. No obligation, and no pressure to hire us.</p>
+  </div>
+  <span class="btn ed-cta-btn">Start your intake</span>
+</a>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Legal Research Bot — {{ firm_name }}{% endblock %}
+
+{% block styles %}
+<style>
+/* Editorial page opening: text on the page background, no photo overlay. */
+.page-header {
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 1.75rem;
+  margin-bottom: 2rem;
+}
+.page-header h1 { color: var(--ink); text-shadow: none; }
+.page-header p  { color: var(--muted); }
+.disclaimer-banner {
+  background: none;
+  border: none;
+  border-left: 2px solid var(--accent-lt);
+  border-radius: 0;
+  box-shadow: none;
+  padding: .2rem 0 .2rem .9rem;
+  color: var(--muted);
+  font-size: .82rem;
+  line-height: 1.7;
+}
+.disclaimer-banner strong { color: var(--accent); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Legal Research Bot</h1>
+  <p>Enter a legal question or issue and receive a structured research memo.</p>
+</div>
+
+
+<div class="disclaimer-banner">
+  <strong>Research Aid Only —</strong>
+  This tool is not a substitute for independent legal research. All citations, statutes, and case references must be independently verified before reliance. AI may produce inaccuracies.
+</div>
+
+<div class="research-layout">
+  <!-- Query panel -->
+  <div class="card" id="query-panel" style="position:sticky;top:80px">
+    <div class="query-panel-header">
+      <h2 style="margin:0">New Query</h2>
+      <button class="query-toggle-btn" id="query-toggle-btn" type="button" onclick="toggleQueryPanel()">▼ Collapse</button>
+    </div>
+    <div class="research-form-body">
+      <form id="research-form" onsubmit="submitResearch(event)">
+        <div class="form-group" style="margin-bottom:.85rem">
+          <label for="research-case-type">Case Type</label>
+          <select id="research-case-type" name="case_type">
+            <option value="Criminal Defense">Criminal Defense</option>
+            <option value="Civil Litigation">Civil Litigation</option>
+            <option value="DeFi / Crypto Law">DeFi / Crypto Law</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom:1rem">
+          <label for="research-question">Research Question</label>
+          <textarea
+            id="research-question"
+            name="question"
+            rows="7"
+            placeholder="e.g. What are the Fourth Amendment grounds for suppressing evidence obtained during a warrantless traffic stop in this state?"
+            required
+          ></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width:100%">Research →</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Result panel -->
+  <div>
+    <div id="research-result" style="display:none"></div>
+
+    <div id="research-placeholder" class="card" style="color:var(--gray-3);font-family:Arial,sans-serif;font-size:.92rem;text-align:center;padding:3rem">
+      <div style="font-size:2.5rem;margin-bottom:.75rem">⚖</div>
+      Your research memo will appear here.
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+  document.getElementById("research-result").addEventListener("DOMNodeInserted", function () {
+    const ph = document.getElementById("research-placeholder");
+    if (ph) ph.style.display = "none";
+  });
+  // MutationObserver fallback for modern browsers
+  const observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(m) {
+      if (m.target.id === "research-result" && m.target.innerHTML.trim() !== "") {
+        const ph = document.getElementById("research-placeholder");
+        if (ph) ph.style.display = "none";
+      }
+    });
+  });
+  observer.observe(document.getElementById("research-result"), { childList: true });
+</script>
+{% endblock %}

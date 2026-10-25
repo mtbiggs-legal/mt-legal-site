@@ -1,0 +1,953 @@
+{% extends "base.html" %}
+{% block title %}My Case — {{ firm_name }} Client Portal{% endblock %}
+
+{% block styles %}
+<style>
+.new-badge { display:inline-block; font-family:Arial,sans-serif; font-size:.62rem;
+  letter-spacing:.04em; text-transform:uppercase; padding:.05rem .35rem; border-radius:3px;
+  margin-left:.3rem; vertical-align:middle; background:#f0c040; color:#3a2a00; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="portal-wrap">
+
+  <!-- ── Sidebar ─────────────────────────────────────────────────────────── -->
+  <aside class="portal-sidebar">
+    <div class="portal-sidebar-header">
+      <div class="sidebar-role">Client Portal</div>
+      <div class="sidebar-name">{{ client.client_name }}</div>
+    </div>
+    <nav>
+      <button class="portal-tab-btn active" onclick="showTab('overview', this)">My Case</button>
+      <button class="portal-tab-btn" onclick="showTab('documents', this); loadClientDocs()">Documents</button>
+      <button class="portal-tab-btn" onclick="showTab('research', this)">Research</button>
+      <button class="portal-tab-btn" onclick="showTab('messages', this)">Message Attorney</button>
+      <button class="portal-tab-btn" onclick="showTab('billing', this); loadBilling()">Billing{% if has_new_statement %} <span class="new-badge">New</span>{% endif %}</button>
+    </nav>
+    <div class="portal-sidebar-footer">
+      <a href="{{ url_for('auth.logout') }}" class="portal-logout-btn">Sign Out</a>
+    </div>
+  </aside>
+
+  <!-- ── Main panels ────────────────────────────────────────────────────── -->
+  <div>
+
+    <!-- Overview tab -->
+    <div id="tab-overview" class="portal-panel active">
+      <div class="page-header" style="margin-bottom:1.25rem">
+        <h1 style="font-size:1.5rem">Case Overview</h1>
+        <p style="font-size:.9rem">Your current case status with {{ firm_name }}</p>
+      </div>
+
+      <div class="portal-stats">
+        <div class="portal-stat">
+          <div class="portal-stat-label">Case Type</div>
+          <div class="portal-stat-value" style="font-size:1.1rem">{{ client.case_type or '—' }}</div>
+        </div>
+        <div class="portal-stat ov-stat-link" style="cursor:pointer"
+             onclick="showTab('billing', document.querySelector('.portal-tab-btn[onclick*=billing]')); loadBilling();"
+             title="View billing breakdown">
+          <div class="portal-stat-label">Hours Billed</div>
+          <div class="portal-stat-value">{{ billed_hours or 0 }}</div>
+          <div class="portal-stat-sub" style="color:var(--gold);font-weight:600">View breakdown →</div>
+        </div>
+        <div class="portal-stat">
+          <div class="portal-stat-label">Last Communication</div>
+          <div class="portal-stat-value" style="font-size:1rem">{{ client.last_communication or '—' }}</div>
+        </div>
+        <div class="portal-stat">
+          <div class="portal-stat-label">Next Court Date</div>
+          <div class="portal-stat-value" style="font-size:1rem;color:{% if client.next_court_date %}var(--red){% else %}var(--navy){% endif %}">
+            {{ client.next_court_date or 'TBD' }}
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:1.25rem">
+        <div class="portal-section-title">Legal Issue</div>
+        <p style="font-family:Arial,sans-serif;font-size:.95rem;line-height:1.7;color:var(--gray-4)">
+          {{ client.legal_issue or 'Your attorney has not yet entered a case summary. Please check back after your initial consultation.' }}
+        </p>
+      </div>
+
+      {% if client.next_meeting %}
+      <div class="card" style="margin-bottom:1.25rem;border-left:4px solid var(--gold)">
+        <div class="portal-section-title">Next Scheduled Meeting</div>
+        <p style="font-family:Arial,sans-serif;font-size:1rem;color:var(--navy);font-weight:bold">
+          {{ client.next_meeting }}
+        </p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Documents tab -->
+    <div id="tab-documents" class="portal-panel">
+      <div class="page-header" style="margin-bottom:1.25rem">
+        <h1 style="font-size:1.5rem">My Documents</h1>
+        <p style="font-size:.9rem">Documents from your attorney. All files are confidential.</p>
+      </div>
+      <div class="doc-cat-tabs" id="client-doc-cat-tabs"></div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.85rem">
+          <div class="portal-section-title" style="margin-bottom:0" id="client-doc-list-title">Intake</div>
+          <div id="client-doc-file-count" style="font-family:Arial,sans-serif;font-size:.78rem;color:var(--gray-3)"></div>
+        </div>
+        <div id="client-doc-file-list">
+          <p style="font-family:Arial,sans-serif;font-size:.87rem;color:var(--gray-3);text-align:center;padding:1.75rem 0">Select Documents to view your files.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Research tab -->
+    <div id="tab-research" class="portal-panel">
+      <div class="page-header" style="margin-bottom:1.25rem">
+        <h1 style="font-size:1.5rem">Legal Research</h1>
+        <p style="font-size:.9rem;color:var(--gray-3)">Ask a legal question and get a plain-language answer. Save answers to your documents folder.</p>
+      </div>
+
+      <div class="card" style="margin-bottom:1.25rem">
+        <div class="portal-section-title">Ask a Legal Question</div>
+        <div class="form-group" style="margin-bottom:.9rem">
+          <textarea id="cr-question" rows="4"
+            placeholder="Example: What does it mean if the prosecutor files a motion to continue? What rights do I have during a traffic stop?"
+            style="font-family:Arial,sans-serif;font-size:.95rem;line-height:1.6;width:100%;box-sizing:border-box"></textarea>
+        </div>
+        <button class="btn btn-primary" id="cr-submit-btn" onclick="submitClientResearch()">Get Answer →</button>
+        <span id="cr-spinner" style="display:none;font-family:Arial,sans-serif;font-size:.9rem;color:var(--gray-3);margin-left:.5rem"> Researching…</span>
+        <div id="cr-error" style="color:var(--red);font-family:Arial,sans-serif;font-size:.88rem;margin-top:.5rem"></div>
+      </div>
+
+      <div id="cr-result-card" class="card" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;flex-wrap:wrap;gap:.5rem">
+          <div class="portal-section-title" style="margin:0">Answer</div>
+          <div style="display:flex;align-items:center;gap:.6rem">
+            <button class="btn btn-primary" id="cr-save-btn" onclick="saveClientResearch()"
+                    style="padding:.35rem .9rem;font-size:.84rem">Save to My Documents</button>
+            <span id="cr-save-result" style="font-family:Arial,sans-serif;font-size:.84rem"></span>
+          </div>
+        </div>
+        <div id="cr-answer" style="font-family:Arial,sans-serif;font-size:.92rem;line-height:1.7;color:var(--navy)"></div>
+        <div style="margin-top:.9rem;padding:.6rem .8rem;background:#fffbe6;border-radius:6px;border:1px solid #f0d060;font-family:Arial,sans-serif;font-size:.8rem;color:#5a4800">
+          Saving this answer will add <strong>0.2 billable hours</strong> to your account at the standard rate.
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:1.25rem;padding:1rem 1.25rem">
+        <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gray-3);margin-bottom:.5rem">Important Notice</div>
+        <p style="font-family:Arial,sans-serif;font-size:.84rem;color:var(--gray-3);margin:0;line-height:1.6">
+          Information provided here is for general educational purposes only. It is not legal advice and does not create an attorney-client relationship. Always consult your attorney before taking any action based on legal information.
+        </p>
+      </div>
+    </div>
+
+    <!-- Messages tab -->
+    <div id="tab-messages" class="portal-panel">
+      <div class="page-header" style="margin-bottom:1.25rem">
+        <h1 style="font-size:1.5rem">Message Your Attorney</h1>
+        <p style="font-size:.9rem">All communications are protected by attorney-client privilege.</p>
+      </div>
+
+      <div class="card">
+        <div style="background:#f0f4f8;border-left:4px solid #6b8cae;border-radius:4px;padding:.65rem 1rem;margin-bottom:.85rem;font-family:Arial,sans-serif;font-size:.82rem;color:#2c3e50">
+          <strong>{{ firm_name }} Assistant:</strong> You are chatting with an AI assistant. All messages are saved and reviewed by your attorney. Responses are billed at 0.1 hrs per message.
+        </div>
+        <div class="portal-section-title">Message Thread</div>
+        <div class="message-thread" id="message-thread">
+          {% if client.messages %}
+            {% for msg in client.messages %}
+            <div>
+              <div class="message-bubble from-{{ msg.from }}">{{ msg.text }}</div>
+              <div class="message-meta" style="text-align:{% if msg.from in ('attorney', 'ai') %}right{% else %}left{% endif %}">
+                {% if msg.from == 'attorney' %}Attorney
+                {% elif msg.from == 'ai' %}{{ firm_name }} Assistant
+                {% else %}{{ client.client_name }}{% endif %} &middot; {{ msg.date }}
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <p style="font-family:Arial,sans-serif;font-size:.9rem;color:var(--gray-3);text-align:center;padding:1.5rem 0">No messages yet. Send your first message below.</p>
+          {% endif %}
+        </div>
+
+        <div class="form-group" style="margin-bottom:.75rem">
+          <label for="msg-text">Your Message</label>
+          <textarea id="msg-text" rows="4" placeholder="Type your message here…" style="resize:vertical"></textarea>
+        </div>
+        <div id="msg-result"></div>
+        <button class="btn btn-primary" onclick="sendMessage()">Send Message →</button>
+        <p style="font-family:Arial,sans-serif;font-size:.78rem;color:var(--gray-3);
+                  margin-top:.75rem;line-height:1.6">
+          Messages receive an immediate reply from the {{ firm_name }} Assistant, billed at
+          0.1 hr of the standard hourly rate. Your attorney reviews every message.
+          <button type="button" onclick="openFeeSchedule()"
+                  style="background:none;border:none;padding:0;color:var(--gold);
+                         font-family:inherit;font-size:inherit;text-decoration:underline;
+                         cursor:pointer">See the fee schedule</button>.
+        </p>
+      </div>
+    </div>
+
+    <!-- Billing tab -->
+    <div id="tab-billing" class="portal-panel">
+      <div class="page-header" style="margin-bottom:1.25rem">
+        <h1 style="font-size:1.5rem">Billing &amp; Payments</h1>
+        <p style="font-size:.9rem">Pay your outstanding balance securely online.</p>
+      </div>
+
+      <!-- Balance summary -->
+      <div class="portal-stats" id="billing-stats">
+        <div class="portal-stat">
+          <div class="portal-stat-label">Billed Hours</div>
+          <div class="portal-stat-value" id="bill-hours-billed">&mdash;</div>
+        </div>
+        <div class="portal-stat">
+          <div class="portal-stat-label">Balance Due</div>
+          <div class="portal-stat-value" id="bill-balance-due" style="color:var(--red)">&mdash;</div>
+          <div class="portal-stat-sub" id="bill-balance-sub"></div>
+        </div>
+        <div class="portal-stat">
+          <div class="portal-stat-label">Rate</div>
+          <div class="portal-stat-value" id="bill-rate">&mdash;</div>
+          <div class="portal-stat-sub">per hour</div>
+        </div>
+      </div>
+
+      <!-- Pay Now card (hidden when balance = 0) -->
+      <div class="card" id="billing-pay-card" style="margin-bottom:1.25rem;display:none">
+        <div class="portal-section-title">Pay Now</div>
+        <p id="billing-amount-label" style="font-family:Arial,sans-serif;font-size:1.1rem;font-weight:bold;color:var(--navy);margin-bottom:1rem"></p>
+        <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:.75rem">
+          <button class="btn btn-primary" id="btn-pay-card" onclick="payWithCard()">Pay with Card &rarr;</button>
+          <button class="btn btn-secondary" id="btn-pay-crypto" onclick="payWithCrypto()">Pay with Crypto &rarr;</button>
+        </div>
+        <p style="font-family:Arial,sans-serif;font-size:.78rem;color:var(--gray-3)">
+          Card: Visa &middot; Mastercard &middot; Amex &middot; ACH &nbsp;|&nbsp;
+          Crypto: BTC &middot; ETH &middot; SOL &middot; USDC &middot; USDT
+        </p>
+        <p id="billing-no-methods" style="display:none;font-family:Arial,sans-serif;font-size:.85rem;color:var(--gray-4)">
+          Online payment isn't set up yet — please contact the office to settle your balance.
+        </p>
+        <div id="billing-pay-result"></div>
+      </div>
+
+      <!-- Zero balance message -->
+      <div id="billing-paid-msg" style="display:none;margin-bottom:1.25rem" class="card">
+        <p style="font-family:Arial,sans-serif;font-size:.95rem;color:var(--green);font-weight:bold">
+          Your account is fully paid up. Thank you!
+        </p>
+      </div>
+
+      <!-- Statements -->
+      <div class="card" id="billing-statements-card" style="margin-bottom:1.25rem">
+        <div class="portal-section-title">Statements</div>
+        <table style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:.87rem">
+          <thead>
+            <tr style="border-bottom:2px solid var(--gray-1)">
+              <th style="text-align:left;padding:.4rem .6rem;color:var(--gray-3);font-weight:600">#</th>
+              <th style="text-align:left;padding:.4rem .6rem;color:var(--gray-3);font-weight:600">Issued</th>
+              <th style="text-align:left;padding:.4rem .6rem;color:var(--gray-3);font-weight:600">Billed Through</th>
+              <th style="text-align:right;padding:.4rem .6rem;color:var(--gray-3);font-weight:600">Hours</th>
+              <th style="text-align:right;padding:.4rem .6rem;color:var(--gray-3);font-weight:600">Amount</th>
+            </tr>
+          </thead>
+          <tbody id="billing-statements-body"></tbody>
+        </table>
+        <p id="billing-statements-empty" style="font-family:Arial,sans-serif;font-size:.87rem;color:var(--gray-3);margin-top:.6rem">No statements yet.</p>
+      </div>
+
+      <!-- Time log breakdown -->
+      <div class="card" id="billing-log-card" style="display:none;margin-bottom:1.25rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.85rem">
+          <div class="portal-section-title" style="margin-bottom:0">Hours Breakdown</div>
+          <button onclick="openFeeSchedule()" style="font-family:Arial,sans-serif;font-size:.75rem;font-weight:600;color:var(--gold);background:rgba(168,136,60,.1);border:1px solid rgba(168,136,60,.3);border-radius:20px;padding:.25rem .8rem;cursor:pointer;transition:background .15s" onmouseover="this.style.background='rgba(168,136,60,.2)'" onmouseout="this.style.background='rgba(168,136,60,.1)'">
+            Standard Fee Schedule →
+          </button>
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:.87rem">
+          <thead>
+            <tr style="border-bottom:2px solid var(--gray-1)">
+              <th style="text-align:left;padding:.4rem .6rem;color:var(--gray-3);font-weight:600">Date</th>
+              <th style="text-align:left;padding:.4rem .6rem;color:var(--gray-3);font-weight:600">Description</th>
+              <th style="text-align:right;padding:.4rem .6rem;color:var(--gray-3);font-weight:600">Hrs</th>
+              <th style="text-align:right;padding:.4rem .6rem;color:var(--gray-3);font-weight:600">Amount</th>
+              <th style="text-align:left;padding:.4rem .6rem;color:var(--gray-3);font-weight:600">Statement</th>
+            </tr>
+          </thead>
+          <tbody id="billing-log-body"></tbody>
+          <tfoot id="billing-log-foot"></tfoot>
+        </table>
+      </div>
+      <p id="billing-next-note" style="font-family:Arial,sans-serif;font-size:.82rem;color:var(--gray-3);margin:-.5rem 0 1.25rem"></p>
+
+      <!-- Payment history -->
+      <div class="card" id="billing-history-card" style="display:none">
+        <div class="portal-section-title">Payment History</div>
+        <table style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:.88rem">
+          <thead>
+            <tr style="border-bottom:2px solid var(--gray-1)">
+              <th style="text-align:left;padding:.4rem .5rem;color:var(--gray-3)">Date</th>
+              <th style="text-align:left;padding:.4rem .5rem;color:var(--gray-3)">Method</th>
+              <th style="text-align:right;padding:.4rem .5rem;color:var(--gray-3)">Amount</th>
+            </tr>
+          </thead>
+          <tbody id="billing-history-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- end main panels -->
+</div>
+
+<!-- ── Standard Fee Schedule Modal ──────────────────────────────────────── -->
+<div id="fee-schedule-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1200;align-items:center;justify-content:center;padding:1rem">
+  <div style="background:#fff;border-radius:12px;width:min(94vw,560px);max-height:88vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.35);display:flex;flex-direction:column">
+    <div style="background:var(--navy);padding:1.1rem 1.5rem;display:flex;justify-content:space-between;align-items:center;border-radius:12px 12px 0 0;border-bottom:2px solid var(--gold)">
+      <div>
+        <div style="font-family:Georgia,serif;font-size:1.1rem;font-weight:bold;color:#fff">Standard Fee Schedule</div>
+        <div style="font-family:Arial,sans-serif;font-size:.75rem;color:rgba(255,255,255,.55);margin-top:.1rem">{{ firm_name }}</div>
+      </div>
+      <button onclick="closeFeeSchedule()" style="background:none;border:none;color:rgba(255,255,255,.6);font-size:1.2rem;cursor:pointer;line-height:1;padding:.2rem .4rem" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.6)'">✕</button>
+    </div>
+    <div style="padding:1.5rem">
+      <p style="font-family:Arial,sans-serif;font-size:.82rem;color:var(--gray-3);margin-bottom:1.25rem;line-height:1.6">All services are billed at the standard hourly rate. The table below reflects the time allotted for common legal tasks. Time is billed in tenths of an hour (0.1 hr increments).</p>
+
+      <table style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:.88rem">
+        <thead>
+          <tr style="border-bottom:2px solid var(--gray-2)">
+            <th style="text-align:left;padding:.5rem .6rem;color:var(--navy);font-weight:700">Service</th>
+            <th style="text-align:center;padding:.5rem .6rem;color:var(--navy);font-weight:700">Time</th>
+            <th style="text-align:right;padding:.5rem .6rem;color:var(--navy);font-weight:700">Rate</th>
+          </tr>
+        </thead>
+        <tbody id="fee-schedule-body"></tbody>
+      </table>
+
+      <div style="margin-top:1.25rem;padding:.85rem 1rem;background:var(--gray-1);border-radius:8px;border-left:3px solid var(--gold)">
+        <p style="font-family:Arial,sans-serif;font-size:.8rem;color:var(--gray-4);line-height:1.65;margin:0">
+          <strong>Note:</strong> All fees are estimates. Complex matters may require additional time. Your attorney will notify you of any significant billing outside of standard rates. Attorney-client communications are billed at the standard hourly rate in 0.1 hr increments.
+        </p>
+      </div>
+
+      <div style="margin-top:1rem;text-align:right">
+        <button onclick="closeFeeSchedule()" class="btn btn-secondary" style="font-size:.88rem">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  </div><!-- end main panels -->
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showTab(name, btn) {
+  document.querySelectorAll(".portal-panel").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".portal-tab-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("tab-" + name).classList.add("active");
+  btn.classList.add("active");
+}
+
+function sendMessage() {
+  var text = document.getElementById("msg-text").value.trim();
+  var res  = document.getElementById("msg-result");
+  if (!text) {
+    res.textContent = "Please enter a message.";
+    res.style.color = "var(--red)";
+    return;
+  }
+  res.textContent = "Sending\u2026";
+  res.style.color = "var(--gray-3)";
+  var btn = document.querySelector("[onclick='sendMessage()']");
+  if (btn) btn.disabled = true;
+
+  fetch("/portal/client/message", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text: text })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (btn) btn.disabled = false;
+    if (d.success) {
+      var thread = document.getElementById("message-thread");
+      var now = new Date().toLocaleDateString("en-US", { year:"numeric", month:"2-digit", day:"2-digit" });
+
+      // Append client message
+      var clientWrap = document.createElement("div");
+      var clientBubble = document.createElement("div");
+      clientBubble.className = "message-bubble from-client";
+      clientBubble.textContent = text;
+      var clientMeta = document.createElement("div");
+      clientMeta.className = "message-meta";
+      clientMeta.textContent = "You \u00B7 " + now;
+      clientWrap.appendChild(clientBubble);
+      clientWrap.appendChild(clientMeta);
+      thread.appendChild(clientWrap);
+
+      // Append AI reply if returned
+      if (d.ai_reply) {
+        var aiWrap = document.createElement("div");
+        var aiBubble = document.createElement("div");
+        aiBubble.className = "message-bubble from-ai";
+        aiBubble.textContent = d.ai_reply;
+        var aiMeta = document.createElement("div");
+        aiMeta.className = "message-meta";
+        aiMeta.style.textAlign = "right";
+        aiMeta.textContent = "{{ firm_name }} Assistant \u00B7 " + now;
+        aiWrap.appendChild(aiBubble);
+        aiWrap.appendChild(aiMeta);
+        thread.appendChild(aiWrap);
+      }
+
+      thread.scrollTop = thread.scrollHeight;
+      document.getElementById("msg-text").value = "";
+      res.textContent = d.ai_reply ? "" : "Message sent. Your attorney will respond shortly.";
+      res.style.color = "var(--green)";
+      if (res.textContent) setTimeout(function() { res.textContent = ""; }, 4000);
+    } else {
+      res.textContent = d.error || "An error occurred.";
+      res.style.color = "var(--red)";
+    }
+  })
+  .catch(function() {
+    if (btn) btn.disabled = false;
+    res.textContent = "Connection error. Please try again.";
+    res.style.color = "var(--red)";
+  });
+}
+
+var _clientDocData = null;
+var _clientDocCat  = "Intake";
+
+function loadClientDocs() {
+  if (_clientDocData) { renderClientDocList(); return; }
+  var loadingMsg = '<p style="font-family:Arial,sans-serif;font-size:.87rem;color:var(--gray-3);text-align:center;padding:1.75rem 0">Loading...</p>';
+  document.getElementById("client-doc-file-list").textContent = "";
+  document.getElementById("client-doc-file-list").insertAdjacentHTML("beforeend", loadingMsg);
+  fetch("/portal/client/documents")
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      _clientDocData = d;
+      var tabsEl = document.getElementById("client-doc-cat-tabs");
+      tabsEl.textContent = "";
+      (d.categories || []).forEach(function(cat, i) {
+        var btn = document.createElement("button");
+        btn.className = "doc-cat-tab" + (i === 0 ? " active" : "");
+        btn.textContent = cat;
+        btn.addEventListener("click", function() { switchClientDocCat(cat, btn); });
+        tabsEl.appendChild(btn);
+      });
+      _clientDocCat = d.categories[0] || "";
+      renderClientDocList();
+    })
+    .catch(function() {
+      var errEl = document.getElementById("client-doc-file-list");
+      errEl.textContent = "";
+      errEl.insertAdjacentHTML("beforeend", '<p style="font-family:Arial,sans-serif;color:var(--red);text-align:center;padding:1.5rem">Unable to load documents.</p>');
+    });
+}
+
+function switchClientDocCat(cat, btn) {
+  _clientDocCat = cat;
+  document.querySelectorAll("#client-doc-cat-tabs .doc-cat-tab")
+    .forEach(function(b) { b.classList.remove("active"); });
+  btn.classList.add("active");
+  renderClientDocList();
+}
+
+function renderClientDocList() {
+  if (!_clientDocData) return;
+  var files   = (_clientDocData.files || {})[_clientDocCat] || [];
+  var listEl  = document.getElementById("client-doc-file-list");
+  var titleEl = document.getElementById("client-doc-list-title");
+  var countEl = document.getElementById("client-doc-file-count");
+  titleEl.textContent = _clientDocCat;
+  countEl.textContent = files.length
+    ? files.length + " file" + (files.length !== 1 ? "s" : "") : "";
+
+  function fmtSize(b) {
+    if (b < 1024) return b + " B";
+    if (b < 1048576) return (b / 1024).toFixed(1) + " KB";
+    return (b / 1048576).toFixed(1) + " MB";
+  }
+  function fileIcon(name) {
+    var ext = (name.split(".").pop() || "").toLowerCase();
+    if (ext === "pdf")  return "\uD83D\uDCC4";
+    if (ext === "doc" || ext === "docx") return "\uD83D\uDCDD";
+    if (["jpg","jpeg","png","gif","bmp","webp"].indexOf(ext) >= 0) return "\uD83D\uDDBC";
+    if (ext === "xls" || ext === "xlsx") return "\uD83D\uDCCA";
+    return "\uD83D\uDCC1";
+  }
+
+  listEl.textContent = "";
+  if (!files.length) {
+    var emptyP = document.createElement("p");
+    emptyP.style.cssText = "font-family:Arial,sans-serif;font-size:.87rem;color:var(--gray-3);text-align:center;padding:1.75rem 0";
+    emptyP.textContent = "No documents in this category yet.";
+    listEl.appendChild(emptyP);
+    return;
+  }
+  files.forEach(function(f) {
+    var row = document.createElement("div");
+    row.className = "doc-file-row";
+
+    var icon = document.createElement("span");
+    icon.className = "doc-file-icon";
+    icon.textContent = fileIcon(f.name);
+
+    var nameSpan = document.createElement("span");
+    nameSpan.className = "doc-file-name";
+    nameSpan.textContent = f.name;
+
+    var metaSpan = document.createElement("span");
+    metaSpan.className = "doc-file-meta";
+    metaSpan.textContent = fmtSize(f.size) + " \u00B7 " + f.modified;
+
+    var actions = document.createElement("div");
+    actions.className = "doc-file-actions";
+
+    var dlLink = document.createElement("a");
+    dlLink.className = "doc-btn";
+    dlLink.href = "/portal/client/document/"
+      + encodeURIComponent(_clientDocCat) + "/" + encodeURIComponent(f.name);
+    dlLink.setAttribute("download", "");
+    dlLink.textContent = "Download";
+
+    actions.appendChild(dlLink);
+    row.appendChild(icon);
+    row.appendChild(nameSpan);
+    row.appendChild(metaSpan);
+    row.appendChild(actions);
+    listEl.appendChild(row);
+  });
+}
+
+// Scroll message thread to bottom on load
+window.addEventListener("DOMContentLoaded", function() {
+  var t = document.getElementById("message-thread");
+  if (t) t.scrollTop = t.scrollHeight;
+
+  // Auto-switch to billing tab and confirm payment after the provider redirect
+  var params = new URLSearchParams(window.location.search);
+  if (params.get("tab") === "billing") {
+    var billingBtn = document.querySelector(".portal-tab-btn[onclick*='billing']");
+    if (billingBtn) billingBtn.click();
+
+    var stripeSession = params.get("session_id");
+    if (stripeSession) {
+      // Webhooks never reach a locally-running app, so confirm the checkout
+      // directly with Stripe before telling the client it went through.
+      fetch("/portal/client/payment/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: stripeSession })
+      })
+        .then(function(r) { return r.json(); })
+        .then(function() { showPaymentBanner(); })
+        .catch(function() { showPaymentBanner(); });
+    } else if (params.get("paid") === "1") {
+      showPaymentBanner();
+    }
+  }
+});
+
+function showPaymentBanner() {
+  var panel = document.getElementById("tab-billing");
+  if (!panel) return;
+  var banner = document.createElement("div");
+  banner.style.cssText = "background:var(--green);color:#fff;font-family:Arial,sans-serif;font-size:.95rem;padding:.75rem 1.25rem;border-radius:6px;margin-bottom:1rem;font-weight:bold";
+  banner.textContent = "Payment received! Your account has been updated.";
+  panel.insertBefore(banner, panel.firstChild);
+  setTimeout(function() { banner.remove(); }, 6000);
+  _billingData = null;   // bust cache so fresh totals load
+  loadBilling();
+}
+
+var _billingData = null;
+
+function loadBilling() {
+  if (_billingData) { renderBilling(); return; }
+  fetch("/portal/client/billing")
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      _billingData = d;
+      renderBilling();
+      document.querySelectorAll(".portal-tab-btn .new-badge").forEach(function(b) { b.remove(); });
+    })
+    .catch(function() {
+      var res = document.getElementById("billing-pay-result");
+      if (res) res.textContent = "Unable to load billing data.";
+    });
+}
+
+function renderBilling() {
+  var d = _billingData;
+  document.getElementById("bill-hours-billed").textContent = d.billed_hours;
+  document.getElementById("bill-rate").textContent         = "$" + d.hourly_rate.toFixed(0);
+  renderBillingStatements(d.statements || []);
+  renderBillingLog(d.entries || [], d.hourly_rate);
+  var nextNote = document.getElementById("billing-next-note");
+  nextNote.textContent = d.latest_billed_through
+    ? "Time logged after " + d.latest_billed_through + " will appear on your next statement."
+    : "";
+  if (d.amount_due > 0) {
+    document.getElementById("bill-balance-due").textContent  = "$" + d.amount_due.toFixed(2);
+    document.getElementById("bill-balance-sub").textContent  = "on issued statements";
+    document.getElementById("billing-amount-label").textContent = "Amount Due: $" + d.amount_due.toFixed(2);
+    document.getElementById("bill-balance-due").style.color    = "var(--red)";
+    document.getElementById("billing-pay-card").style.display  = "";
+    document.getElementById("billing-paid-msg").style.display  = "none";
+    // Only offer payment methods the firm has actually configured.
+    var cardBtn   = document.getElementById("btn-pay-card");
+    var cryptoBtn = document.getElementById("btn-pay-crypto");
+    if (cardBtn)   cardBtn.style.display   = d.card_enabled   ? "" : "none";
+    if (cryptoBtn) cryptoBtn.style.display = d.crypto_enabled ? "" : "none";
+    var noMethods = !d.card_enabled && !d.crypto_enabled;
+    var payNote   = document.getElementById("billing-no-methods");
+    if (payNote) payNote.style.display = noMethods ? "" : "none";
+  } else {
+    document.getElementById("bill-balance-due").textContent    = "$0.00";
+    document.getElementById("bill-balance-due").style.color    = "var(--green)";
+    document.getElementById("bill-balance-sub").textContent    = "";
+    document.getElementById("billing-pay-card").style.display  = "none";
+    document.getElementById("billing-paid-msg").style.display  =
+      (d.statements || []).length ? "" : "none";
+  }
+  var payments = d.payments || [];
+  if (payments.length) {
+    document.getElementById("billing-history-card").style.display = "";
+    var tbody = document.getElementById("billing-history-body");
+    while (tbody.firstChild) { tbody.removeChild(tbody.firstChild); }
+    payments.forEach(function(p) {
+      var tr = document.createElement("tr");
+      tr.style.borderBottom = "1px solid var(--gray-1)";
+
+      function td(text, align) {
+        var cell = document.createElement("td");
+        cell.style.padding = ".4rem .5rem";
+        if (align) cell.style.textAlign = align;
+        cell.textContent = text || "\u2014";
+        return cell;
+      }
+
+      var methodCell = td(p.method || "\u2014");
+      methodCell.style.textTransform = "capitalize";
+
+      tr.appendChild(td(p.date || "\u2014"));
+      tr.appendChild(methodCell);
+      tr.appendChild(td("$" + (p.amount || 0).toFixed(2), "right"));
+
+      tbody.appendChild(tr);
+    });
+  }
+}
+
+function renderBillingStatements(statements) {
+  var tbody = document.getElementById("billing-statements-body");
+  var empty = document.getElementById("billing-statements-empty");
+  while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
+  empty.style.display = statements.length ? "none" : "";
+  statements.forEach(function(s) {
+    var tr = document.createElement("tr");
+    tr.style.borderBottom = "1px solid var(--gray-1)";
+    function td(txt, align) {
+      var c = document.createElement("td");
+      c.style.padding = ".38rem .6rem";
+      if (align) c.style.textAlign = align;
+      c.textContent = txt;
+      return c;
+    }
+    tr.appendChild(td(String(s.number)));
+    tr.appendChild(td((s.issued_at || "").slice(0, 10) || "\u2014"));
+    tr.appendChild(td(s.billed_through || "\u2014"));
+    tr.appendChild(td(Number(s.hours || 0).toFixed(1) + " hr", "right"));
+    tr.appendChild(td("$" + Number(s.amount || 0).toFixed(2), "right"));
+    tbody.appendChild(tr);
+  });
+}
+
+function renderBillingLog(entries, rate) {
+  var card  = document.getElementById("billing-log-card");
+  var tbody = document.getElementById("billing-log-body");
+  var tfoot = document.getElementById("billing-log-foot");
+  if (!entries || !entries.length) { card.style.display = "none"; return; }
+  card.style.display = "";
+  while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
+  var totalHrs = 0, totalAmt = 0;
+  entries.forEach(function(e) {
+    if (!e.hours) return;
+    totalHrs += Number(e.hours);
+    totalAmt += Number(e.amount || 0);
+    var tr = document.createElement("tr");
+    tr.style.borderBottom = "1px solid var(--gray-1)";
+    function td(txt, align, color) {
+      var c = document.createElement("td");
+      c.style.padding = ".38rem .6rem";
+      if (align) c.style.textAlign = align;
+      if (color) c.style.color = color;
+      c.textContent = txt || "\u2014";
+      return c;
+    }
+    tr.appendChild(td(e.date || "\u2014"));
+    tr.appendChild(td(e.note || "\u2014"));
+    tr.appendChild(td(Number(e.hours).toFixed(1) + " hr", "right", "var(--navy)"));
+    tr.appendChild(td(e.amount == null ? "\u2014" : "$" + Number(e.amount).toFixed(2), "right"));
+    tr.appendChild(td(e.statement_number ? "#" + e.statement_number : "\u2014"));
+    tbody.appendChild(tr);
+  });
+  while (tfoot.firstChild) tfoot.removeChild(tfoot.firstChild);
+  var tfr = document.createElement("tr");
+  tfr.style.borderTop = "2px solid var(--gray-2)";
+  function tft(txt, align, bold) {
+    var c = document.createElement("td");
+    c.style.padding = ".5rem .6rem";
+    c.style.fontFamily = "Arial,sans-serif";
+    c.style.fontSize = ".82rem";
+    if (align) c.style.textAlign = align;
+    if (bold) { c.style.fontWeight = "700"; c.style.color = "var(--navy)"; }
+    else { c.style.fontWeight = "700"; c.style.color = "var(--gray-3)"; }
+    c.textContent = txt;
+    return c;
+  }
+  var lbl = tft("Total Billed", "left", false);
+  lbl.colSpan = 2;
+  tfr.appendChild(lbl);
+  tfr.appendChild(tft(totalHrs.toFixed(1) + " hr", "right", true));
+  tfr.appendChild(tft("$" + totalAmt.toFixed(2), "right", true));
+  tfr.appendChild(tft("", "left", false));
+  tfoot.appendChild(tfr);
+}
+
+function openFeeSchedule() {
+  var rate = (_billingData && _billingData.hourly_rate) ? _billingData.hourly_rate : 350;
+  var rows = [
+    ["Initial Intake Processing",           "0.1 hr",  rate * 0.1],
+    ["Client Portal Message (per message)", "0.1 hr",  rate * 0.1],
+    ["Research and Review (per matter)",    "0.5 hr",  rate * 0.5],
+    ["Document Drafting \u2014 Motion",     "0.5 hr",  rate * 0.5],
+    ["Document Drafting \u2014 Letter",     "0.5 hr",  rate * 0.5],
+    ["Document Upload & Review",            "0.1 hr",  rate * 0.1],
+    ["Court Appearance (per hearing)",      "1.0 hr",  rate * 1.0],
+    ["Consultation (per session)",          "1.0 hr",  rate * 1.0],
+    ["Standard Hourly Rate",                "per hr",  rate],
+  ];
+  var tbody = document.getElementById("fee-schedule-body");
+  while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
+  rows.forEach(function(r, i) {
+    var tr = document.createElement("tr");
+    tr.style.borderBottom = "1px solid var(--gray-1)";
+    if (i % 2 === 0) tr.style.background = "var(--gray-1)";
+    function fsd(txt, align, bold) {
+      var c = document.createElement("td");
+      c.style.padding = ".48rem .6rem";
+      c.style.color = bold ? "var(--navy)" : "var(--gray-4)";
+      if (bold) c.style.fontWeight = "700";
+      if (align) c.style.textAlign = align;
+      c.textContent = txt;
+      return c;
+    }
+    tr.appendChild(fsd(r[0]));
+    tr.appendChild(fsd(r[1], "center", true));
+    tr.appendChild(fsd("$" + r[2].toFixed(2), "right", true));
+    tbody.appendChild(tr);
+  });
+  document.getElementById("fee-schedule-modal").style.display = "flex";
+}
+
+function closeFeeSchedule() {
+  document.getElementById("fee-schedule-modal").style.display = "none";
+}
+
+document.getElementById("fee-schedule-modal").addEventListener("click", function(e) {
+  if (e.target === this) closeFeeSchedule();
+});
+
+// ── Client Research Q&A ───────────────────────────────────────────────────────
+var _crCurrentAnswer   = "";
+var _crCurrentQuestion = "";
+
+function submitClientResearch() {
+  var q = document.getElementById("cr-question").value.trim();
+  if (!q) {
+    document.getElementById("cr-error").textContent = "Please enter a question.";
+    return;
+  }
+  document.getElementById("cr-error").textContent = "";
+  document.getElementById("cr-submit-btn").disabled = true;
+  document.getElementById("cr-spinner").style.display = "inline";
+  document.getElementById("cr-result-card").style.display = "none";
+
+  fetch("/portal/client/research-query", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({question: q})
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    document.getElementById("cr-submit-btn").disabled = false;
+    document.getElementById("cr-spinner").style.display = "none";
+    if (!d.success) {
+      document.getElementById("cr-error").textContent = d.error || "An error occurred.";
+      return;
+    }
+    // The API returns the memo under "memo" — reading d.answer left this panel
+    // blank and made every save fail.
+    _crCurrentAnswer   = d.memo;
+    _crCurrentQuestion = q;
+
+    // The memo is HTML built from a question the client typed, so run it
+    // through the allowlist sanitizer before it reaches the page.
+    renderSafeHtml(document.getElementById("cr-answer"), d.memo);
+
+    document.getElementById("cr-result-card").style.display = "block";
+    document.getElementById("cr-save-btn").disabled = false;
+    document.getElementById("cr-save-result").textContent = "";
+  })
+  .catch(function(e) {
+    document.getElementById("cr-submit-btn").disabled = false;
+    document.getElementById("cr-spinner").style.display = "none";
+    document.getElementById("cr-error").textContent = "Request failed: " + e.message;
+  });
+}
+
+function saveClientResearch() {
+  if (!_crCurrentAnswer) return;
+  document.getElementById("cr-save-btn").disabled = true;
+  document.getElementById("cr-save-result").textContent = "Saving\u2026";
+
+  fetch("/portal/client/research-save", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({question: _crCurrentQuestion, memo: _crCurrentAnswer})
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (!d.success) {
+      document.getElementById("cr-save-btn").disabled = false;
+      document.getElementById("cr-save-result").style.color = "var(--red)";
+      document.getElementById("cr-save-result").textContent = d.error || "Save failed.";
+      return;
+    }
+    document.getElementById("cr-save-result").style.color = "#2e7d32";
+    document.getElementById("cr-save-result").textContent = "Saved \u2713  (0.2 hrs added to your next statement)";
+  })
+  .catch(function() {
+    document.getElementById("cr-save-btn").disabled = false;
+    document.getElementById("cr-save-result").style.color = "var(--red)";
+    document.getElementById("cr-save-result").textContent = "Request failed.";
+  });
+}
+
+function payWithCard() {
+  var btn = document.getElementById("btn-pay-card");
+  var res = document.getElementById("billing-pay-result");
+  btn.disabled = true;
+  btn.textContent = "Redirecting\u2026";
+  fetch("/portal/client/payment/stripe", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: "{}",
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.checkout_url) {
+      window.location.href = d.checkout_url;
+    } else {
+      res.textContent = d.error || "An error occurred. Please try again.";
+      btn.disabled = false;
+      btn.textContent = "Pay with Card \u2192";
+    }
+  })
+  .catch(function() {
+    res.textContent = "Connection error. Please try again.";
+    btn.disabled = false;
+    btn.textContent = "Pay with Card \u2192";
+  });
+}
+
+function payWithCrypto() {
+  var btn = document.getElementById("btn-pay-crypto");
+  var res = document.getElementById("billing-pay-result");
+  btn.disabled = true;
+  btn.textContent = "Redirecting\u2026";
+  fetch("/portal/client/payment/coinbase", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: "{}",
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.hosted_url) {
+      window.location.href = d.hosted_url;
+    } else {
+      res.textContent = d.error || "An error occurred. Please try again.";
+      btn.disabled = false;
+      btn.textContent = "Pay with Crypto \u2192";
+    }
+  })
+  .catch(function() {
+    res.textContent = "Connection error. Please try again.";
+    btn.disabled = false;
+    btn.textContent = "Pay with Crypto \u2192";
+  });
+}
+
+// ── Back-navigation guard ─────────────────────────────────────────────────────
+(function() {
+  // Push a sentinel state so the first "back" press fires popstate here
+  history.pushState({portalGuard: true}, '');
+
+  window.addEventListener('popstate', function(e) {
+    // Re-push so the next back press also triggers this handler
+    history.pushState({portalGuard: true}, '');
+    document.getElementById('nav-guard-modal').style.display = 'flex';
+  });
+
+  // Catches tab close / address-bar navigation / reload
+  window.addEventListener('beforeunload', function(e) {
+    e.preventDefault();
+    e.returnValue = '';
+  });
+})();
+
+function navGuardStay() {
+  document.getElementById('nav-guard-modal').style.display = 'none';
+}
+
+function navGuardLogout() {
+  // Disable beforeunload so the logout redirect goes through cleanly
+  window.onbeforeunload = null;
+  window.location.href = '/logout';
+}
+</script>
+
+<!-- ── Back-navigation guard modal ─────────────────────────────────────────── -->
+<div id="nav-guard-modal" style="display:none;position:fixed;inset:0;z-index:9999;
+     background:rgba(10,20,40,.72);align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:12px;padding:2rem 2.25rem;max-width:380px;
+              width:90%;box-shadow:0 20px 60px rgba(0,0,0,.35);text-align:center">
+    <div style="font-size:2rem;margin-bottom:.6rem">⚠️</div>
+    <h2 style="font-family:Georgia,serif;font-size:1.25rem;color:#0c1828;margin:0 0 .6rem">
+      Leave the Portal?
+    </h2>
+    <p style="font-family:Arial,sans-serif;font-size:.9rem;color:#555;margin:0 0 1.5rem;line-height:1.6">
+      Your session is still active. Would you like to return to the portal or sign out?
+    </p>
+    <div style="display:flex;flex-direction:column;gap:.65rem">
+      <button onclick="navGuardStay()"
+              style="padding:.7rem 1rem;background:#1a3a5c;color:#fff;border:none;
+                     border-radius:7px;font-size:.95rem;cursor:pointer;font-weight:600">
+        Return to Portal
+      </button>
+      <button onclick="navGuardLogout()"
+              style="padding:.7rem 1rem;background:#fff;color:#c0392b;border:2px solid #c0392b;
+                     border-radius:7px;font-size:.95rem;cursor:pointer;font-weight:600">
+        Sign Out &amp; Go to Login
+      </button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

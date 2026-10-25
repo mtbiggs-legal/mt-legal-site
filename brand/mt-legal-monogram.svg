@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 750" role="img" aria-label="MT Legal monogram">
+  <rect width="600" height="750" fill="#14181F"/>
+  <rect x="40" y="40" width="520" height="670" fill="none" stroke="#B9AE93" stroke-width="1"/>
+  <text x="300" y="400" text-anchor="middle" font-family="Georgia, serif" font-size="150" fill="#B9AE93" letter-spacing="8">MB</text>
+  <text x="300" y="470" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#8A8371" letter-spacing="6">MT LEGAL</text>
+</svg>
