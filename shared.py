@@ -116,7 +116,7 @@ CASE_ATTORNEY_MAP = {
     "Employment Law":             "Endocide",
     "DeFi / Crypto Law":          "Endocide",
     "Crypto LLC Formation":       "Endocide",
-    "Real Estate Tokenization":   "Endocide",
+    "Real World Assets Tokenization": "Endocide",
     "AI / Technology Law":        "Endocide",
     "Civil Rights":               "Endocide",
     "Stablecoins / Digital Payments": "Endocide",

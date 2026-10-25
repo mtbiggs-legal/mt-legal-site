@@ -345,22 +345,24 @@ PRACTICE_AREAS = {
                   "that must be reported, even when the gain is near zero."},
         ],
     },
-    "real-estate-tokenization": {
-        "name":       "Real Estate Tokenization",
-        "tagline":    "Turn Nashville-area property into compliant digital securities: "
-                      "fractional ownership, investor onboarding, and secondary transfers.",
-        "case_types": ["Real Estate Tokenization", "Real Estate"],
+    "rwa-tokenization": {
+        "name":       "Real World Assets Tokenization",
+        "tagline":    "Turn real-world assets, from Nashville real estate to loans and revenue "
+                      "streams, into compliant digital securities: fractional ownership, "
+                      "investor onboarding, and secondary transfers.",
+        "case_types": ["Real World Assets Tokenization", "Real Estate"],
         "helps": [
             'Structures the deal so investors buy compliant securities, not an accidental unregistered offering.',
             'Clears title, liens, and lender consent before the property moves into the owning entity.',
             'Drafts the offering documents and coordinates the auditor, transfer agent, and trading platform.',
             'Handles ongoing filings, investor communications, and resale compliance after launch.',
         ],
-        "overview":   "Tokenization puts ownership interests in a property (or in the entity "
-                      "that owns it) on a blockchain, so they can be issued, transferred, and "
-                      "tracked as digital tokens. Done right, it opens a property to smaller "
-                      "investors and faster transfers. Done wrong, it is an unregistered "
-                      "securities offering. We handle the legal structure end to end.",
+        "overview":   "Tokenization puts ownership of a real-world asset (a building, a loan, a "
+                      "revenue stream, or the entity that owns it) on a blockchain, so it can "
+                      "be issued, transferred, and tracked as digital tokens. Done right, it "
+                      "opens an asset to smaller investors and faster transfers. Done wrong, "
+                      "it is an unregistered securities offering. We handle the legal "
+                      "structure end to end, with deep experience in Nashville-area real estate.",
         "focus": [
             "Choosing the ownership vehicle: SPV LLC, series LLC, DST, or fund",
             "Securities exemptions: Reg D 506(b)/(c), Reg A+ Tier 1 and 2, Reg CF, Reg S",
@@ -609,7 +611,7 @@ PRACTICE_AREAS = {
 # Display order: crypto estate planning and emerging tech first, then litigation.
 _ORDER = [
     "estate-business", "ai-emerging-tech", "defi-digital-assets", "stablecoins",
-    "real-estate-tokenization",
+    "rwa-tokenization",
     "criminal-defense", "civil-rights", "family-law", "personal-injury",
 ]
 PRACTICE_AREAS = {slug: PRACTICE_AREAS[slug] for slug in _ORDER}
@@ -620,7 +622,7 @@ PRACTICE_AREAS = {slug: PRACTICE_AREAS[slug] for slug in _ORDER}
 # briefings underneath them.
 EMERGING_TECH_AREAS = [
     "estate-business", "ai-emerging-tech", "defi-digital-assets", "stablecoins",
-    "real-estate-tokenization",
+    "rwa-tokenization",
 ]
 
 EMERGING_TECH_TOPICS = [

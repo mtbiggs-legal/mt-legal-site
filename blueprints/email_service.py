@@ -45,7 +45,7 @@ PRACTICE_BLURB = {
     "Criminal Defense":           "criminal defense",
     "DeFi / Crypto Law":          "DeFi and cryptocurrency law",
     "Crypto LLC Formation":       "crypto LLC formation",
-    "Real Estate Tokenization":   "real estate tokenization",
+    "Real World Assets Tokenization": "real-world asset tokenization",
     "AI / Technology Law":        "AI and technology law",
     "Stablecoins / Digital Payments": "stablecoins and digital payments",
     "Civil Rights":               "civil rights",

@@ -62,8 +62,8 @@ def test_practice_area_case_types_exist_in_intake_dropdown():
 
 
 def test_tokenization_page_renders_structures_process_fees_and_faqs(client):
-    html = client.get("/practice/real-estate-tokenization").get_data(as_text=True)
-    area = PRACTICE_AREAS["real-estate-tokenization"]
+    html = client.get("/practice/rwa-tokenization").get_data(as_text=True)
+    area = PRACTICE_AREAS["rwa-tokenization"]
     for s in area["structures"]:
         assert str(escape(s["name"])) in html
     for step in area["process"]:
@@ -162,3 +162,8 @@ def test_service_area_counties_link_to_case_search_with_county_preset(client):
 def test_old_civil_litigation_url_redirects_to_civil_rights(client):
     resp = client.get("/practice/civil-litigation")
     assert resp.status_code == 301 and resp.headers["Location"].endswith("/practice/civil-rights")
+
+
+def test_old_real_estate_tokenization_url_redirects(client):
+    resp = client.get("/practice/real-estate-tokenization")
+    assert resp.status_code == 301 and resp.headers["Location"].endswith("/practice/rwa-tokenization")

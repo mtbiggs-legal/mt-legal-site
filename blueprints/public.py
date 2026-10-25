@@ -99,7 +99,10 @@ def emerging_tech():
 
 
 # Renamed practice areas: old URLs keep working.
-_MOVED_PRACTICE_AREAS = {"civil-litigation": "civil-rights"}
+_MOVED_PRACTICE_AREAS = {
+    "civil-litigation":         "civil-rights",
+    "real-estate-tokenization": "rwa-tokenization",
+}
 
 
 @public_bp.route("/practice/<slug>")
