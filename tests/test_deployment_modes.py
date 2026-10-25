@@ -65,3 +65,19 @@ def test_versioned_static_files_are_cached_for_a_year(client):
     resp = client.get("/static/css/style.css?v=1")
     assert "immutable" in resp.headers["Cache-Control"]
     assert "max-age=86400" in client.get("/static/css/style.css").headers["Cache-Control"]
+
+
+def test_link_preview_tags_and_icons(client):
+    html = client.get("/meet-the-firm").get_data(as_text=True)
+    assert 'property="og:image" content="http://localhost/static/images/og-image.jpg?v=' in html
+    assert 'name="twitter:card" content="summary_large_image"' in html
+    assert 'rel="apple-touch-icon"' in html
+    assert client.get("/favicon.ico").status_code == 200
+
+
+def test_robots_and_sitemap(client):
+    robots = client.get("/robots.txt").get_data(as_text=True)
+    assert "Disallow: /attorney-login" in robots and "Sitemap: http://localhost/sitemap.xml" in robots
+    sitemap = client.get("/sitemap.xml").get_data(as_text=True)
+    assert "<loc>http://localhost/practice/stablecoins</loc>" in sitemap
+    assert "/attorney-portal" not in sitemap

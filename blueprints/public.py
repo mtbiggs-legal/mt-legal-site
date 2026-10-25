@@ -2,7 +2,10 @@
 
 import json
 from datetime import datetime
-from flask import Blueprint, abort, redirect, render_template, request, jsonify, url_for
+from flask import (
+    Blueprint, Response, abort, current_app, jsonify, redirect, render_template, request,
+    send_from_directory, url_for,
+)
 
 from shared import (
     require_auth, require_attorney, LEADS_DIR, CASE_ATTORNEY_MAP,
@@ -28,6 +31,46 @@ def index():
 @require_auth
 def meet_the_firm():
     return render_template("meet_the_firm.html", all_areas=PRACTICE_AREAS)
+
+
+# ── Search engines and browsers ───────────────────────────────────────────────
+
+# Public pages listed in sitemap.xml (practice pages are added from the data).
+_SITEMAP_ENDPOINTS = (
+    "public.index", "public.meet_the_firm", "public.emerging_tech", "public.why_nashville",
+    "public.case_search", "public.how_it_works", "intake.intake",
+)
+
+
+@public_bp.route("/favicon.ico")
+def favicon():
+    """Browsers and Google ask for /favicon.ico at the site root."""
+    return send_from_directory(current_app.static_folder, "favicon.ico",
+                               mimetype="image/vnd.microsoft.icon", max_age=86400)
+
+
+@public_bp.route("/robots.txt")
+def robots_txt():
+    lines = [
+        "User-agent: *",
+        "Disallow: /portal/", "Disallow: /client-portal", "Disallow: /attorney-portal",
+        "Disallow: /client-login", "Disallow: /attorney-login", "Disallow: /research",
+        "Disallow: /drafting", "Disallow: /calendar/", "Disallow: /api/",
+        "",
+        "Sitemap: " + url_for("public.sitemap_xml", _external=True),
+    ]
+    return Response("\n".join(lines) + "\n", mimetype="text/plain")
+
+
+@public_bp.route("/sitemap.xml")
+def sitemap_xml():
+    urls = [url_for(e, _external=True) for e in _SITEMAP_ENDPOINTS]
+    urls += [url_for("public.practice_area", slug=s, _external=True) for s in PRACTICE_AREAS]
+    body = "".join(f"  <url><loc>{u}</loc></url>\n" for u in urls)
+    xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+           + body + "</urlset>\n")
+    return Response(xml, mimetype="application/xml")
 
 
 @public_bp.route("/case-search")

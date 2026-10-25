@@ -39,10 +39,28 @@
   </script>
   <title>{% block title %}{{ firm_name }} | Nashville AI, Blockchain, Tokenization &amp; Estate Attorney{% endblock %}</title>
   <meta name="description" content="{% block meta_description %}{{ firm_name }} is a Nashville law practice for crypto estate and future-asset planning, AI and blockchain law, real estate tokenization, plus criminal defense and civil representation across Middle Tennessee. Free consultation.{% endblock %}" />
+  <link rel="canonical" href="{{ request.base_url }}" />
+  <!-- Link previews (texts, iMessage, WhatsApp, LinkedIn, Facebook, Slack) -->
+  {% set og_image = url_for('static', filename='images/og-image.jpg', _external=True) %}
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="{{ firm_name }}" />
   <meta property="og:title" content="{{ self.title() }}" />
   <meta property="og:description" content="{{ self.meta_description() }}" />
+  <meta property="og:url" content="{{ request.base_url }}" />
+  <meta property="og:image" content="{{ og_image }}" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="{{ firm_name }}: Counsel for what comes next. Nashville and Middle Tennessee." />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="{{ self.title() }}" />
+  <meta name="twitter:description" content="{{ self.meta_description() }}" />
+  <meta name="twitter:image" content="{{ og_image }}" />
+  <!-- Site icons: browser tabs, Google results, phone home screens -->
+  <link rel="icon" href="/favicon.ico" sizes="48x48" />
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='icons/favicon-32.png') }}" />
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}" />
+  <link rel="manifest" href="{{ url_for('static', filename='site.webmanifest') }}" />
+  <meta name="theme-color" content="#14181F" />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -50,6 +68,8 @@
     "name": {{ firm_name | tojson }},
     "description": "Solo law practice serving Nashville and Middle Tennessee.",
     "url": {{ request.url_root | tojson }},
+    "logo": {{ url_for('static', filename='icons/icon-512.png', _external=True) | tojson }},
+    "image": {{ og_image | tojson }},
     "founder": {"@type": "Person", "name": {{ partner.display | tojson }}, "jobTitle": {{ partner.title | tojson }}},
     "address": {"@type": "PostalAddress", "addressLocality": "Nashville", "addressRegion": "TN", "addressCountry": "US"},
     "areaServed": [{% for c in service_counties %}{"@type": "AdministrativeArea", "name": {{ (c ~ " County, Tennessee") | tojson }}}{% if not loop.last %}, {% endif %}{% endfor %}],
