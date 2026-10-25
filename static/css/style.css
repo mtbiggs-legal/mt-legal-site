@@ -2592,3 +2592,29 @@ a.ed-layer--link:hover { background: var(--bg); border-top-color: var(--accent);
   .ed-hero--layered .ed-hero-text { padding: 3rem 1.5rem 7rem; }
   .ed-section--overlap { margin-top: -4.5rem; }
 }
+
+/* ── Phone-only collapsible blocks (see the [data-mobile-collapse] script) ──── */
+.is-collapsible > .ed-layer-head,
+.is-collapsible > .ed-panel-head { cursor: pointer; position: relative; padding-right: 2.25rem; }
+.is-collapsible > .ed-layer-head::after,
+.is-collapsible > .ed-panel-head::after {
+  content: "+";
+  position: absolute;
+  top: .1rem;
+  right: 0;
+  font-size: 1.35rem;
+  line-height: 1;
+  color: var(--accent);
+  transition: transform .15s;
+}
+.is-collapsible:not(.is-collapsed) > .ed-layer-head::after,
+.is-collapsible:not(.is-collapsed) > .ed-panel-head::after { transform: rotate(45deg); }
+.is-collapsed > .ed-layer-body,
+.is-collapsed > .ed-panel-body { display: none; }
+.is-collapsed.ed-layer { gap: 0; padding-bottom: 1.5rem; }
+.is-collapsed > .ed-layer-head p,
+.is-collapsed > .ed-panel-head h2 { margin-bottom: 0; }
+.ed-panel-head .ed-box-label { display: block; }
+@media (max-width: 700px) {
+  .ed-layer-body .ed-focus-list, .ed-layer-body .ed-points { grid-template-columns: 1fr; }
+}

@@ -92,9 +92,12 @@
 <!-- ── Always-open panels: common questions and service area ───────────────── -->
 <section class="ed-section ed-section--tight" style="padding-top:0">
   <div class="ed-panels">
-    <div class="ed-panel">
-      <span class="ed-box-label">Questions</span>
-      <h2>Common questions</h2>
+    <div class="ed-panel" data-mobile-collapse>
+      <header class="ed-panel-head">
+        <span class="ed-box-label">Questions</span>
+        <h2>Common questions</h2>
+      </header>
+      <div class="ed-panel-body">
       <dl class="ed-qa ed-scroll" tabindex="0" aria-label="Common questions">
         <dt>Is the first consultation really free?</dt>
         <dd>Yes. It is free and confidential. Nothing is owed unless you sign an engagement
@@ -125,16 +128,21 @@
         <dd>Yes. We review your payment partners, customer terms, compliance obligations, and
           tax treatment so you can accept stablecoins with confidence.</dd>
       </dl>
+      </div>
     </div>
-    <div class="ed-panel">
-      <span class="ed-box-label">Service area</span>
-      <h2>Serving Middle Tennessee</h2>
+    <div class="ed-panel" data-mobile-collapse>
+      <header class="ed-panel-head">
+        <span class="ed-box-label">Service area</span>
+        <h2>Serving Middle Tennessee</h2>
+      </header>
+      <div class="ed-panel-body">
       <p class="ed-panel-lede">Based in Nashville, appearing in courts across the region.
         Choose a county to look up your case. Crypto, AI, and tokenization clients are welcome
         from anywhere.</p>
       <ul class="ed-counties ed-counties--panel">
         {% for c in service_counties %}<li><a href="{{ url_for('public.case_search', county=c) }}">{{ c }} County</a></li>{% endfor %}
       </ul>
+      </div>
     </div>
   </div>
 </section>

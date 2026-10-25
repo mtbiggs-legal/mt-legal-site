@@ -418,6 +418,57 @@
     });
   }, true);
   </script>
+  <script>
+  // Phones only: always-open blocks ([data-mobile-collapse]) fold down to their
+  // heading and open on tap, one at a time, so long pages stay short. Wider
+  // screens keep them permanently open.
+  (function () {
+    var blocks = Array.prototype.slice.call(document.querySelectorAll("[data-mobile-collapse]"));
+    if (!blocks.length) return;
+    var phone = window.matchMedia("(max-width: 700px)");
+    function head(b) { return b.querySelector(".ed-layer-head, .ed-panel-head"); }
+    function setOpen(b, open) {
+      b.classList.toggle("is-collapsed", !open);
+      var h = head(b);
+      if (h) h.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+    function apply() {
+      blocks.forEach(function (b) {
+        var h = head(b);
+        if (!h) return;
+        if (phone.matches) {
+          b.classList.add("is-collapsible");
+          h.setAttribute("role", "button");
+          h.setAttribute("tabindex", "0");
+          setOpen(b, false);
+        } else {
+          b.classList.remove("is-collapsible", "is-collapsed");
+          h.removeAttribute("role"); h.removeAttribute("tabindex"); h.removeAttribute("aria-expanded");
+        }
+      });
+    }
+    function toggle(b) {
+      if (!b.classList.contains("is-collapsible")) return;
+      var opening = b.classList.contains("is-collapsed");
+      if (opening) {
+        blocks.forEach(function (o) {
+          if (o !== b && o.parentElement === b.parentElement && o.classList.contains("is-collapsible")) setOpen(o, false);
+        });
+      }
+      setOpen(b, opening);
+    }
+    blocks.forEach(function (b) {
+      var h = head(b);
+      if (!h) return;
+      h.addEventListener("click", function () { toggle(b); });
+      h.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(b); }
+      });
+    });
+    apply();
+    if (phone.addEventListener) phone.addEventListener("change", apply);
+  })();
+  </script>
   <script src="{{ url_for('static', filename='js/app.js') }}"></script>
   {% block scripts %}{% endblock %}
 
