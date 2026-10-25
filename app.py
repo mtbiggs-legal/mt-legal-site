@@ -59,6 +59,30 @@ def _public_site_only():
         abort(404)
 
 
+# ── Static file caching ──────────────────────────────────────────────────────
+# url_for('static', ...) adds ?v=<file modified time>, so a changed file gets a
+# new URL. Versioned URLs can then be cached for a year; anything requested
+# without a version (e.g. url() references inside CSS) is cached for a day.
+
+@app.url_defaults
+def _version_static_urls(endpoint, values):
+    if endpoint == "static" and "filename" in values and "v" not in values:
+        path = os.path.join(app.static_folder, values["filename"])
+        try:
+            values["v"] = int(os.path.getmtime(path))
+        except OSError:
+            pass
+
+
+@app.after_request
+def _cache_static(resp):
+    if request.endpoint == "static" and resp.status_code in (200, 304):
+        resp.headers["Cache-Control"] = (
+            "public, max-age=31536000, immutable" if request.args.get("v")
+            else "public, max-age=86400")
+    return resp
+
+
 @app.route("/healthz")
 def healthz():
     """Uptime check for the hosting platform. Also reports which deployment

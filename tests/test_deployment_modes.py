@@ -57,3 +57,11 @@ def test_intake_email_omits_portal_login_when_public_only(monkeypatch):
     body = " ".join(str(v) for v in sent.values())
     assert sent, "email was not sent"
     assert "TempPass123!" not in body and "client-login" not in body
+
+
+def test_versioned_static_files_are_cached_for_a_year(client):
+    html = client.get("/").get_data(as_text=True)
+    assert "/static/images/hero-home.webp?v=" in html
+    resp = client.get("/static/css/style.css?v=1")
+    assert "immutable" in resp.headers["Cache-Control"]
+    assert "max-age=86400" in client.get("/static/css/style.css").headers["Cache-Control"]

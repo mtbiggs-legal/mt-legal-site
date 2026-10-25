@@ -56,6 +56,9 @@
     "knowsAbout": ["Artificial intelligence law", "Blockchain and DeFi law", "Stablecoins and digital payments", "Crypto tax", "Real estate tokenization", "Estate planning", "Digital asset planning", "Criminal defense", "Civil litigation", "Family law", "Personal injury"]
   }
   </script>
+  <!-- Fonts are needed for the first paint; fetch them alongside the CSS. -->
+  <link rel="preload" href="/static/fonts/fraunces-var.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/static/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin />
   <!-- tokens.css must load first: style.css consumes its custom properties -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />

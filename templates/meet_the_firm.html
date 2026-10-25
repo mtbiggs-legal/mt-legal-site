@@ -176,8 +176,14 @@
 <div class="mp-profile">
 
   <aside class="mp-portrait">
-    <img src="{{ url_for('static', filename='images/' + partner_photo) }}"
-         alt="{{ partner.display }}, {{ partner.title }} of {{ firm_name }}" />
+    <picture>
+      {% if partner_photo.endswith('.jpg') %}
+      <source type="image/webp" srcset="{{ url_for('static', filename='images/' + partner_photo[:-4] + '.webp') }}" />
+      {% endif %}
+      <img src="{{ url_for('static', filename='images/' + partner_photo) }}" fetchpriority="high"
+           width="760" height="1141"
+           alt="{{ partner.display }}, {{ partner.title }} of {{ firm_name }}" />
+    </picture>
     <div class="mp-name">{{ partner.display }}</div>
     <div class="mp-title">{{ partner.title }}</div>
     <ul class="mp-facts">

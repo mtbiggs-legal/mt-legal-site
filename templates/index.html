@@ -2,6 +2,8 @@
 {% block title %}{{ firm_name }} | Nashville AI, Blockchain, Tokenization &amp; Estate Attorney{% endblock %}
 
 {% block styles %}
+<link rel="preload" as="image" type="image/webp" fetchpriority="high"
+      href="{{ url_for('static', filename='images/hero-home.webp') }}" />
 <style>
 /* Homepage sections run edge to edge; the shell's inner padding would fight them. */
 .main-content { max-width: 100%; padding: 0; }
@@ -13,7 +15,9 @@
      boxes below rise up over its bottom edge (see .ed-hero--layered) ──────── -->
 <section class="ed-hero ed-hero--home ed-hero--layered">
   <div class="ed-hero-photo photo-treated" aria-hidden="true"
-       style="background-image:url('/static/images/hero-home.jpg')"></div>
+       style="background-image:url('{{ url_for('static', filename='images/hero-home.jpg') }}');
+              background-image:image-set(url('{{ url_for('static', filename='images/hero-home.webp') }}') type('image/webp'),
+                                         url('{{ url_for('static', filename='images/hero-home.jpg') }}') type('image/jpeg'))"></div>
   <div class="ed-hero-shade" aria-hidden="true"></div>
   <div class="ed-hero-text">
     <h1>Counsel for<br><em>what comes next.</em></h1>
@@ -41,7 +45,9 @@
 <!-- ── Divider between the practice areas and the boxes below ──────────────── -->
 <section class="ed-quote ed-quote--divider">
   <div class="ed-quote-photo photo-treated"
-       style="background-image:url('/static/images/quote-justice.jpg')"></div>
+       style="background-image:url('{{ url_for('static', filename='images/quote-justice.jpg') }}');
+              background-image:image-set(url('{{ url_for('static', filename='images/quote-justice.webp') }}') type('image/webp'),
+                                         url('{{ url_for('static', filename='images/quote-justice.jpg') }}') type('image/jpeg'))"></div>
   <div class="ed-quote-body">
     <div class="ed-quote-rule"></div>
     <blockquote>A person&rsquo;s worth cannot be measured by their wealth, and neither should
