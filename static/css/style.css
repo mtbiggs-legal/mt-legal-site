@@ -2635,3 +2635,22 @@ a.ed-layer--link:hover { background: var(--bg); border-top-color: var(--accent);
   .ed-grid--checker4 > .ed-cell:nth-child(n) { background: var(--paper); }
   .ed-grid--checker4 > .ed-cell:nth-child(even) { background: var(--tint); }
 }
+
+/* ── Phones: an opened box reads as heading-on-dark, content-on-light ─────────
+   Whether it's a stacked layer or an expandable card, the heading sits on the
+   darker tone and the content beneath it on the lighter one, so it's clear
+   which heading the text belongs to. */
+@media (max-width: 700px) {
+  .ed-layer.is-collapsible:not(.is-collapsed) { background: var(--paper); }
+  .ed-layer.is-collapsible:not(.is-collapsed) > .ed-layer-head {
+    background: var(--tint);
+    margin: -1.6rem -1.4rem 0;
+    padding: 1.6rem 3.65rem 1.25rem 1.4rem;
+    border-bottom: 1px solid #D3CDBF;
+  }
+  .ed-layer.is-collapsible:not(.is-collapsed) > .ed-layer-head::after { top: 1.7rem; right: 1.4rem; }
+  .ed-layer.is-collapsible:not(.is-collapsed) > .ed-layer-body { padding-top: .25rem; }
+
+  .ed-boxes > .ed-box[open]:nth-child(n) { background: var(--paper); }
+  .ed-boxes > .ed-box[open] > summary { background: var(--tint); border-bottom-color: #D3CDBF; }
+}
