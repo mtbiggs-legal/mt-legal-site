@@ -46,8 +46,9 @@
   .mp-bio-scroll {
     position: absolute;
     top: 0; left: 0; right: 0;
-    /* No taller than the portrait column, nor than the screen under the banner. */
-    height: min(100%, calc(100vh - 7rem));
+    /* Halfway between the screen's height under the banner and the full photo
+       column, so the gap beneath the bio is half what it would otherwise be. */
+    height: min(100%, calc((100% + 100vh - 7rem) / 2));
     overflow-y: auto;
     overscroll-behavior: auto;
     scrollbar-width: none;
@@ -150,6 +151,44 @@
   /* Bio in three parts. On phones each part shows a short preview (its heading
      and the start of its first paragraph) with a Read more toggle; on wider
      screens the parts are just consecutive paragraphs and the button is hidden. */
+  /* Detail boxes: on wider screens an opened box stays put and its content
+     balloons out beside it (to the right, or to the left near the edge) as a
+     floating panel, while a shade dims the rest of the page. */
+  .ed-pop-shade {
+    position: fixed; inset: 0; z-index: 90;
+    background: rgba(20, 24, 31, .46);
+    opacity: 0; pointer-events: none;
+    transition: opacity .2s ease;
+  }
+  .ed-pop-shade.is-on { opacity: 1; pointer-events: auto; }
+  @media (min-width: 701px) {
+    .ed-boxes--pop { position: relative; }
+    .ed-boxes--pop > .ed-box { position: relative; }
+    .ed-boxes--pop > .ed-box[open] { flex-basis: 230px; z-index: 95; }
+    .ed-boxes--pop > .ed-box[open] > summary {
+      background: var(--tint);
+      box-shadow: 0 18px 40px rgba(20, 24, 31, .28);
+    }
+    .ed-boxes--pop > .ed-box[open] > .ed-box-body {
+      position: absolute;
+      top: 0;
+      left: 100%;
+      width: min(560px, calc(100vw - 6rem));
+      background: var(--paper);
+      border: 1px solid #D3CDBF;
+      border-top: 3px solid var(--ink);
+      box-shadow: 0 28px 60px rgba(20, 24, 31, .34), 0 8px 18px rgba(20, 24, 31, .16);
+      animation: ed-pop-in .2s ease-out;
+    }
+    .ed-boxes--pop > .ed-box[open].pops-left > .ed-box-body { left: auto; right: 100%; }
+    .ed-boxes--pop > .ed-box[open] .ed-points { grid-template-columns: 1fr; }
+  }
+  @keyframes ed-pop-in { from { opacity: 0; transform: translateX(-8px) scale(.98); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .ed-boxes--pop > .ed-box[open] > .ed-box-body { animation: none; }
+    .ed-pop-shade { transition: none; }
+  }
+
   .mp-read-more { display: none; }
   @media (max-width: 700px) {
     .mp-bio-part { padding-bottom: 1.4rem; margin-bottom: 1.4rem; border-bottom: 1px solid var(--rule); }
@@ -326,9 +365,9 @@
   </article>
 </div>
 
-<!-- ── Details: expandable boxes ───────────────────────────────────────────── -->
+<!-- ── Details: boxes that pop out over the others ────────────────────────── -->
 <section class="ed-section ed-section--tight" style="padding-top:0">
-  <div class="ed-boxes">
+  <div class="ed-boxes ed-boxes--pop">
     <details class="ed-box">
       <summary>
         <span class="ed-box-label">Career</span>
@@ -428,6 +467,35 @@
   <span class="btn ed-cta-btn">Start your intake</span>
 </a>
 
+<div class="ed-pop-shade" aria-hidden="true"></div>
+<script>
+// Wider screens: detail boxes pop out over the others with the page shaded.
+(function () {
+  var group = document.querySelector(".ed-boxes--pop");
+  var shade = document.querySelector(".ed-pop-shade");
+  if (!group || !shade) return;
+  var wide = window.matchMedia("(min-width: 701px)");
+  var boxes = Array.prototype.slice.call(group.querySelectorAll(":scope > details"));
+  function place(box) {
+    box.classList.remove("pops-left");
+    var body = box.querySelector(".ed-box-body");
+    if (!body) return;
+    var right = box.getBoundingClientRect().right + body.offsetWidth;
+    if (right > document.documentElement.clientWidth - 16) box.classList.add("pops-left");
+  }
+  function sync() {
+    var open = boxes.filter(function (b) { return b.open; })[0];
+    if (open && wide.matches) place(open);
+    shade.classList.toggle("is-on", !!open && wide.matches);
+  }
+  boxes.forEach(function (b) { b.addEventListener("toggle", sync); });
+  shade.addEventListener("click", function () { boxes.forEach(function (b) { b.open = false; }); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") boxes.forEach(function (b) { b.open = false; });
+  });
+  window.addEventListener("resize", sync);
+})();
+</script>
 <script>
 // Phones: Read more / Show less for each part of the bio.
 document.querySelectorAll(".mp-read-more").forEach(function (btn) {

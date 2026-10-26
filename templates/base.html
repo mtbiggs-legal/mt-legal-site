@@ -423,6 +423,18 @@
     box.addEventListener("scroll", check, { passive: true });
     window.addEventListener("resize", check);
     check();
+
+    // On first hover, slide the content up a little and back so it's obvious
+    // the block scrolls. Skipped once the reader has scrolled it themselves, or
+    // when they've asked for reduced motion.
+    var nudged = false;
+    box.addEventListener("mouseenter", function () {
+      if (nudged || box.scrollTop > 0 || box.scrollHeight <= box.clientHeight) return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      nudged = true;
+      box.classList.add("is-nudging");          // CSS slides the content up and back
+      setTimeout(function () { box.classList.remove("is-nudging"); }, 1000);
+    });
   });
   </script>
   <script>
