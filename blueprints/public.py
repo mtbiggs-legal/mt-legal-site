@@ -105,9 +105,15 @@ _MOVED_PRACTICE_AREAS = {
 }
 
 
+# Practice areas no longer offered: their old pages point to the Emerging Tech hub.
+_RETIRED_PRACTICE_AREAS = {"ai-emerging-tech", "defi-digital-assets"}
+
+
 @public_bp.route("/practice/<slug>")
 @require_auth
 def practice_area(slug):
+    if slug in _RETIRED_PRACTICE_AREAS:
+        return redirect(url_for("public.emerging_tech"), 301)
     if slug in _MOVED_PRACTICE_AREAS:
         return redirect(url_for("public.practice_area", slug=_MOVED_PRACTICE_AREAS[slug]), 301)
     area = PRACTICE_AREAS.get(slug)
@@ -116,7 +122,7 @@ def practice_area(slug):
     attorney = {
         "name":  MANAGING_PARTNER["name"],
         "role":  MANAGING_PARTNER["title"],
-        "blurb": "Nashville counsel for AI, blockchain, and tokenization, with courtroom "
+        "blurb": "Nashville counsel for crypto estates, stablecoins, and tokenization, with courtroom "
                  "experience across Middle Tennessee. You work with him directly, start to "
                  "finish — no hand-offs to associates.",
         "photo": partner_photo_filename(),
@@ -223,9 +229,9 @@ def chat_message():
 
     system = (
         f"You are a helpful legal assistant for {FIRM_NAME}, a Nashville, Tennessee law "
-        f"practice led by {MANAGING_PARTNER['display']}. The firm focuses on AI and emerging "
-        "technology law, blockchain and DeFi law, real estate tokenization, and estate and "
-        "future-asset planning, and also handles criminal defense, civil litigation, family "
+        f"practice led by {MANAGING_PARTNER['display']}. The firm focuses on crypto estate "
+        "and future-asset planning, stablecoins and agentic payments, and real-world asset "
+        "tokenization, and also handles criminal defense, civil litigation, family "
         "law, and personal injury across Nashville and Middle Tennessee. A core belief of the firm is that criminal defense and "
         "decentralization share one idea: protecting the individual, their privacy, and their "
         "fundamental rights from overreaching power. You help answer "

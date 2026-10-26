@@ -18,58 +18,6 @@ shown in the expandable homepage cards and on the practice page.
 """
 
 PRACTICE_AREAS = {
-    "ai-emerging-tech": {
-        "name":       "AI & Emerging Technology",
-        "tagline":    "Legal strategy for businesses and creators building with or deploying "
-                      "artificial intelligence: contracts, IP, privacy, liability, and compliance.",
-        "case_types": ["AI / Technology Law"],
-        "helps": [
-            "Negotiates AI vendor and licensing contracts so you keep rights to your data and outputs, and the vendor carries its share of the risk.",
-            "Protects your work and identity, including voice and likeness rights under Tennessee's ELVIS Act.",
-            "Writes AI use policies that keep confidential and customer data out of public AI tools.",
-            "Represents you when a regulator, customer, or competitor challenges how your AI is built or used.",
-        ],
-        "overview":   "AI law is being written in real time: state statutes, federal agency "
-                      "guidance, the EU AI Act for companies with European users, and a wave of "
-                      "copyright and privacy litigation. Nashville sits at the center of one of "
-                      "the first fights: Tennessee's ELVIS Act protects artists' voices from AI "
-                      "cloning. We help companies, creators, and founders adopt AI without "
-                      "inheriting its liability.",
-        "focus": [
-            "AI vendor, licensing, and SaaS contracts: data rights, indemnities, and output ownership",
-            "Copyright and IP in AI-generated works and training data",
-            "Voice and likeness rights under Tennessee's ELVIS Act, vital for Nashville's music industry",
-            "Privacy and data protection under the Tennessee Information Protection Act",
-            "AI use policies, governance programs, and risk assessments",
-            "Liability for automated decisions in consumer protection, hiring, and discrimination",
-            "AI agents and smart contracts that transact on-chain",
-        ],
-        "process": [
-            {"title": "AI inventory",
-             "detail": "Which tools you build, buy, or let employees use, and what data flows "
-                       "into them."},
-            {"title": "Risk map",
-             "detail": "IP, privacy, contract, and regulatory exposure, ranked by what matters "
-                       "most to your business."},
-            {"title": "Contracts and policies",
-             "detail": "Vendor terms renegotiated, customer terms updated, and an internal AI "
-                       "policy employees can follow."},
-            {"title": "Ongoing counsel",
-             "detail": "Updates as new laws take effect and new tools are adopted."},
-        ],
-        "faqs": [
-            {"q": "Who owns content my AI tool creates?",
-             "a": "The U.S. Copyright Office requires human authorship, so purely AI-generated "
-                  "material may not be protected. Between you and your vendor, the contract "
-                  "decides, which is why the terms matter."},
-            {"q": "What is the ELVIS Act?",
-             "a": "A 2024 Tennessee law that adds a person's voice to the right of publicity "
-                  "and creates liability for unauthorized AI voice and likeness cloning."},
-            {"q": "Does my business need an AI policy?",
-             "a": "If employees use generative AI with customer, client, or confidential data, "
-                  "yes. A clear policy prevents the most common and costly mistakes."},
-        ],
-    },
     "criminal-defense": {
         "name":       "Criminal Defense",
         "tagline":    "DUI, drug, assault, theft, and felony defense in Davidson, Rutherford, "
@@ -164,108 +112,16 @@ PRACTICE_AREAS = {
                   "comes first, and the two need to be handled together."},
         ],
     },
-    "defi-digital-assets": {
-        "name":       "DeFi & Digital Assets",
-        "tagline":    "Token offerings, DAO and protocol entity structuring, and regulatory "
-                      "posture for crypto-native businesses in Tennessee and beyond.",
-        "case_types": ["DeFi / Crypto Law", "Crypto LLC Formation"],
-        "helps": [
-            'Puts a written securities analysis in place before you sell a single token. It is your best defense in an SEC or state inquiry.',
-            "Chooses and forms the right entity so founders and DAO members aren't personally liable.",
-            'Drafts token terms, governance documents, and disclosures that investors and exchanges expect.',
-            'Represents you in regulatory inquiries, exchange disputes, and efforts to recover lost or stolen assets.',
-            "Untangles crypto tax problems, from staking and yield income to missing cost basis, alongside your CPA.",
-        ],
-        "overview":   "Blockchain projects fail legally in predictable ways: an unregistered "
-                      "securities offering, a DAO that turns out to be a general partnership "
-                      "with unlimited liability, or a protocol that is accidentally a money "
-                      "transmitter. We help founders, investors, and Nashville businesses choose "
-                      "a structure on purpose and document it so it holds up.",
-        "focus": [
-            "Securities analysis under the Howey test, Reg D, Reg A+, Reg S, Reg CF",
-            "Token standards and smart contract legal exposure",
-            "DAO entity structuring (Wyoming DAO LLC, Cayman Foundation, and others)",
-            "SEC, CFTC, FinCEN, and IRS regulatory posture",
-            "Tennessee Securities Act notice filings and money-transmitter analysis",
-            "Real-world-asset (RWA) tokenization, including real estate",
-            "Yield from staking, lending, and liquidity pools: securities and tax treatment",
-            "Crypto tax issues: cost basis, Form 1099-DA reporting, and IRS notices",
-        ],
-        "structures": [
-            {"name": "Tennessee Decentralized Organization LLC",
-             "summary": "Tennessee's DAO statute (T.C.A. Title 48, Chapter 250) lets an LLC be "
-                        "governed by its members or by smart contract, with liability "
-                        "protection for members.",
-             "fits": "Tennessee-based DAOs and protocols that want a home-state entity."},
-            {"name": "Wyoming DAO LLC / DUNA",
-             "summary": "The longest-running US DAO frameworks. The DUNA (Decentralized "
-                        "Unincorporated Nonprofit Association) suits large token-governed "
-                        "communities without a central operator.",
-             "fits": "Governance DAOs with many widely distributed token holders."},
-            {"name": "Cayman Islands Foundation Company",
-             "summary": "An ownerless foundation with directors and a supervisor; a common "
-                        "wrapper for protocol treasuries and token issuers outside the US.",
-             "fits": "Protocols with global users and a non-US token launch."},
-            {"name": "Operating LLC + Token SPV",
-             "summary": "A conventional development company paired with a separate special-"
-                        "purpose vehicle that holds tokens, treasury, or IP, isolating liability.",
-             "fits": "Venture-backed teams that need clean cap tables for investors."},
-            {"name": "SAFE + Token Warrant / SAFT",
-             "summary": "Early-stage financing that gives investors equity, future tokens, or "
-                        "both, usually sold under Reg D to accredited investors.",
-             "fits": "Pre-launch fundraising."},
-            {"name": "Series LLC for pools and vaults",
-             "summary": "Tennessee permits series LLCs (T.C.A. § 48-249-309), letting each pool, "
-                        "vault, or asset sit in its own liability-segregated series.",
-             "fits": "Funds, vault strategies, and multi-asset tokenization programs."},
-        ],
-        "process": [
-            {"title": "Discovery call",
-             "detail": "What the token does, who buys it, and where the team and users are."},
-            {"title": "Regulatory map",
-             "detail": "Securities, commodities, money transmission, sanctions, and tax "
-                       "exposure, delivered as a written memo."},
-            {"title": "Entity and documents",
-             "detail": "Formation, operating agreement or charter, token terms, and governance "
-                       "framework."},
-            {"title": "Launch and ongoing compliance",
-             "detail": "Form D and state notice filings, disclosures, and updates as the rules "
-                       "change."},
-        ],
-        "faqs": [
-            {"q": "Is my token a security?",
-             "a": "Possibly. Under the Howey test the answer turns on how it is sold, what "
-                  "buyers expect, and how decentralized the project really is. We analyze it "
-                  "in writing before you sell."},
-            {"q": "Do I need a DAO LLC?",
-             "a": "A DAO with no legal wrapper risks being treated as a general partnership, "
-                  "with members personally liable. A wrapper is usually worth it."},
-            {"q": "How is staking or DeFi yield taxed?",
-             "a": "The IRS treats staking rewards as ordinary income when you gain control of "
-                  "them (Rev. Rul. 2023-14), and a later sale produces capital gain or loss. "
-                  "Lending and liquidity-pool yield raise harder questions. Tennessee has no "
-                  "state income tax on wages or investment income, but federal tax applies."},
-            {"q": "What is Form 1099-DA?",
-             "a": "A new IRS form brokers issue for crypto sales starting with 2025 "
-                  "transactions, with cost-basis reporting phasing in after that. Gaps between "
-                  "the form and your own records are a common source of IRS notices."},
-            {"q": "Is a yield or staking program a security?",
-             "a": "It can be. Programs where a platform pools customer assets and pays a "
-                  "return have drawn securities enforcement. Structure and disclosures matter."},
-            {"q": "Do you work with clients outside Tennessee?",
-             "a": "Federal securities and commodities questions aren't limited by state. Where "
-                  "another state's law governs, we coordinate with local counsel."},
-        ],
-    },
     "stablecoins": {
-        "name":       "Stablecoins & Digital Payments",
+        "name":       "Stablecoins & Agentic Payments",
         "tagline":    "Issue, accept, or build on stablecoins under the new federal framework, "
-                      "and use them to grow: faster payments, lower fees, and global reach.",
-        "case_types": ["Stablecoins / Digital Payments"],
+                      "and set the rules for AI agents that pay and get paid on your behalf.",
+        "case_types": ["Stablecoins / Agentic Payments"],
         "helps": [
             "Maps where your business fits under the GENIUS Act and Tennessee money-transmitter rules before you launch.",
             "Drafts merchant, wallet, and platform terms so customers, partners, and processors know who carries the risk.",
             "Sets up treasury and accounting policies for holding stablecoins, including reserves, custody, and tax treatment.",
+            "Sets the mandates, spending limits, and liability terms for AI agents that send or receive money for you.",
             "Represents you with banks, payment partners, and regulators as rules are finalized.",
         ],
         "overview":   "Stablecoins are digital dollars on a blockchain, and they are now one of "
@@ -274,7 +130,10 @@ PRACTICE_AREAS = {
                       "reserve, disclosure, and licensing rules for issuers. For Nashville "
                       "businesses that means a real opportunity: settle payments in minutes "
                       "instead of days, cut card and wire fees, and reach customers abroad. We "
-                      "help you capture that growth on a compliant footing.",
+                      "help you capture that growth on a compliant footing. The next wave is agentic "
+                      "payments: AI agents that buy, sell, and settle on a person's or "
+                      "company's behalf, often over stablecoin rails, raising new questions "
+                      "about authority, liability, and consumer protection.",
         "focus": [
             "GENIUS Act analysis for issuers, wallets, exchanges, and payment platforms",
             "Accepting stablecoin payments: merchant terms, refunds, chargebacks, and disclosures",
@@ -282,6 +141,8 @@ PRACTICE_AREAS = {
             "Tennessee and multi-state money-transmitter licensing questions",
             "AML, KYC, and sanctions compliance for stablecoin flows",
             "Stablecoin yield and rewards programs, and when they raise securities issues",
+            "Agentic payments: authorizing AI agents to transact, spending caps, and audit trails",
+            "Who bears the loss when an AI agent's payment goes wrong, from card and bank error rules to irreversible on-chain transfers",
             "Tax and accounting treatment of stablecoin receipts and payments",
         ],
         "structures": [
@@ -307,6 +168,11 @@ PRACTICE_AREAS = {
              "summary": "Pay international contractors, creators, or suppliers in stablecoins, "
                         "with sanctions screening and local-law review built in.",
              "fits": "Businesses with global teams or royalty payees."},
+            {"name": "Agentic Payment Program",
+             "summary": "Lets an AI agent buy, sell, or pay invoices for you over stablecoin or "
+                        "card rails, with written mandates, spending caps, and logs that make "
+                        "every payment authorized and traceable.",
+             "fits": "Businesses using AI agents for procurement, subscriptions, or checkout."},
             {"name": "Tokenized Settlement for Real Assets",
              "summary": "Use stablecoins as the payment leg for tokenized real estate or other "
                         "digital securities, so delivery and payment settle together.",
@@ -339,6 +205,16 @@ PRACTICE_AREAS = {
              "a": "The GENIUS Act bars issuers of payment stablecoins from paying interest or "
                   "yield to holders. Rewards offered by third parties raise their own "
                   "securities and consumer-protection questions."},
+            {"q": "What are agentic payments?",
+             "a": "Payments started by an AI agent acting for a person or business, like an "
+                  "assistant that books and pays for travel or software that pays per-use fees "
+                  "in stablecoins. The law on who is responsible when an agent overspends or "
+                  "is tricked is still developing, so contracts and controls matter."},
+            {"q": "Who is liable if my AI agent makes a bad payment?",
+             "a": "It depends on how the payment was authorized and which rails it used. Card "
+                  "and bank payments by consumers come with error-resolution rights; stablecoin "
+                  "transfers usually cannot be reversed. Clear mandates, limits, and vendor "
+                  "terms allocate the risk in advance."},
             {"q": "Are stablecoin payments taxable?",
              "a": "The IRS treats digital assets, including stablecoins, as property. Receiving "
                   "them as payment is income, and spending or converting them is a disposition "
@@ -610,7 +486,7 @@ PRACTICE_AREAS = {
 
 # Display order: crypto estate planning and emerging tech first, then litigation.
 _ORDER = [
-    "estate-business", "ai-emerging-tech", "defi-digital-assets", "stablecoins",
+    "estate-business", "stablecoins",
     "rwa-tokenization",
     "criminal-defense", "civil-rights", "family-law", "personal-injury",
 ]
@@ -621,7 +497,7 @@ PRACTICE_AREAS = {slug: PRACTICE_AREAS[slug] for slug in _ORDER}
 # The practice areas the hub links into, and the expandable "what's changing"
 # briefings underneath them.
 EMERGING_TECH_AREAS = [
-    "estate-business", "ai-emerging-tech", "defi-digital-assets", "stablecoins",
+    "estate-business", "stablecoins",
     "rwa-tokenization",
 ]
 
@@ -665,6 +541,11 @@ EMERGING_TECH_TOPICS = [
              "clearer rules, banks, payment companies, and merchants are moving in, making "
              "stablecoins a practical way to settle payments faster and cheaper. Regulators are "
              "still finalizing the details."},
+    {"label": "Payments", "title": "Agentic payments",
+     "teaser": "AI agents that pay and get paid, and who is liable when they slip.",
+     "body": "AI agents are starting to buy, subscribe, and settle invoices on their own, "
+             "often over stablecoin rails. Authority, spending limits, and liability for "
+             "mistaken or manipulated payments are still being worked out."},
     {"label": "Tax", "title": "Crypto yield and taxes",
      "teaser": "Staking rewards, DeFi yield, and the new Form 1099-DA.",
      "body": "Staking rewards are ordinary income when received, and selling crypto later "

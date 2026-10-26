@@ -2621,3 +2621,17 @@ a.ed-layer--link:hover { background: var(--bg); border-top-color: var(--accent);
 
 /* Small "(optional)" marker beside intake fields that aren't required. */
 .field-optional { font-size: .72em; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--faint); margin-left: .25rem; }
+
+/* Homepage practice grid: four across, two-tone checkerboard by row. */
+.ed-grid--checker4 > .ed-cell:nth-child(n) { background: var(--paper); }
+.ed-grid--checker4 > .ed-cell:nth-child(8n+2), .ed-grid--checker4 > .ed-cell:nth-child(8n+4),
+.ed-grid--checker4 > .ed-cell:nth-child(8n+5), .ed-grid--checker4 > .ed-cell:nth-child(8n+7) { background: var(--tint); }
+.ed-grid--checker4 > a.ed-cell:hover { background: var(--bg); }
+@media (max-width: 980px) {
+  .ed-grid--checker4 > .ed-cell:nth-child(n) { background: var(--paper); }
+  .ed-grid--checker4 > .ed-cell:nth-child(4n+2), .ed-grid--checker4 > .ed-cell:nth-child(4n+3) { background: var(--tint); }
+}
+@media (max-width: 620px) {
+  .ed-grid--checker4 > .ed-cell:nth-child(n) { background: var(--paper); }
+  .ed-grid--checker4 > .ed-cell:nth-child(even) { background: var(--tint); }
+}

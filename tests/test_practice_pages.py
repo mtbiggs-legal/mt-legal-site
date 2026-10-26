@@ -92,7 +92,7 @@ def test_footer_practice_links_point_to_practice_pages(client):
     html = client.get("/").get_data(as_text=True)
     assert 'href="/practice/criminal-defense"' in html
     assert 'href="/practice/civil-rights"' in html
-    assert 'href="/practice/defi-digital-assets"' in html
+    assert 'href="/practice/stablecoins"' in html
     assert 'href="/practice/family-law"' in html
 
 
@@ -167,3 +167,14 @@ def test_old_civil_litigation_url_redirects_to_civil_rights(client):
 def test_old_real_estate_tokenization_url_redirects(client):
     resp = client.get("/practice/real-estate-tokenization")
     assert resp.status_code == 301 and resp.headers["Location"].endswith("/practice/rwa-tokenization")
+
+
+@pytest.mark.parametrize("slug", ["ai-emerging-tech", "defi-digital-assets"])
+def test_retired_practice_pages_redirect_to_emerging_tech(client, slug):
+    resp = client.get(f"/practice/{slug}")
+    assert resp.status_code == 301 and resp.headers["Location"].endswith("/emerging-tech")
+
+
+def test_stablecoins_page_covers_agentic_payments(client):
+    html = client.get("/practice/stablecoins").get_data(as_text=True)
+    assert "Stablecoins &amp; Agentic Payments" in html and "What are agentic payments?" in html

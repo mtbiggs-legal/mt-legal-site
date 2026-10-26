@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{{ firm_name }} | Nashville AI, Blockchain, Tokenization &amp; Estate Attorney{% endblock %}
+{% block title %}{{ firm_name }} | Nashville Crypto Estate, Stablecoin &amp; Tokenization Attorney{% endblock %}
 
 {% block styles %}
 <link rel="preload" as="image" type="image/webp" fetchpriority="high"
@@ -23,19 +23,22 @@
     <h1>Counsel for<br><em>what comes next.</em></h1>
     <p class="ed-lede">{{ firm_name }} helps Nashville families, founders, and investors plan for
       crypto, tokenized property, and the assets that come next. Crypto estate and future-asset
-      planning, AI and blockchain law, stablecoins, and real estate tokenization, backed by real courtroom
+      planning, stablecoins and agentic payments, and real-world asset tokenization, backed by real courtroom
       experience in criminal and civil matters across Middle Tennessee.</p>
   </div>
 </section>
 
 <!-- ── Practice areas: each box opens its own page ─────────────────────────── -->
 <section class="ed-section ed-section--tight ed-section--overlap" id="practice">
-  <div class="ed-grid ed-grid--titles">
+  <div class="ed-grid ed-grid--titles ed-grid--four ed-grid--checker4">
     {% for slug, area in areas.items() %}
     <a href="{{ url_for('public.practice_area', slug=slug) }}" class="ed-cell">
       <h3>{{ area.name }}</h3>
     </a>
     {% endfor %}
+    <a href="{{ url_for('intake.intake') }}" class="ed-cell">
+      <h3>Not sure where your matter fits?</h3>
+    </a>
   </div>
 </section>
 {% endblock %}
@@ -74,7 +77,7 @@
     <a href="{{ url_for('public.emerging_tech') }}" class="ed-box">
       <span class="ed-box-label">Practice focus</span>
       <h3>Emerging Tech</h3>
-      <p>AI, blockchain, stablecoins, tokenization, and planning for the assets that come next.</p>
+      <p>Stablecoins, agentic payments, tokenization, and planning for the assets that come next.</p>
     </a>
     <a href="{{ url_for('public.case_search') }}" class="ed-box">
       <span class="ed-box-label">Court records</span>

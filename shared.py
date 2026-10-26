@@ -119,7 +119,7 @@ CASE_ATTORNEY_MAP = {
     "Real World Assets Tokenization": "Endocide",
     "AI / Technology Law":        "Endocide",
     "Civil Rights":               "Endocide",
-    "Stablecoins / Digital Payments": "Endocide",
+    "Stablecoins / Agentic Payments": "Endocide",
     "Estate Planning":            "Endocide",
     "Other":                      "Endocide",
 }
