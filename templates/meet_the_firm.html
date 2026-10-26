@@ -147,6 +147,40 @@
   }
   .law-quote-cite { font-size: .78rem; letter-spacing: .1em; color: rgba(247,245,240,.72); }
 
+  /* Bio in three parts. On phones each part shows a short preview (its heading
+     and the start of its first paragraph) with a Read more toggle; on wider
+     screens the parts are just consecutive paragraphs and the button is hidden. */
+  .mp-read-more { display: none; }
+  @media (max-width: 700px) {
+    .mp-bio-part { padding-bottom: 1.4rem; margin-bottom: 1.4rem; border-bottom: 1px solid var(--rule); }
+    .mp-bio-part:last-child { border-bottom: 0; }
+    .mp-bio-part h2 { margin-top: 0; }
+    .mp-bio-part:not(.is-open) > p ~ p { display: none; }
+    .mp-bio-part:not(.is-open) > p:first-of-type {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 4;
+      overflow: hidden;
+      margin-bottom: .6rem;
+    }
+    .mp-read-more {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      background: none;
+      border: 0;
+      padding: .25rem 0;
+      font-family: var(--font-sans);
+      font-size: .82rem;
+      font-weight: 500;
+      letter-spacing: .04em;
+      color: var(--accent);
+      cursor: pointer;
+    }
+    .mp-read-more::after { content: "+"; font-size: 1.05rem; line-height: 1; }
+    .mp-bio-part.is-open .mp-read-more::after { content: "\2212"; }
+  }
+
   @media (max-width: 900px) {
     .firm-intro { padding: 3rem 1.5rem 2rem; }
     .mp-profile { grid-template-columns: 1fr; padding: 0 1.5rem 3rem; gap: 2rem; }
@@ -212,6 +246,7 @@
 
   <article class="mp-bio">
     <div class="mp-bio-scroll" tabindex="0" aria-label="Biography">
+    <section class="mp-bio-part">
     <p class="mp-lead">{{ partner.name }} is a litigator who builds structures for freedom. As
       an attorney with the Public Defender&rsquo;s Office of Metropolitan Nashville &amp;
       Davidson County, he stood between individuals and the full weight of the state. He founded
@@ -240,7 +275,10 @@
       Nashville Bar Foundation Leadership Law Class of 2025 and the Tennessee Bar Association
       Leadership Law Class of 2026, and as a member of the Napier-Looby Bar Association, where
       he served on the Judicial and Legislative Committee in 2024.</p>
+    <button type="button" class="mp-read-more" aria-expanded="false">Read more</button>
+    </section>
 
+    <section class="mp-bio-part">
     <h2>AI, blockchain &amp; tokenization</h2>
     <p>Madison&rsquo;s blockchain work grows out of time inside the community, not just the
       case law. He is a member of Nashville&rsquo;s local Bitcoin community, has attended the
@@ -268,7 +306,10 @@
       a family planning for assets that didn&rsquo;t exist a decade ago, and a Nashville resident
       facing a charge in General Sessions with the same care and the same direct access to their
       lawyer.</p>
+    <button type="button" class="mp-read-more" aria-expanded="false">Read more</button>
+    </section>
 
+    <section class="mp-bio-part">
     <h2>Why he practices</h2>
     <p>For Madison, criminal defense and decentralization are one and the same. Both start from
       the idea of personhood: that an individual deserves protection from overreaching power,
@@ -279,7 +320,8 @@
       by their wealth.&rdquo; He focuses on representing underserved Nashville residents,
       mentoring law students, and ensuring that access to justice is not determined by
       financial circumstances.</p>
-
+    <button type="button" class="mp-read-more" aria-expanded="false">Read more</button>
+    </section>
     </div>
   </article>
 </div>
@@ -386,6 +428,18 @@
   <span class="btn ed-cta-btn">Start your intake</span>
 </a>
 
+<script>
+// Phones: Read more / Show less for each part of the bio.
+document.querySelectorAll(".mp-read-more").forEach(function (btn) {
+  btn.addEventListener("click", function () {
+    var part = btn.closest(".mp-bio-part");
+    var open = part.classList.toggle("is-open");
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+    btn.textContent = open ? "Show less" : "Read more";
+    if (!open) part.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  });
+});
+</script>
 <script>
 (function () {
   var box = document.querySelector(".mp-bio-scroll");
