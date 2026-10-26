@@ -2654,3 +2654,26 @@ a.ed-layer--link:hover { background: var(--bg); border-top-color: var(--accent);
   .ed-boxes > .ed-box[open]:nth-child(n) { background: var(--paper); }
   .ed-boxes > .ed-box[open] > summary { background: var(--tint); border-bottom-color: #D3CDBF; }
 }
+
+/* ── Phones: the opened box lifts above the page; the others dim back ─────── */
+@media (max-width: 700px) {
+  .ed-layers > .ed-layer,
+  .ed-boxes > .ed-box {
+    position: relative;
+    transition: transform .25s ease, box-shadow .25s ease, filter .25s ease;
+  }
+  .ed-layer.is-collapsible:not(.is-collapsed),
+  .ed-boxes > .ed-box[open] {
+    z-index: 2;
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 22px 44px rgba(20, 24, 31, .26), 0 6px 14px rgba(20, 24, 31, .14);
+  }
+  /* While one box in a group is open, its neighbours fall into shadow. */
+  .ed-layers:has(> .ed-layer.is-collapsible:not(.is-collapsed)) > .ed-layer:not(.is-collapsible:not(.is-collapsed)),
+  .ed-boxes:has(> .ed-box[open]) > .ed-box:not([open]) {
+    filter: brightness(.84) saturate(.85);
+  }
+}
+@media (max-width: 700px) and (prefers-reduced-motion: reduce) {
+  .ed-layers > .ed-layer, .ed-boxes > .ed-box { transition: none; }
+}
