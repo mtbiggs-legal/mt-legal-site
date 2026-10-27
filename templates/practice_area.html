@@ -147,9 +147,8 @@
       <summary>
         <span class="ed-box-label">Structure</span>
         <h3>{{ s.name }}</h3>
-        <p>Best for: {{ s.fits }}</p>
       </summary>
-      <div class="ed-box-body"><p>{{ s.summary }}</p></div>
+      <div class="ed-box-body"><p class="ed-box-intro">Best for: {{ s.fits }}</p><p>{{ s.summary }}</p></div>
     </details>
     {% endfor %}
   </div>

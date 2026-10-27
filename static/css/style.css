@@ -2742,3 +2742,13 @@ a.ed-layer--link:hover { background: var(--bg); border-top-color: var(--accent);
   .ed-boxes--pop > .ed-box[open] > .ed-box-body { animation: none; }
   .ed-pop-shade { transition: none; }
 }
+
+/* Pop-out boxes: the closed box shows only its title; the one-line summary
+   leads the opened panel. */
+.ed-box-body > .ed-box-intro {
+  font-family: Fraunces, Georgia, "Times New Roman", serif;
+  font-size: 1.02rem;
+  line-height: 1.55;
+  color: var(--ink);
+  margin: 0 0 .9rem;
+}
