@@ -68,7 +68,7 @@ MANAGING_PARTNER = {
     "username": "Endocide",
     "name":     "Madison T. Biggs",
     "display":  "Madison T. Biggs, Esq.",
-    "title":    "Founder & Managing Partner",
+    "title":    "Founder & Managing Attorney",
     "role":     "AI · Blockchain · Estate · Litigation",
     "photo":    "managing-partner.jpg",
 }
