@@ -20,8 +20,9 @@ shown in the expandable homepage cards and on the practice page.
 PRACTICE_AREAS = {
     "criminal-defense": {
         "name":       "Criminal Defense",
-        "tagline":    "DUI, drug, assault, theft, and felony defense in Davidson, Rutherford, "
-                      "and surrounding county courts, from someone who knows how they work.",
+        "tagline":    "Standing between you and the full weight of the state: DUI, drug, "
+                      "assault, theft, and felony defense in Davidson, Rutherford, and "
+                      "surrounding county courts.",
         "case_types": ["Criminal Defense"],
         "helps": [
             'Protects your rights from the first police contact. No statements, searches, or interviews without counsel.',
@@ -222,7 +223,7 @@ PRACTICE_AREAS = {
         ],
     },
     "rwa-tokenization": {
-        "name":       "Real World Assets Tokenization",
+        "name":       "Real World Assets & Tokenization",
         "tagline":    "Turn real-world assets, from Nashville real estate to loans and revenue "
                       "streams, into compliant digital securities: fractional ownership, "
                       "investor onboarding, and secondary transfers.",
@@ -329,7 +330,7 @@ PRACTICE_AREAS = {
         ],
     },
     "family-law": {
-        "name":       "Family & Estate Planning",
+        "name":       "Estate & Family Planning",
         "tagline":    "Divorce, custody, and parenting plans, plus the wills, trusts, and "
                       "guardianships that protect your family for the long run.",
         "case_types": ["Family Law — Divorce", "Family Law — Child Custody",
@@ -394,7 +395,7 @@ PRACTICE_AREAS = {
         ],
     },
     "estate-business": {
-        "name":       "Crypto Estate & Future Asset Planning",
+        "name":       "Digital Asset Estate & Future Planning",
         "tagline":    "Wills, trusts, and key-access plans for crypto, tokenized property, "
                       "digital IP, and royalties: the assets you own today and the ones "
                       "you'll own next.",
@@ -484,11 +485,10 @@ PRACTICE_AREAS = {
 }
 
 
-# Display order: crypto estate planning and emerging tech first, then litigation.
+# Display order: the defense and litigation practice first, then digital assets.
 _ORDER = [
-    "estate-business", "stablecoins",
-    "rwa-tokenization",
     "criminal-defense", "civil-rights", "family-law", "personal-injury",
+    "estate-business", "stablecoins", "rwa-tokenization",
 ]
 PRACTICE_AREAS = {slug: PRACTICE_AREAS[slug] for slug in _ORDER}
 

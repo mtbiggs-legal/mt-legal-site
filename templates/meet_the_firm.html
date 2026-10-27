@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Meet {{ partner.name }} | Nashville Crypto Estate &amp; Tokenization Attorney | {{ firm_name }}{% endblock %}
+{% block title %}Meet {{ partner.name }} | Nashville Criminal Defense &amp; Digital Asset Attorney | {{ firm_name }}{% endblock %}
 {% block meta_description %}{{ partner.display }}, founder and managing partner of {{ firm_name }}: Belmont Law graduate, Fisk University adjunct professor of Business Law, and Nashville counsel for AI, blockchain, stablecoins, real estate tokenization, estate and future-asset planning, and criminal and civil representation.{% endblock %}
 
 {% block styles %}
@@ -151,50 +151,6 @@
   /* Bio in three parts. On phones each part shows a short preview (its heading
      and the start of its first paragraph) with a Read more toggle; on wider
      screens the parts are just consecutive paragraphs and the button is hidden. */
-  /* Detail boxes: on wider screens an opened box stays put and its content
-     balloons out beside it (to the right, or to the left near the edge) as a
-     floating panel, while a shade dims the rest of the page. */
-  .ed-pop-shade {
-    position: fixed; inset: 0; z-index: 90;
-    background: rgba(20, 24, 31, .46);
-    opacity: 0; pointer-events: none;
-    transition: opacity .2s ease;
-  }
-  .ed-pop-shade.is-on { opacity: 1; pointer-events: auto; }
-  @media (min-width: 701px) {
-    .ed-boxes--pop { position: relative; }
-    .ed-boxes--pop > .ed-box { position: relative; }
-    .ed-boxes--pop > .ed-box[open] { flex-basis: 230px; z-index: 95; }
-    .ed-boxes--pop > .ed-box[open] > summary {
-      background: var(--tint);
-      box-shadow: 0 18px 40px rgba(20, 24, 31, .28);
-    }
-    .ed-boxes--pop > .ed-box[open] > .ed-box-body {
-      position: absolute;
-      top: 0;
-      left: 100%;
-      width: min(560px, calc(100vw - 6rem));
-      background: var(--paper);
-      border: 1px solid #D3CDBF;
-      border-top: 3px solid var(--ink);
-      box-shadow: 0 28px 60px rgba(20, 24, 31, .34), 0 8px 18px rgba(20, 24, 31, .16);
-      animation: ed-pop-in .2s ease-out;
-    }
-    .ed-boxes--pop > .ed-box[open].pops-left > .ed-box-body { left: auto; right: 100%; }
-    /* No room on either side (e.g. a box stretched across the row): drop the
-       panel just below the heading, centred on the box. */
-    .ed-boxes--pop > .ed-box[open].pops-center > .ed-box-body {
-      top: 100%;
-      left: calc(50% - min(280px, (100vw - 6rem) / 2));
-    }
-    .ed-boxes--pop > .ed-box[open] .ed-points { grid-template-columns: 1fr; }
-  }
-  @keyframes ed-pop-in { from { opacity: 0; transform: translateX(-8px) scale(.98); } to { opacity: 1; transform: none; } }
-  @media (prefers-reduced-motion: reduce) {
-    .ed-boxes--pop > .ed-box[open] > .ed-box-body { animation: none; }
-    .ed-pop-shade { transition: none; }
-  }
-
   .mp-read-more { display: none; }
   @media (max-width: 700px) {
     .mp-bio-part { padding-bottom: 1.4rem; margin-bottom: 1.4rem; border-bottom: 1px solid var(--rule); }
@@ -473,40 +429,6 @@
   <span class="btn ed-cta-btn">Start your intake</span>
 </a>
 
-<div class="ed-pop-shade" aria-hidden="true"></div>
-<script>
-// Wider screens: detail boxes pop out over the others with the page shaded.
-(function () {
-  var group = document.querySelector(".ed-boxes--pop");
-  var shade = document.querySelector(".ed-pop-shade");
-  if (!group || !shade) return;
-  var wide = window.matchMedia("(min-width: 701px)");
-  var boxes = Array.prototype.slice.call(group.querySelectorAll(":scope > details"));
-  // Open beside the box (right, else left); if neither side has room, centre it.
-  function place(box) {
-    box.classList.remove("pops-left", "pops-center");
-    var body = box.querySelector(".ed-box-body");
-    if (!body) return;
-    var r = box.getBoundingClientRect();
-    var w = body.offsetWidth + 16;
-    var vw = document.documentElement.clientWidth;
-    if (r.right + w <= vw) return;
-    if (r.left - w >= 0) box.classList.add("pops-left");
-    else box.classList.add("pops-center");
-  }
-  function sync() {
-    var open = boxes.filter(function (b) { return b.open; })[0];
-    if (open && wide.matches) place(open);
-    shade.classList.toggle("is-on", !!open && wide.matches);
-  }
-  boxes.forEach(function (b) { b.addEventListener("toggle", sync); });
-  shade.addEventListener("click", function () { boxes.forEach(function (b) { b.open = false; }); });
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape") boxes.forEach(function (b) { b.open = false; });
-  });
-  window.addEventListener("resize", sync);
-})();
-</script>
 <script>
 // Phones: Read more / Show less for each part of the bio.
 document.querySelectorAll(".mp-read-more").forEach(function (btn) {

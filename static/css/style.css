@@ -2697,3 +2697,48 @@ a.ed-layer--link:hover { background: var(--bg); border-top-color: var(--accent);
   transition: opacity .2s;
 }
 .ed-scroll.is-end + .ed-scroll-hint { opacity: 0; }
+
+/* ── Pop-out boxes ─────────────────────────────────────────────────────────── */
+/* Pop-out boxes (.ed-boxes--pop): on wider screens an opened box stays put and its content
+   balloons out beside it (to the right, or to the left near the edge) as a
+   floating panel, while a shade dims the rest of the page. */
+.ed-pop-shade {
+  position: fixed; inset: 0; z-index: 90;
+  background: rgba(20, 24, 31, .46);
+  opacity: 0; pointer-events: none;
+  transition: opacity .2s ease;
+}
+.ed-pop-shade.is-on { opacity: 1; pointer-events: auto; }
+@media (min-width: 701px) {
+  .ed-boxes--pop { position: relative; }
+  .ed-boxes--pop > .ed-box { position: relative; }
+  .ed-boxes--pop > .ed-box[open] { flex-basis: 230px; z-index: 95; }
+  .ed-boxes--pop > .ed-box[open] > summary {
+    background: var(--tint);
+    box-shadow: 0 18px 40px rgba(20, 24, 31, .28);
+  }
+  .ed-boxes--pop > .ed-box[open] > .ed-box-body {
+    position: absolute;
+    top: 0;
+    left: 100%;
+    width: min(560px, calc(100vw - 6rem));
+    background: var(--paper);
+    border: 1px solid #D3CDBF;
+    border-top: 3px solid var(--ink);
+    box-shadow: 0 28px 60px rgba(20, 24, 31, .34), 0 8px 18px rgba(20, 24, 31, .16);
+    animation: ed-pop-in .2s ease-out;
+  }
+  .ed-boxes--pop > .ed-box[open].pops-left > .ed-box-body { left: auto; right: 100%; }
+  /* No room on either side (e.g. a box stretched across the row): drop the
+     panel just below the heading, centred on the box. */
+  .ed-boxes--pop > .ed-box[open].pops-center > .ed-box-body {
+    top: 100%;
+    left: calc(50% - min(280px, (100vw - 6rem) / 2));
+  }
+  .ed-boxes--pop > .ed-box[open] .ed-points { grid-template-columns: 1fr; }
+}
+@keyframes ed-pop-in { from { opacity: 0; transform: translateX(-8px) scale(.98); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .ed-boxes--pop > .ed-box[open] > .ed-box-body { animation: none; }
+  .ed-pop-shade { transition: none; }
+}

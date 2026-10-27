@@ -37,8 +37,8 @@
     window.fetch = window.apiFetch;
   })();
   </script>
-  <title>{% block title %}{{ firm_name }} | Nashville Crypto Estate, Stablecoin &amp; Tokenization Attorney{% endblock %}</title>
-  <meta name="description" content="{% block meta_description %}{{ firm_name }} is a Nashville law practice for crypto estate and future-asset planning, stablecoins and agentic payments, real-world asset tokenization, plus criminal defense and civil representation across Middle Tennessee. Free consultation.{% endblock %}" />
+  <title>{% block title %}{{ firm_name }} | Nashville Criminal Defense &amp; Digital Asset Attorney{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}{{ firm_name }} is a Nashville criminal defense firm first, and DeFi-native counsel for digital assets. Criminal defense, civil rights litigation, estate and family planning, and personal injury across Middle Tennessee, plus digital asset estate planning, stablecoins and agentic payments, and real-world asset tokenization. Free consultation.{% endblock %}" />
   <link rel="canonical" href="{{ request.base_url }}" />
   <!-- Link previews (texts, iMessage, WhatsApp, LinkedIn, Facebook, Slack) -->
   {% set og_image = url_for('static', filename='images/og-image.jpg', _external=True) %}
@@ -73,7 +73,7 @@
     "founder": {"@type": "Person", "name": {{ partner.display | tojson }}, "jobTitle": {{ partner.title | tojson }}},
     "address": {"@type": "PostalAddress", "addressLocality": "Nashville", "addressRegion": "TN", "addressCountry": "US"},
     "areaServed": [{% for c in service_counties %}{"@type": "AdministrativeArea", "name": {{ (c ~ " County, Tennessee") | tojson }}}{% if not loop.last %}, {% endif %}{% endfor %}],
-    "knowsAbout": ["Stablecoins and agentic payments", "Crypto tax", "Real-world asset tokenization", "Estate planning", "Digital asset planning", "Criminal defense", "Civil litigation", "Family law", "Personal injury"]
+    "knowsAbout": ["Criminal defense", "Civil rights litigation", "Estate and family planning", "Personal injury", "Digital asset estate planning", "Stablecoins and agentic payments", "Real-world asset tokenization", "Crypto tax"]
   }
   </script>
   <!-- Fonts are needed for the first paint; fetch them alongside the CSS. -->
@@ -336,8 +336,8 @@
     <div class="footer-cols">
       <div class="footer-brand">
         <div class="footer-firm">{{ firm_name }}</div>
-        <p>Crypto estate and future-asset planning, stablecoins and agentic payments,
-           and real-world asset tokenization for Nashville and Middle Tennessee.</p>
+        <p>A criminal defense firm first, and DeFi-native counsel for digital assets,
+           standing with the individual across Nashville and Middle Tennessee.</p>
         <p class="footer-counties">Serving {% for c in service_counties %}{{ c }}{% if not loop.last %} &middot; {% endif %}{% endfor %} counties</p>
       </div>
       <div>
@@ -345,11 +345,11 @@
         <ul>
           <li><a href="{{ url_for('public.practice_area', slug='criminal-defense') }}">Criminal Defense</a></li>
           <li><a href="{{ url_for('public.practice_area', slug='civil-rights') }}">Civil Rights Litigation</a></li>
-          <li><a href="{{ url_for('public.practice_area', slug='stablecoins') }}">Stablecoins &amp; Agentic Payments</a></li>
-          <li><a href="{{ url_for('public.practice_area', slug='rwa-tokenization') }}">Real World Assets Tokenization</a></li>
-          <li><a href="{{ url_for('public.practice_area', slug='family-law') }}">Family &amp; Estate Planning</a></li>
+          <li><a href="{{ url_for('public.practice_area', slug='family-law') }}">Estate &amp; Family Planning</a></li>
           <li><a href="{{ url_for('public.practice_area', slug='personal-injury') }}">Personal Injury &amp; Liabilities</a></li>
-          <li><a href="{{ url_for('public.practice_area', slug='estate-business') }}">Crypto Estate Planning</a></li>
+          <li><a href="{{ url_for('public.practice_area', slug='estate-business') }}">Digital Asset Estate &amp; Future Planning</a></li>
+          <li><a href="{{ url_for('public.practice_area', slug='stablecoins') }}">Stablecoins &amp; Agentic Payments</a></li>
+          <li><a href="{{ url_for('public.practice_area', slug='rwa-tokenization') }}">Real World Assets &amp; Tokenization</a></li>
         </ul>
       </div>
       <div>
@@ -497,6 +497,50 @@
     });
     apply();
     if (phone.addEventListener) phone.addEventListener("change", apply);
+  })();
+  </script>
+  <script>
+  // Pop-out boxes (.ed-boxes--pop): on wider screens an opened box's content
+  // floats beside it (right, else left, else centred below) and a shade dims
+  // the page. Clicking the shade or pressing Escape closes it.
+  (function () {
+    var groups = document.querySelectorAll(".ed-boxes--pop");
+    if (!groups.length) return;
+    var shade = document.createElement("div");
+    shade.className = "ed-pop-shade";
+    shade.setAttribute("aria-hidden", "true");
+    document.body.appendChild(shade);
+    var wide = window.matchMedia("(min-width: 701px)");
+    var boxes = [];
+    groups.forEach(function (g) {
+      boxes = boxes.concat(Array.prototype.slice.call(g.querySelectorAll(":scope > details")));
+    });
+    function place(box) {
+      box.classList.remove("pops-left", "pops-center");
+      var body = box.querySelector(".ed-box-body");
+      if (!body) return;
+      var r = box.getBoundingClientRect();
+      var w = body.offsetWidth + 16;
+      var vw = document.documentElement.clientWidth;
+      if (r.right + w <= vw) return;
+      if (r.left - w >= 0) box.classList.add("pops-left");
+      else box.classList.add("pops-center");
+    }
+    function closeAll() { boxes.forEach(function (b) { b.open = false; }); }
+    function sync() {
+      var open = boxes.filter(function (b) { return b.open; })[0];
+      if (open && wide.matches) place(open);
+      shade.classList.toggle("is-on", !!open && wide.matches);
+    }
+    boxes.forEach(function (b) {
+      b.addEventListener("toggle", function () {
+        if (b.open) boxes.forEach(function (o) { if (o !== b) o.open = false; });
+        sync();
+      });
+    });
+    shade.addEventListener("click", closeAll);
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeAll(); });
+    window.addEventListener("resize", sync);
   })();
   </script>
   <script src="{{ url_for('static', filename='js/app.js') }}"></script>
