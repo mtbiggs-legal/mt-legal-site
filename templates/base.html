@@ -295,6 +295,21 @@
     transform: translateY(-2px);
     box-shadow: 0 6px 22px rgba(20,24,31,.24);
   }
+  /* Every 35 seconds the pill hops and wiggles once to catch the eye
+     (see the script below the widget). */
+  #chat-toggle.is-wiggling { animation: chat-wiggle .9s ease-in-out; }
+  @keyframes chat-wiggle {
+    0%   { transform: none; }
+    18%  { transform: translateY(-8px) rotate(-3deg); }
+    34%  { transform: translateY(0) rotate(3deg); }
+    48%  { transform: translateY(-4px) rotate(-2deg); }
+    62%  { transform: translateY(0) rotate(1.5deg); }
+    76%  { transform: rotate(-1deg); }
+    100% { transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #chat-toggle.is-wiggling { animation: none; }
+  }
   .chat-toggle-icon {
     width: 28px; height: 28px;
     background: rgba(247,245,240,.16);
@@ -649,6 +664,21 @@
     var _chatGreeted = false;
 
     var GREETING = "Hi there! I'm the {{ firm_name }} virtual assistant. How can I help you with your legal question today?";
+
+    // Wiggle the closed pill every 35 seconds, skipping while the chat is
+    // open, the pill is hovered, or the tab is in the background.
+    (function () {
+      var pill = document.getElementById("chat-toggle");
+      if (!pill) return;
+      setInterval(function () {
+        if (document.hidden || pill.matches(":hover")) return;
+        if (_chatOpen) return;
+        pill.classList.remove("is-wiggling");
+        void pill.offsetWidth;
+        pill.classList.add("is-wiggling");
+        setTimeout(function () { pill.classList.remove("is-wiggling"); }, 1000);
+      }, 35000);
+    })();
 
     window.toggleChat = function() {
       _chatOpen = !_chatOpen;
