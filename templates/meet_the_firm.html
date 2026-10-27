@@ -181,6 +181,12 @@
       animation: ed-pop-in .2s ease-out;
     }
     .ed-boxes--pop > .ed-box[open].pops-left > .ed-box-body { left: auto; right: 100%; }
+    /* No room on either side (e.g. a box stretched across the row): drop the
+       panel just below the heading, centred on the box. */
+    .ed-boxes--pop > .ed-box[open].pops-center > .ed-box-body {
+      top: 100%;
+      left: calc(50% - min(280px, (100vw - 6rem) / 2));
+    }
     .ed-boxes--pop > .ed-box[open] .ed-points { grid-template-columns: 1fr; }
   }
   @keyframes ed-pop-in { from { opacity: 0; transform: translateX(-8px) scale(.98); } to { opacity: 1; transform: none; } }
@@ -476,12 +482,17 @@
   if (!group || !shade) return;
   var wide = window.matchMedia("(min-width: 701px)");
   var boxes = Array.prototype.slice.call(group.querySelectorAll(":scope > details"));
+  // Open beside the box (right, else left); if neither side has room, centre it.
   function place(box) {
-    box.classList.remove("pops-left");
+    box.classList.remove("pops-left", "pops-center");
     var body = box.querySelector(".ed-box-body");
     if (!body) return;
-    var right = box.getBoundingClientRect().right + body.offsetWidth;
-    if (right > document.documentElement.clientWidth - 16) box.classList.add("pops-left");
+    var r = box.getBoundingClientRect();
+    var w = body.offsetWidth + 16;
+    var vw = document.documentElement.clientWidth;
+    if (r.right + w <= vw) return;
+    if (r.left - w >= 0) box.classList.add("pops-left");
+    else box.classList.add("pops-center");
   }
   function sync() {
     var open = boxes.filter(function (b) { return b.open; })[0];
