@@ -146,7 +146,7 @@ def test_homepage_explore_boxes_all_open_pages(client):
         assert f'href="{href}"' in explore
         assert client.get(href).status_code == 200
     # Questions and service area are always expanded on the homepage.
-    assert "Is the first consultation really free?" in html and "Davidson County" in html
+    assert "Is there a consultation fee?" in html and "Davidson County" in html
 
 
 def test_service_area_counties_link_to_case_search_with_county_preset(client):

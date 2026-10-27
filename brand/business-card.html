@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Business card</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* Standard US card, 3.5 x 2 in. Print each card on its own page with
+     "Margins: none" and "Background graphics" on; send the PDF to a printer
+     with 1/8 in bleed added, or upload the PNGs to a print service. */
+  @page { size: 3.5in 2in; margin: 0; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #E9E5DC; font-family: Inter, Arial, sans-serif; }
+  .sheet { display: flex; flex-wrap: wrap; gap: 32px; justify-content: center; padding: 40px 16px; }
+  .card { width: 3.5in; height: 2in; overflow: hidden; position: relative; box-shadow: 0 6px 20px rgba(20,24,31,.18); }
+  @media print {
+    body { background: none; }
+    .sheet { display: block; padding: 0; }
+    .card { box-shadow: none; page-break-after: always; break-after: page; }
+  }
+
+  .front { background: #FFFDF9; color: #14181F; display: flex; align-items: center; padding: 0 .24in; gap: .18in; }
+  .front img { width: .78in; height: .78in; display: block; flex: none; }
+  .front .rule { width: 1px; align-self: stretch; margin: .42in 0; background: #B9AE93; flex: none; }
+  .name { font-family: Fraunces, Georgia, serif; font-size: 12pt; white-space: nowrap; line-height: 1.15; margin: 0; }
+  .title { font-size: 5.6pt; letter-spacing: .16em; text-transform: uppercase; color: #7D6E4C; margin: 3pt 0 9pt; font-weight: 600; }
+  .lines { font-size: 7pt; line-height: 1.6; color: #39414F; margin: 0; }
+  .lines b { color: #7D6E4C; font-weight: 600; }
+
+  .back { background: #14181F; color: #B9AE93; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .back img { width: .95in; height: .95in; display: block; }
+  .back p { font-size: 5.6pt; letter-spacing: .22em; text-transform: uppercase; margin: 10pt 0 0; color: #8A8371; font-weight: 500; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <div class="card front">
+    <img src="mt-legal-mark.png" alt="MT Legal mark">
+    <div class="rule"></div>
+    <div>
+      <p class="name">Madison T. Biggs, Esq.</p>
+      <p class="title">Founder &amp; Managing Partner</p>
+      <p class="lines">
+        615-601-0633<br>
+        Mtbiggs@midtennlegal.com<br>
+        <b>midtennlegal.com</b>
+      </p>
+    </div>
+  </div>
+  <div class="card back">
+    <img src="mt-legal-mark.png" alt="">
+    <p>Nashville &middot; Middle Tennessee</p>
+  </div>
+</div>
+</body>
+</html>

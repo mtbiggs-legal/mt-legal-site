@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ area.name }} Attorney in Nashville, TN | {{ firm_name }}{% endblock %}
-{% block meta_description %}{{ area.tagline }} {{ firm_name }}, {{ partner.display }}, Nashville, Tennessee. Free consultation.{% endblock %}
+{% block meta_description %}{{ area.tagline }} {{ firm_name }}, {{ partner.display }}, Nashville, Tennessee. Schedule a consultation.{% endblock %}
 
 {% block styles %}
 <style>
@@ -160,7 +160,7 @@
 <a href="{{ url_for('intake.intake') }}?case_type={{ area.case_types[0] | urlencode }}" class="ed-cta ed-cta--link">
   <div>
     <h2>Discuss your {{ area.name }} matter.</h2>
-    <p>A free, confidential consultation. No obligation, and no pressure to hire us.</p>
+    <p>Start with a brief call at no cost. The consultation fee is credited toward your retainer if you hire us.</p>
   </div>
   <span class="btn ed-cta-btn">Start your intake</span>
 </a>

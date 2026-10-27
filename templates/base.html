@@ -38,7 +38,7 @@
   })();
   </script>
   <title>{% block title %}{{ firm_name }} | Nashville Criminal Defense &amp; Digital Asset Attorney{% endblock %}</title>
-  <meta name="description" content="{% block meta_description %}{{ firm_name }} is a Nashville criminal defense firm first, and DeFi-native counsel for digital assets. Criminal defense, civil rights litigation, estate and family planning, and personal injury across Middle Tennessee, plus digital asset estate planning, stablecoins and agentic payments, and real-world asset tokenization. Free consultation.{% endblock %}" />
+  <meta name="description" content="{% block meta_description %}{{ firm_name }} is a Nashville criminal defense firm first, and DeFi-native counsel for digital assets. Criminal defense, civil rights litigation, estate and family planning, and personal injury across Middle Tennessee, plus digital asset estate planning, stablecoins and agentic payments, and real-world asset tokenization. Schedule a consultation.{% endblock %}" />
   <link rel="canonical" href="{{ request.base_url }}" />
   <!-- Link previews (texts, iMessage, WhatsApp, LinkedIn, Facebook, Slack) -->
   {% set og_image = url_for('static', filename='images/og-image.jpg', _external=True) %}
@@ -320,7 +320,7 @@
         </nav>
         <div class="header-portals">
           {% if not public_site_only %}<a href="{{ url_for('auth.client_login') }}"   class="portal-pill">Client Login</a>{% endif %}
-          <a href="{{ url_for('intake.intake') }}"       class="header-cta">Free Consultation</a>
+          <a href="{{ url_for('intake.intake') }}"       class="header-cta">Schedule Consultation</a>
         </div>
       </div>
     </div>
@@ -558,7 +558,7 @@
         <div class="consult-divider"></div>
         <p id="consult-body" class="consult-body-text"></p>
         <a href="/intake" class="btn btn-consult" style="display:inline-flex;text-decoration:none;margin-bottom:.75rem;font-size:1rem;padding:.8rem 2rem">
-          Schedule Free Consultation →
+          Schedule Consultation →
         </a>
         <br/>
         <button class="btn btn-secondary" id="consult-dismiss" onclick="closeConsultModal()" style="margin-top:.4rem">
@@ -572,7 +572,7 @@
   <div id="calendar-modal" class="modal-overlay" style="display:none" onclick="handleModalOverlayClick(event)">
     <div class="modal-box">
       <div class="modal-header">
-        <h2>📞 Schedule Free Initial Call</h2>
+        <h2>📞 Schedule Initial Call</h2>
         <button class="modal-close" onclick="closeScheduleModal()" title="Close">✕</button>
       </div>
       <div class="modal-body">
@@ -631,7 +631,7 @@
           oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'"></textarea>
         <button id="chat-send" onclick="sendChatMsg()" title="Send">&#9658;</button>
       </div>
-      <div id="chat-disclaimer">General information only, not legal advice. &nbsp;<a href="/intake" style="color:var(--accent)">Get a free consultation →</a></div>
+      <div id="chat-disclaimer">General information only, not legal advice. &nbsp;<a href="/intake" style="color:var(--accent)">Schedule a consultation →</a></div>
     </div>
 
     <!-- Toggle pill (always visible) -->

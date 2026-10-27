@@ -207,11 +207,12 @@ def send_lead_email(name: str, email: str, case_type: str, assigned_attorney: st
         <strong>{practice}</strong> and will be in touch shortly.
       </p>
       <p>
-        The fastest way to get answers is to schedule a
-        <strong>free 20-minute consultation</strong> directly on our calendar:
+        The fastest way to get started is to book a brief intro call, at no cost,
+        directly on our calendar. If your matter is a fit, we will schedule a full
+        consultation; its fee is credited toward your retainer if you hire us.
       </p>
       <div class="cta">
-        <a href="{cal_url}">Book Your Free Consultation &rarr;</a>
+        <a href="{cal_url}">Book Your Intro Call &rarr;</a>
       </div>
       <hr class="divider">
       <p>
@@ -230,7 +231,7 @@ def send_lead_email(name: str, email: str, case_type: str, assigned_attorney: st
     text_body = (
         f"Hi {first_name},\n\n"
         f"Thank you for reaching out about your {practice} matter.\n\n"
-        f"Book a free consultation: {cal_url}\n\n"
+        f"Book a brief intro call (no cost): {cal_url}\n\n"
         f"Assigned attorney: {atty_display}\n"
         f"Urgent matters: {phone}\n\n"
         f"Warm regards,\n{atty_display}\nMT Legal"
