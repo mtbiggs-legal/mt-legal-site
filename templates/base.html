@@ -295,7 +295,7 @@
     transform: translateY(-2px);
     box-shadow: 0 6px 22px rgba(20,24,31,.24);
   }
-  /* Ten seconds after landing, then every 40 seconds, the pill hops and
+  /* Five seconds after landing, then every 20 seconds, the pill hops and
      wiggles once to catch the eye
      (see the script below the widget). */
   #chat-toggle.is-wiggling { animation: chat-wiggle .9s ease-in-out; }
@@ -666,7 +666,7 @@
 
     var GREETING = "Hi there! I'm the {{ firm_name }} virtual assistant. How can I help you with your legal question today?";
 
-    // Wiggle the closed pill 10 seconds after the page loads, then every 40
+    // Wiggle the closed pill 5 seconds after the page loads, then every 20
     // seconds while the visitor stays, skipping while the chat is open, the
     // pill is hovered, or the tab is in the background.
     (function () {
@@ -682,8 +682,8 @@
       }
       setTimeout(function () {
         wiggle();
-        setInterval(wiggle, 40000);
-      }, 10000);
+        setInterval(wiggle, 20000);
+      }, 5000);
     })();
 
     window.toggleChat = function() {
