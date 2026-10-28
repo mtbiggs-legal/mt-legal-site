@@ -205,6 +205,36 @@
     .commit-grid { grid-template-columns: 1fr; }
     .law-quote-photo-content { padding: 2.5rem 1.5rem; }
   }
+  /* The short bio beside the photo is for phones only. */
+  .mp-short { display: none; }
+  @media (max-width: 700px) {
+    /* Phones: photo and short bio side by side, name and title beneath both. */
+    .mp-portrait {
+      grid-template-columns: clamp(110px, 38vw, 150px) 1fr;
+      align-items: start;
+      row-gap: 0;
+    }
+    .mp-portrait picture { grid-row: 1; }
+    .mp-short {
+      display: block;
+      grid-column: 2;
+      grid-row: 1;
+      align-self: center;
+      margin: 0;
+      font-size: .84rem;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+    .mp-portrait .mp-name {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      margin-top: 1.1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--rule);
+    }
+    .mp-portrait .mp-title { grid-column: 1 / -1; grid-row: 3; }
+    .mp-portrait .mp-facts { grid-row: 4; }
+  }
 </style>
 {% endblock %}
 
@@ -233,6 +263,9 @@
            width="760" height="1141"
            alt="{{ partner.display }}, {{ partner.title }} of {{ firm_name }}" />
     </picture>
+    <p class="mp-short">A Nashville litigator in the crypto space since 2017, offering
+      client-centered representation with dedicated DeFi and digital-asset support, and
+      standing with individuals against bigger players.</p>
     <div class="mp-name">{{ partner.display }}</div>
     <div class="mp-title">{{ partner.title }}</div>
     <ul class="mp-facts">
