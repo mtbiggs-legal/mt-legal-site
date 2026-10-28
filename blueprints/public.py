@@ -229,7 +229,8 @@ def chat_message():
 
     system = (
         f"You are a helpful legal assistant for {FIRM_NAME}, a Nashville, Tennessee law "
-        f"practice led by {MANAGING_PARTNER['display']}. It is a client-centered firm "
+        f"practice led by {MANAGING_PARTNER['display']}, with partner Paul Randolph, Esq., a "
+        "civil rights litigator and trial attorney. It is a client-centered firm "
         "with dedicated support for DeFi and digital-asset operations: digital asset estate and "
         "future planning, stablecoins and agentic payments, and real-world asset tokenization. "
         "It also provides traditional practice: criminal defense, civil rights litigation, "

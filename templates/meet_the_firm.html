@@ -1,6 +1,6 @@
 {% extends "base.html" %}
-{% block title %}Meet {{ partner.name }} | Nashville DeFi, Digital Asset &amp; Litigation Attorney | {{ firm_name }}{% endblock %}
-{% block meta_description %}{{ partner.display }}, founder and managing attorney of {{ firm_name }}: a Nashville litigator involved in the crypto space since 2017, offering client-centered representation with dedicated support for DeFi and digital assets. Belmont Law graduate and Fisk University adjunct professor of Business Law, also handling criminal defense, civil rights, estate and family planning, and personal injury.{% endblock %}
+{% block title %}Meet the Firm | Nashville DeFi, Digital Asset &amp; Litigation Attorneys | {{ firm_name }}{% endblock %}
+{% block meta_description %}Meet the attorneys of {{ firm_name }}: founder and managing attorney {{ partner.display }}, a Nashville litigator in the crypto space since 2017, and partner Paul Randolph, Esq., a civil rights litigator and trial attorney. Client-centered representation with dedicated support for DeFi and digital assets.{% endblock %}
 
 {% block styles %}
 <style>
@@ -205,6 +205,8 @@
     .commit-grid { grid-template-columns: 1fr; }
     .law-quote-photo-content { padding: 2.5rem 1.5rem; }
   }
+  .mp-profile--partner { padding-top: 3.5rem; border-top: 1px solid var(--rule); }
+  @media (max-width: 900px) { .mp-profile--partner { padding-top: 2.5rem; } }
   /* The short bio beside the photo is for phones only. */
   .mp-short { display: none; }
   @media (max-width: 700px) {
@@ -241,9 +243,10 @@
 {% block hero %}
 <section class="firm-intro">
   <span class="firm-intro-eyebrow">{{ firm_name }} &middot; {{ firm_tagline }}</span>
-  <h1>Meet {{ partner.name.split(' ')[0] }}.</h1>
+  <h1>Meet the firm.</h1>
   <div class="firm-intro-rule"></div>
-  <p>At {{ firm_name }}, there is no chain of associates and no case handed off after the
+  <p>{{ firm_name }} pairs dedicated DeFi and digital-asset counsel with courtroom-tested
+     litigators. There is no chain of associates and no case handed off after the
      consultation. The attorney you meet is the attorney who handles
      your matter.</p>
 </section>
@@ -431,7 +434,7 @@
       </summary>
       <div class="ed-box-body"><p class="ed-box-intro">Direct access, plain English, and fees in writing.</p>
         <ul class="ed-points">
-          <li><b>Your lawyer, directly.</b> No associates, no hand-offs, from consultation to close.</li>
+          <li><b>Your lawyer, directly.</b> A partner on your matter, with no hand-offs from consultation to close.</li>
           <li><b>Plain-English advice.</b> Your options, the likely outcomes, and what each path costs, explained before you decide anything.</li>
           <li><b>Fees in writing.</b> Every engagement starts with a written fee agreement.</li>
           <li><b>A secure client portal.</b> Documents, messages, court dates, and billing in one encrypted place.</li>
@@ -442,6 +445,59 @@
     </details>
   </div>
 </section>
+
+<!-- ── Partner profile: Paul Randolph ─────────────────────────────────────── -->
+{% for p in partners %}
+<div class="mp-profile mp-profile--partner">
+
+  <aside class="mp-portrait">
+    <picture>
+      <source type="image/webp" srcset="{{ url_for('static', filename='images/' + p.photo[:-4] + '.webp') }}" />
+      <img src="{{ url_for('static', filename='images/' + p.photo) }}" loading="lazy"
+           width="760" height="1141" alt="{{ p.display }}, {{ p.title }} at {{ firm_name }}" />
+    </picture>
+    <p class="mp-short">A civil rights litigator and trial attorney who takes on
+      municipalities and law enforcement agencies in federal court.</p>
+    <div class="mp-name">{{ p.display }}</div>
+    <div class="mp-title">{{ p.title }}</div>
+    <ul class="mp-facts">
+      <li><span>Education</span>J.D., Loyola University New Orleans College of Law, 2019<br>B.A., International Affairs, East Tennessee State University, 2016</li>
+      <li><span>Focus</span>Civil rights litigation under 42 U.S.C. &sect; 1983 and trial work</li>
+      <li><span>Also handles</span>Civil litigation, criminal defense, and family law</li>
+      <li><span>Hometown</span>Memphis, Tennessee</li>
+    </ul>
+  </aside>
+
+  <article class="mp-bio">
+    <div class="mp-bio-scroll" tabindex="0" aria-label="Biography of {{ p.name }}">
+    <section class="mp-bio-part">
+    <p class="mp-lead">Paul Randolph is a civil rights litigator and trial attorney who holds
+      municipalities and law enforcement agencies to account when they violate the
+      Constitution. A Memphis native, he shares the conviction behind the whole firm: one
+      person deserves a fair fight against a far bigger power.</p>
+    <p>Paul began his career defending clients in Davidson County&rsquo;s criminal courts,
+      representing people who could not afford to hire a lawyer. That work showed him, case by
+      case, how unlawful stops, arrests, and uses of force reach into real lives, and it led him
+      to the other side of the docket: suing the government in federal court over unlawful
+      arrest, excessive force, and other constitutional violations.</p>
+    <button type="button" class="mp-read-more" aria-expanded="false">Read more</button>
+    </section>
+
+    <section class="mp-bio-part">
+    <h2>Background</h2>
+    <p>He earned his B.A. in International Affairs from East Tennessee State University in 2016
+      and his J.D. from Loyola University New Orleans College of Law in 2019, where his studies
+      centered on race and the law and the systemic inequities that shape the justice system.</p>
+    <p>Alongside his civil rights practice, Paul handles civil litigation, criminal defense, and
+      family law matters, bringing a trial lawyer&rsquo;s preparation to every case and the same
+      direct access to his clients that defines {{ firm_name }}.</p>
+    <button type="button" class="mp-read-more" aria-expanded="false">Read more</button>
+    </section>
+    </div>
+  </article>
+
+</div>
+{% endfor %}
 
 <!-- ── Practice areas ──────────────────────────────────────────────────────── -->
 <section class="ed-section ed-section--tight" style="padding-top:0">
@@ -454,7 +510,7 @@
 
 <a href="{{ url_for('intake.intake') }}" class="ed-cta ed-cta--link">
   <div>
-    <h2>Talk to {{ partner.name.split(' ')[0] }} directly.</h2>
+    <h2>Talk to an attorney directly.</h2>
     <p>Start with a brief call at no cost. The consultation fee is credited toward your retainer if you hire us.</p>
   </div>
   <span class="btn ed-cta-btn">Start your intake</span>
@@ -473,15 +529,13 @@ document.querySelectorAll(".mp-read-more").forEach(function (btn) {
 });
 </script>
 <script>
-(function () {
-  var box = document.querySelector(".mp-bio-scroll");
-  if (!box) return;
+document.querySelectorAll(".mp-bio-scroll").forEach(function (box) {
   function check() {
     box.classList.toggle("is-end", box.scrollTop + box.clientHeight >= box.scrollHeight - 8);
   }
   box.addEventListener("scroll", check, { passive: true });
   window.addEventListener("resize", check);
   check();
-})();
+});
 </script>
 {% endblock %}

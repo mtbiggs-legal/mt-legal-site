@@ -80,6 +80,17 @@ SERVICE_COUNTIES = [
 ]
 
 
+# Partners other than the founder, shown on Meet the Firm.
+PARTNERS = [
+    {
+        "name":    "Paul Randolph",
+        "display": "Paul Randolph, Esq.",
+        "title":   "Partner",
+        "photo":   "paul-randolph.jpg",
+    },
+]
+
+
 def partner_photo_filename() -> str:
     """The managing partner's headshot, or a monogram placeholder until the
     real photo is saved to static/images/managing-partner.jpg."""
