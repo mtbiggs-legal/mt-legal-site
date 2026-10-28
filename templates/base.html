@@ -334,7 +334,7 @@
       <div class="mobile-nav-collapse">
         <nav class="main-nav">
           <a href="{{ url_for('public.index') }}" class="nav-link {% if request.endpoint == 'public.index' %}active{% endif %}">Home</a>
-          <a href="{{ url_for('public.meet_the_firm') }}" class="nav-link {% if request.endpoint == 'public.meet_the_firm' %}active{% endif %}">Meet the Firm</a>
+          <a href="{{ url_for('public.meet_the_firm') }}" class="nav-link {% if request.endpoint == 'public.meet_the_firm' %}active{% endif %}">Meet Madison</a>
           <a href="{{ url_for('public.emerging_tech') }}" class="nav-link {% if request.endpoint == 'public.emerging_tech' %}active{% endif %}">Emerging Tech</a>
         </nav>
         <div class="header-portals">
@@ -385,7 +385,7 @@
         <ul>
           <li>Nashville, Tennessee</li>
           <li><a href="{{ url_for('intake.intake') }}">Book a consultation</a></li>
-          <li><a href="{{ url_for('public.meet_the_firm') }}">Meet the Firm</a></li>
+          <li><a href="{{ url_for('public.meet_the_firm') }}">Meet Madison</a></li>
           <li><a href="{{ url_for('public.emerging_tech') }}">Emerging Tech</a></li>
           <li><a href="{{ url_for('public.why_nashville') }}">Why Nashville</a></li>
         </ul>

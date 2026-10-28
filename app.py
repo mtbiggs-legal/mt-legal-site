@@ -102,7 +102,6 @@ def _firm_identity():
         "firm_name":        shared.FIRM_NAME,
         "firm_tagline":     shared.FIRM_TAGLINE,
         "partner":          shared.MANAGING_PARTNER,
-        "partners":         shared.PARTNERS,
         "partner_photo":    shared.partner_photo_filename(),
         "service_counties": shared.SERVICE_COUNTIES,
         "public_site_only": shared.PUBLIC_SITE_ONLY,

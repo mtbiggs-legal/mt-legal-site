@@ -186,12 +186,3 @@ def test_retired_practice_pages_redirect_to_emerging_tech(client, slug):
 def test_stablecoins_page_covers_agentic_payments(client):
     html = client.get("/practice/stablecoins").get_data(as_text=True)
     assert "Stablecoins &amp; Agentic Payments" in html and "What are agentic payments?" in html
-
-
-def test_meet_the_firm_shows_both_attorneys(client):
-    html = client.get("/meet-the-firm").get_data(as_text=True)
-    assert "Meet the firm." in html
-    assert "Madison T. Biggs, Esq." in html and "Paul Randolph, Esq." in html
-    assert "paul-randolph.webp" in html
-    nav = client.get("/").get_data(as_text=True)
-    assert "Meet the Firm" in nav and "Meet Madison" not in nav
