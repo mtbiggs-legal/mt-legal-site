@@ -2731,11 +2731,14 @@ a.ed-layer--link:hover { background: var(--bg); border-top-color: var(--accent);
   .ed-boxes--pop > .ed-box[open].pops-left > .ed-box-body { left: auto; right: 100%; }
   /* No room on either side (e.g. a box stretched across the row): drop the
      panel just below the heading, centred on the box. */
+  /* No room beside the box: open below it, exactly as wide as the box. */
   .ed-boxes--pop > .ed-box[open].pops-center > .ed-box-body {
     top: 100%;
-    left: calc(50% - min(280px, (100vw - 6rem) / 2));
+    left: 0;
+    width: 100%;
   }
   .ed-boxes--pop > .ed-box[open] .ed-points { grid-template-columns: 1fr; }
+  .ed-boxes--pop > .ed-box[open].pops-center .ed-points { grid-template-columns: 1fr 1fr; }
 }
 @keyframes ed-pop-in { from { opacity: 0; transform: translateX(-8px) scale(.98); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) {
