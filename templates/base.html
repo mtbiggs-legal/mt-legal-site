@@ -37,8 +37,8 @@
     window.fetch = window.apiFetch;
   })();
   </script>
-  <title>{% block title %}{{ firm_name }} | Nashville Criminal Defense &amp; Digital Asset Attorney{% endblock %}</title>
-  <meta name="description" content="{% block meta_description %}{{ firm_name }} is a Nashville criminal defense firm first, and DeFi-native counsel for digital assets. Criminal defense, civil rights litigation, estate and family planning, and personal injury across Middle Tennessee, plus digital asset estate planning, stablecoins and agentic payments, and real-world asset tokenization. Schedule a consultation.{% endblock %}" />
+  <title>{% block title %}{{ firm_name }} | Nashville DeFi, Digital Asset &amp; Litigation Attorney{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}{{ firm_name }} is a client-centered Nashville law firm with dedicated support for DeFi and digital-asset operations, backed by courtroom litigation experience. Digital asset estate planning, stablecoins and agentic payments, and real-world asset tokenization, plus criminal defense, civil rights, estate and family planning, and personal injury across Middle Tennessee. Schedule a consultation.{% endblock %}" />
   <link rel="canonical" href="{{ request.base_url }}" />
   <!-- Link previews (texts, iMessage, WhatsApp, LinkedIn, Facebook, Slack) -->
   {% set og_image = url_for('static', filename='images/og-image.jpg', _external=True) %}
@@ -73,7 +73,7 @@
     "founder": {"@type": "Person", "name": {{ partner.display | tojson }}, "jobTitle": {{ partner.title | tojson }}},
     "address": {"@type": "PostalAddress", "addressLocality": "Nashville", "addressRegion": "TN", "addressCountry": "US"},
     "areaServed": [{% for c in service_counties %}{"@type": "AdministrativeArea", "name": {{ (c ~ " County, Tennessee") | tojson }}}{% if not loop.last %}, {% endif %}{% endfor %}],
-    "knowsAbout": ["Criminal defense", "Civil rights litigation", "Estate and family planning", "Personal injury", "Digital asset estate planning", "Stablecoins and agentic payments", "Real-world asset tokenization", "Crypto tax"]
+    "knowsAbout": ["Decentralized finance (DeFi)", "Digital asset estate planning", "Stablecoins and agentic payments", "Real-world asset tokenization", "Crypto tax", "Criminal defense", "Civil rights litigation", "Estate and family planning", "Personal injury"]
   }
   </script>
   <!-- Fonts are needed for the first paint; fetch them alongside the CSS. -->
@@ -352,8 +352,9 @@
     <div class="footer-cols">
       <div class="footer-brand">
         <div class="footer-firm">{{ firm_name }}</div>
-        <p>A criminal defense firm first, and DeFi-native counsel for digital assets,
-           standing with the individual across Nashville and Middle Tennessee.</p>
+        <p>A client-centered firm with dedicated support for DeFi and digital assets, and
+           the courtroom experience to stand with you against bigger players across Nashville
+           and Middle Tennessee.</p>
         <p class="footer-counties">Serving {% for c in service_counties %}{{ c }}{% if not loop.last %} &middot; {% endif %}{% endfor %} counties</p>
       </div>
       <div>

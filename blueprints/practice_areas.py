@@ -6,6 +6,7 @@ field when a visitor clicks through. MT Legal is a solo practice, so every area
 is handled by the managing partner.
 
 Optional sections, rendered by templates/practice_area.html only when present:
+  story      — Madison's personal note: {heading, paras}
   overview   — a paragraph under the page head
   local      — how the matter plays out in Nashville / Middle Tennessee courts
   structures — cards: {name, summary, fits}
@@ -24,6 +25,21 @@ PRACTICE_AREAS = {
                       "assault, theft, and felony defense in Davidson, Rutherford, and "
                       "surrounding county courts.",
         "case_types": ["Criminal Defense"],
+        "story": {"heading": "Where passion meets the courtroom",
+                  "paras": [
+                      "I learned how criminal cases really work from inside the system. Before "
+                      "law school I spent two years as a deputy court clerk in Rutherford "
+                      "County's criminal court, watching cases move from filing to disposition, "
+                      "and I saw how often the person at the center of it all had the least "
+                      "say. In law school I interned with the District Attorney's Office, so I "
+                      "know how the other side builds a case. Then I chose the defense table.",
+                      "That is still the job: you against the full weight of the state, and me "
+                      "making sure the state has to prove every word. I read the discovery "
+                      "myself, I stand beside you in court myself, and you can reach me "
+                      "directly. The same belief that pulled me into crypto in 2017, that "
+                      "individuals deserve control over their own lives and property, is the "
+                      "one I bring to your defense.",
+                  ]},
         "helps": [
             'Protects your rights from the first police contact. No statements, searches, or interviews without counsel.',
             "Challenges the State's evidence: the stop, the search, lab results, and witness credibility.",
@@ -79,6 +95,18 @@ PRACTICE_AREAS = {
         "tagline":    "Holding government accountable when it oversteps: police misconduct, "
                       "unlawful searches and arrests, and violations of your constitutional rights.",
         "case_types": ["Civil Rights", "Civil Litigation"],
+        "story": {"heading": "Where passion meets the courtroom",
+                  "paras": [
+                      "Civil rights cases are the clearest version of what this firm is about: "
+                      "one person against an institution with lawyers, budgets, and immunity "
+                      "doctrines on its side. My years in the criminal courts taught me how "
+                      "those institutions operate from the inside, and where their account of "
+                      "what happened tends to come apart.",
+                      "I take these cases because accountability should not depend on how "
+                      "powerful the other side is. If an officer or agency crossed a line, I "
+                      "will tell you plainly whether the claim is strong, move quickly to "
+                      "preserve the evidence, and push for both compensation and change.",
+                  ]},
         "helps": [
             "Evaluates whether your rights were violated and who can be held responsible, from individual officers to the agency itself.",
             "Preserves body-cam footage, records, and witness accounts before they disappear.",
@@ -118,6 +146,20 @@ PRACTICE_AREAS = {
         "tagline":    "Issue, accept, or build on stablecoins under the new federal framework, "
                       "and set the rules for AI agents that pay and get paid on your behalf.",
         "case_types": ["Stablecoins / Agentic Payments"],
+        "story": {"heading": "Where passion meets paper",
+                  "paras": [
+                      "I have watched stablecoins grow from a trading tool in 2017 into a "
+                      "payment rail that banks, fintechs, and now AI agents are building on. I "
+                      "have spent real time in this community, at the national Bitcoin "
+                      "conferences, at DC Fintech Week, and around projects like 1inch and "
+                      "Groundwork, so I come to your project knowing how builders actually "
+                      "think.",
+                      "My role is to make sure the person or business building something new is "
+                      "not outmatched by the incumbents and regulators who write the rules. I "
+                      "translate the GENIUS Act and state law into terms you can operate under, "
+                      "and put agreements in place that hold up when a bank, partner, or "
+                      "regulator pushes back.",
+                  ]},
         "helps": [
             "Maps where your business fits under the GENIUS Act and Tennessee money-transmitter rules before you launch.",
             "Drafts merchant, wallet, and platform terms so customers, partners, and processors know who carries the risk.",
@@ -228,6 +270,18 @@ PRACTICE_AREAS = {
                       "streams, into compliant digital securities: fractional ownership, "
                       "investor onboarding, and secondary transfers.",
         "case_types": ["Real World Assets Tokenization", "Real Estate"],
+        "story": {"heading": "Where passion meets paper",
+                  "paras": [
+                      "Tokenization is the part of this space I find most exciting. It lets "
+                      "everyday investors own a piece of assets that used to be reserved for "
+                      "institutions, like a Nashville building or a stream of revenue. Since "
+                      "2017 I have seen plenty of projects promise that, and I have seen how "
+                      "many skipped the legal work that makes it real.",
+                      "I build the structure so the token actually represents what it claims "
+                      "to: the right entity, the right securities exemption, clean title, and "
+                      "transfer rules that hold up. And because I am a litigator, I draft every "
+                      "offering with an eye to how it would read if it were ever challenged.",
+                  ]},
         "helps": [
             'Structures the deal so investors buy compliant securities, not an accidental unregistered offering.',
             'Clears title, liens, and lender consent before the property moves into the owning entity.',
@@ -335,6 +389,18 @@ PRACTICE_AREAS = {
                       "guardianships that protect your family for the long run.",
         "case_types": ["Family Law — Divorce", "Family Law — Child Custody",
                        "Family Law — Other", "Estate Planning"],
+        "story": {"heading": "Where passion meets paper",
+                  "paras": [
+                      "Family matters are personal, and I treat them that way. Whether you are "
+                      "working through a divorce or a custody arrangement, or putting a will "
+                      "and guardianship in place for your children, you deserve a lawyer who "
+                      "listens first and explains every option in plain English.",
+                      "Because I have been in the crypto space since 2017, I also know where "
+                      "digital wealth hides in a family's finances: the wallet that never made "
+                      "it onto a disclosure, the exchange account an executor cannot open, the "
+                      "business interest nobody valued. And when a matter does go to court, I "
+                      "prepare it the way a litigator prepares every contested case.",
+                  ]},
         "helps": [
             'Explains Tennessee custody, support, and property rules before you agree to anything.',
             "Builds a parenting plan centered on your children's stability.",
@@ -368,6 +434,18 @@ PRACTICE_AREAS = {
         "tagline":    "Auto, premises, product, and negligence claims across Middle Tennessee, "
                       "from first demand through trial.",
         "case_types": ["Personal Injury"],
+        "story": {"heading": "Where passion meets the courtroom",
+                  "paras": [
+                      "After an injury you are usually up against an insurance company with "
+                      "adjusters, defense lawyers, and a playbook built to pay as little as "
+                      "possible. My career has been spent on the side of the individual in "
+                      "exactly that kind of fight, and I do not accept the first number just "
+                      "because it is the first number.",
+                      "I keep injury cases personal. You will know what your claim is worth and "
+                      "why, what the insurer is doing and why, and you will hear it from me, "
+                      "not a case manager. If a fair settlement is not on the table, the case "
+                      "gets prepared for trial.",
+                  ]},
         "helps": [
             "Preserves evidence and protects Tennessee's one-year filing deadline.",
             "Deals with the insurance companies so a recorded statement doesn't undercut your claim.",
@@ -400,6 +478,19 @@ PRACTICE_AREAS = {
                       "digital IP, and royalties: the assets you own today and the ones "
                       "you'll own next.",
         "case_types": ["Estate Planning"],
+        "story": {"heading": "Where passion meets paper",
+                  "paras": [
+                      "I have been involved in the crypto space since 2017, through bull runs, "
+                      "crashes, exchange collapses, and the long build in between. Over that "
+                      "time I have seen how easily digital wealth can disappear: a lost seed "
+                      "phrase, a hardware wallet nobody knows how to open, an exchange account "
+                      "an executor has no authority to reach.",
+                      "This is where my passion meets paper. I write estate plans as someone "
+                      "who actually holds and uses these assets, so the documents match how "
+                      "your keys, wallets, and accounts really work, and your family is not "
+                      "left at the mercy of a platform's support desk. Your keys stay yours. "
+                      "The plan makes sure the right people can reach them when it matters.",
+                  ]},
         "helps": [
             "Inventories everything you own, from wallets and tokenized interests to royalties and online accounts, so nothing is lost.",
             "Places assets in trusts that avoid probate and pass to your family privately and quickly.",

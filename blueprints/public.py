@@ -122,7 +122,7 @@ def practice_area(slug):
     attorney = {
         "name":  MANAGING_PARTNER["name"],
         "role":  MANAGING_PARTNER["title"],
-        "blurb": "A criminal defense lawyer first, and DeFi-native counsel for digital assets. "
+        "blurb": "A client-centered litigator with dedicated support for DeFi and digital assets. "
                  "You work with him directly, start to "
                  "finish — no hand-offs to associates.",
         "photo": partner_photo_filename(),
@@ -229,12 +229,14 @@ def chat_message():
 
     system = (
         f"You are a helpful legal assistant for {FIRM_NAME}, a Nashville, Tennessee law "
-        f"practice led by {MANAGING_PARTNER['display']}. It is a criminal defense firm "
-        "first, and DeFi-native counsel for digital assets second. It handles criminal "
-        "defense, civil rights litigation, estate and family planning, and personal injury, "
-        "plus digital asset estate and future planning, stablecoins and agentic payments, and "
-        "real-world asset tokenization, across Nashville and Middle Tennessee. A core belief of the firm is that criminal defense and "
-        "decentralization share one idea: protecting the individual, their privacy, and their "
+        f"practice led by {MANAGING_PARTNER['display']}. It is a client-centered firm "
+        "with dedicated support for DeFi and digital-asset operations: digital asset estate and "
+        "future planning, stablecoins and agentic payments, and real-world asset tokenization. "
+        "It also provides traditional practice: criminal defense, civil rights litigation, "
+        "estate and family planning, and personal injury, across Nashville and Middle "
+        "Tennessee. The attorney is a litigator who has been involved in the crypto space since "
+        "2017, and the firm focuses on representing individuals against bigger players. A core "
+        "belief of the firm is that client representation and decentralization share one idea: protecting the individual, their privacy, and their "
         "fundamental rights from overreaching power. You help answer "
         "general legal questions and direct "
         "people to schedule a consultation for specific legal advice (a brief intro call is "

@@ -2752,3 +2752,12 @@ a.ed-layer--link:hover { background: var(--bg); border-top-color: var(--accent);
   color: var(--ink);
   margin: 0 0 .9rem;
 }
+
+/* Practice pages: Madison's personal note, signed. */
+.ed-layer--story .ed-layer-text + .ed-layer-text { margin-top: .9rem; }
+.ed-story-sign {
+  margin-top: 1.1rem;
+  font-family: Fraunces, Georgia, "Times New Roman", serif;
+  font-style: italic;
+  color: var(--ink);
+}

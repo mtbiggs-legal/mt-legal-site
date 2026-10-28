@@ -43,6 +43,14 @@ def test_practice_page_links_to_other_areas_not_itself(client):
     assert 'href="/practice/family-law"' not in other_areas_block
 
 
+def test_every_practice_page_has_a_personal_note(client):
+    from blueprints.practice_areas import PRACTICE_AREAS
+    for slug, area in PRACTICE_AREAS.items():
+        assert area["story"]["paras"], slug
+        html = client.get(f"/practice/{slug}").get_data(as_text=True)
+        assert "From Madison" in html and area["story"]["heading"] in html, slug
+
+
 def test_practice_area_case_types_route_to_the_managing_partner():
     """MT Legal is a solo practice: every case type a practice page offers must
     route to the managing partner shown on that page -- otherwise the page

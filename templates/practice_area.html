@@ -40,6 +40,20 @@
 <section class="ed-section ed-section--tight"{% if area.overview %} style="padding-top:0"{% endif %}>
   <div class="ed-layers">
 
+    {% if area.story %}
+    <section class="ed-layer ed-layer--story" data-mobile-collapse>
+      <header class="ed-layer-head">
+        <span class="ed-box-label">From Madison</span>
+        <h2>{{ area.story.heading }}</h2>
+        <p>Why this work matters to me.</p>
+      </header>
+      <div class="ed-layer-body">
+        {% for para in area.story.paras %}<p class="ed-layer-text">{{ para }}</p>{% endfor %}
+        <p class="ed-story-sign">{{ partner.display }}</p>
+      </div>
+    </section>
+    {% endif %}
+
     {% if area.helps %}
     <section class="ed-layer" data-mobile-collapse>
       <header class="ed-layer-head">
