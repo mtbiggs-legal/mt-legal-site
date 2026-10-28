@@ -266,8 +266,10 @@ def chat_message():
             messages=turns,
         )
         return jsonify({"success": True, "reply": message.content[0].text})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    except Exception:
+        # Log the detail for us; never show provider errors to site visitors.
+        current_app.logger.exception("Website chat failed")
+        return jsonify({"error": "The assistant is unavailable right now."}), 500
 
 
 @public_bp.route("/api/track-visit", methods=["POST"])

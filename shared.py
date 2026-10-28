@@ -165,7 +165,10 @@ for _d in (
 
 # ── API / payment config ──────────────────────────────────────────────────────
 
-ANTHROPIC_API_KEY        = os.getenv("ANTHROPIC_API_KEY")
+ANTHROPIC_API_KEY        = _env("ANTHROPIC_API_KEY") or None
+# Only needed for an API key that isn't scoped to a workspace: the API then
+# requires the workspace ID with every request.
+ANTHROPIC_WORKSPACE_ID   = _env("ANTHROPIC_WORKSPACE_ID")
 MODEL                    = os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
 
 HOURLY_RATE              = float(os.getenv("HOURLY_RATE", "350"))
@@ -220,7 +223,8 @@ TOKEN_FILE       = DATA_ROOT / "calendar-token.json"
 def get_anthropic_client():
     if not ANTHROPIC_API_KEY:
         raise ValueError("ANTHROPIC_API_KEY is not set. Please add it to your .env file.")
-    return anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+    headers = {"anthropic-workspace-id": ANTHROPIC_WORKSPACE_ID} if ANTHROPIC_WORKSPACE_ID else None
+    return anthropic.Anthropic(api_key=ANTHROPIC_API_KEY, default_headers=headers)
 
 
 # ═════════════════════════════════════════════════════════════════════════════

@@ -30,6 +30,8 @@ services:
         sync: false
       - key: ANTHROPIC_API_KEY        # website chat assistant and intake summaries
         sync: false
+      - key: ANTHROPIC_WORKSPACE_ID   # only if the key isn't scoped to a workspace
+        sync: false
       - key: SENDGRID_API_KEY
         sync: false
       - key: FROM_EMAIL
