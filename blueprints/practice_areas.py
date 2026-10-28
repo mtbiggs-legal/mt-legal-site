@@ -576,10 +576,10 @@ PRACTICE_AREAS = {
 }
 
 
-# Display order: the defense and litigation practice first, then digital assets.
+# Display order: the digital-asset practice first, then traditional practice.
 _ORDER = [
-    "criminal-defense", "civil-rights", "family-law", "personal-injury",
     "estate-business", "stablecoins", "rwa-tokenization",
+    "criminal-defense", "civil-rights", "family-law", "personal-injury",
 ]
 PRACTICE_AREAS = {slug: PRACTICE_AREAS[slug] for slug in _ORDER}
 
