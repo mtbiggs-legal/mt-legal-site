@@ -2764,3 +2764,20 @@ a.ed-layer--link:hover { background: var(--bg); border-top-color: var(--accent);
   font-style: italic;
   color: var(--ink);
 }
+
+/* Homepage opening paragraph: on phones only the first sentence shows, with a
+   "Read more" cue; tapping the paragraph opens the rest. */
+@media (max-width: 700px) {
+  [data-lede-fold] { cursor: pointer; }
+  [data-lede-fold]:not(.is-open) .ed-lede-rest { display: none; }
+  [data-lede-fold]:not(.is-open) .ed-lede-first::after {
+    content: "Read more \2193";
+    display: block;
+    margin-top: .55rem;
+    font-size: .72rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--accent-lt);
+  }
+  [data-lede-fold]:focus-visible { outline: 1px solid var(--accent-lt); outline-offset: 4px; }
+}
