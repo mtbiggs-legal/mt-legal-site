@@ -40,8 +40,11 @@
   <title>{% block title %}{{ firm_name }} | Nashville DeFi, Digital Asset &amp; Litigation Attorney{% endblock %}</title>
   <meta name="description" content="{% block meta_description %}{{ firm_name }} is a client-centered Nashville law firm with dedicated support for DeFi and digital-asset operations, backed by courtroom litigation experience. Digital asset estate planning, stablecoins and agentic payments, and real-world asset tokenization, plus criminal defense, civil rights, estate and family planning, and personal injury across Middle Tennessee. Schedule a consultation.{% endblock %}" />
   <link rel="canonical" href="{{ request.base_url }}" />
+  <!-- Let Google show full-size image previews of these pages in search -->
+  <meta name="robots" content="max-image-preview:large" />
   <!-- Link previews (texts, iMessage, WhatsApp, LinkedIn, Facebook, Slack) -->
-  {% set og_image = url_for('static', filename='images/og-image.jpg', _external=True) %}
+  {# No ?v= cache-buster here: search engines and link previews should see one stable image URL. #}
+  {% set og_image = url_for('static', filename='images/og-image.jpg', v=None, _external=True) %}
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="{{ firm_name }}" />
   <meta property="og:title" content="{{ self.title() }}" />
@@ -69,7 +72,7 @@
     "description": "Solo law practice serving Nashville and Middle Tennessee.",
     "url": {{ request.url_root | tojson }},
     "logo": {{ url_for('static', filename='icons/icon-512.png', _external=True) | tojson }},
-    "image": {{ og_image | tojson }},
+    "image": [{{ og_image | tojson }}, {{ url_for('static', filename='images/quote-justice.jpg', v=None, _external=True) | tojson }}],
     "founder": {"@type": "Person", "name": {{ partner.display | tojson }}, "jobTitle": {{ partner.title | tojson }}},
     "address": {"@type": "PostalAddress", "addressLocality": "Nashville", "addressRegion": "TN", "addressCountry": "US"},
     "areaServed": [{% for c in service_counties %}{"@type": "AdministrativeArea", "name": {{ (c ~ " County, Tennessee") | tojson }}}{% if not loop.last %}, {% endif %}{% endfor %}],

@@ -69,7 +69,8 @@ def test_versioned_static_files_are_cached_for_a_year(client):
 
 def test_link_preview_tags_and_icons(client):
     html = client.get("/meet-the-firm").get_data(as_text=True)
-    assert 'property="og:image" content="http://localhost/static/images/og-image.jpg?v=' in html
+    assert 'property="og:image" content="http://localhost/static/images/og-image.jpg"' in html
+    assert 'max-image-preview:large' in html
     assert 'name="twitter:card" content="summary_large_image"' in html
     assert 'rel="apple-touch-icon"' in html
     assert client.get("/favicon.ico").status_code == 200
