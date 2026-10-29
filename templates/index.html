@@ -50,7 +50,25 @@
   var lede = document.querySelector("[data-lede-fold]");
   if (!lede) return;
   var phone = window.matchMedia("(max-width: 700px)");
+  var hero = lede.closest(".ed-hero");
+  var rest = lede.querySelector(".ed-lede-rest");
+  // Hold the hero at its open height so opening and closing the paragraph
+  // never moves the photo or the practice boxes below it.
+  function reserve() {
+    if (!hero || !rest) return;
+    hero.style.minHeight = "";
+    if (!phone.matches) return;
+    var wasOpen = lede.classList.contains("is-open");
+    rest.style.transition = "none";
+    lede.classList.add("is-open");
+    var h = hero.getBoundingClientRect().height;
+    if (!wasOpen) lede.classList.remove("is-open");
+    void rest.offsetHeight;
+    rest.style.transition = "";
+    hero.style.minHeight = Math.ceil(h) + "px";
+  }
   function setup() {
+    reserve();
     if (phone.matches) {
       lede.setAttribute("role", "button");
       lede.setAttribute("tabindex", "0");
@@ -71,6 +89,11 @@
     if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
   });
   phone.addEventListener("change", setup);
+  var lastWidth = window.innerWidth;
+  window.addEventListener("resize", function () {
+    if (window.innerWidth !== lastWidth) { lastWidth = window.innerWidth; reserve(); }
+  });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(reserve);
   setup();
 })();
 </script>

@@ -2788,14 +2788,24 @@ a.ed-layer--link:hover { background: var(--bg); border-top-color: var(--accent);
     transition: max-height .45s ease, opacity .35s ease .05s, margin-top .45s ease;
   }
   [data-lede-fold]:not(.is-open) .ed-lede-rest { max-height: 0; opacity: 0; margin-top: 0; }
-  [data-lede-fold]:not(.is-open) .ed-lede-first::after {
+  /* The cue floats where the hidden text begins and takes up no space, so it
+     never changes the paragraph's height. It fades back in once the text has
+     slid shut. */
+  [data-lede-fold] { position: relative; }
+  [data-lede-fold] .ed-lede-first::after {
     content: "Read more \2193";
+    position: absolute;
+    left: 0;
+    right: 0;
     display: block;
     margin-top: .55rem;
     font-size: .72rem;
     letter-spacing: .14em;
     text-transform: uppercase;
     color: var(--accent-lt);
+    pointer-events: none;
+    transition: opacity .25s ease .35s;
   }
+  [data-lede-fold].is-open .ed-lede-first::after { opacity: 0; transition-delay: 0s; }
   [data-lede-fold]:focus-visible { outline: 1px solid var(--accent-lt); outline-offset: 4px; }
 }
