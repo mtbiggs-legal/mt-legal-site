@@ -2773,6 +2773,11 @@ a.ed-layer--link:hover { background: var(--bg); border-top-color: var(--accent);
      instead of re-centring and pushing the title up. */
   .ed-hero--layered:has([data-lede-fold]) { align-items: flex-start; }
   .ed-hero--layered:has([data-lede-fold]) .ed-hero-text { padding-top: 5.8rem; }
+  /* Give the photo and its shade a fixed height taller than the open hero, so
+     "cover" never rescales the image as the hero grows or shrinks; the hero
+     just reveals more or less of it. */
+  .ed-hero--layered:has([data-lede-fold]) .ed-hero-photo,
+  .ed-hero--layered:has([data-lede-fold]) .ed-hero-shade { bottom: auto; height: max(100%, 680px); }
   /* The rest of the paragraph slides open below the first sentence. */
   [data-lede-fold] .ed-lede-rest {
     display: block;
