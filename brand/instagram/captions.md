@@ -1,9 +1,10 @@
 # MT Legal: Instagram launch kit
 
-Nine posts (one is a three-slide carousel), all 1080 x 1350 so they fill the feed.
-Post them in number order, 01 first; Instagram shows the newest at the top left,
-so the grid ends up looking like `grid-preview.jpg`. Two or three posts a week
-is plenty.
+Ten posts, all 1080 x 1350 so they fill the feed: a six-slide launch carousel
+(00), then nine regular posts (03 is a three-slide carousel). Post the launch
+carousel first, then 01 through 09 in order; Instagram shows the newest at the
+top left, so the grid ends up looking like `grid-preview.jpg`. Two or three
+posts a week is plenty.
 
 ---
 
@@ -14,7 +15,7 @@ is plenty.
 **Bio (under 150 characters):**
 
 ```
-Client-centered counsel for DeFi, digital assets & litigation.
+Client-centered counsel for DeFi, digital assets & trial work.
 Madison T. Biggs, Esq. · Nashville, TN
 Attorney advertising. Not legal advice.
 ```
@@ -25,6 +26,35 @@ Attorney advertising. Not legal advice.
 **Contact buttons:** Call (615-601-0633) and Email (Mtbiggs@midtennlegal.com)
 
 **Highlights to set up later:** About, DeFi, Estate, Know Your Rights, FAQ
+
+---
+
+## 00 · Launch carousel: Introducing MT Legal
+Files: `00a-launch-cover.png`, `00b-launch-who-we-are.png`, `00c-launch-approach.png`, `00d-launch-practice-areas.png`, `00e-launch-meet-madison.png`, `00f-launch-get-started.png`
+
+> MT Legal is open in Nashville.
+>
+> Every case begins the same way: one person, one matter, and a bigger power on
+> the other side. How it ends depends on who stands beside you. I built this firm
+> to be that person: someone who listens first, speaks plainly, and stays with
+> you from the first call to the final appearance.
+>
+> Dedicated support for DeFi and digital assets, alongside criminal defense,
+> civil rights, estate and family planning, and personal injury. Swipe to see
+> how we can help, then start with a brief call at no cost.
+>
+> Link in bio, or scan the code on the last slide.
+>
+> #NashvilleLawyer #MTLegal #MiddleTennessee #DeFi #DigitalAssets #CriminalDefense
+>
+> Attorney advertising.
+
+Alt text (cover): Nashville skyline in black and white with the words "Introducing MT Legal."
+Alt text (slide 2): "Every case begins the same way. One person, one matter, and a bigger power on the other side."
+Alt text (slide 3): "Client-centered, start to finish."
+Alt text (slide 4): List of practice areas, from Digital Asset Structuring to Personal Injury & Liabilities.
+Alt text (slide 5): Portrait of Madison T. Biggs, Esq., trial attorney, with the words "The lawyer you meet is the lawyer on your case."
+Alt text (slide 6): "Start with a brief call, at no cost," with the website, phone number, and a QR code.
 
 ---
 
@@ -116,9 +146,9 @@ File: `05-stablecoins-genius-act.png`
 > minutes, cut card and wire fees, and reach customers abroad. It also means the
 > structure has to be right before you accept, hold, or issue them.
 >
-> Building something with stablecoins or AI agents that pay? Let's talk.
+> Building something with stablecoins or agentic commerce? Let's talk.
 >
-> #Stablecoins #GENIUSAct #Fintech #AgenticPayments #NashvilleBusiness
+> #Stablecoins #GENIUSAct #Fintech #AgenticCommerce #NashvilleBusiness
 >
 > General information, not legal advice.
 
@@ -137,7 +167,7 @@ File: `06-one-person-bigger-power.png`
 > and someone making sure your side gets heard. Today that fight happens in
 > courtrooms and in the new economy.
 >
-> #Litigation #NashvilleLawyer #CivilRights #ClientFirst #MiddleTennessee
+> #TrialAttorney #NashvilleLawyer #CivilRights #ClientFirst #MiddleTennessee
 
 Alt text: Davidson County courthouse in black and white with the words "One person. A bigger power."
 
@@ -184,7 +214,7 @@ File: `09-meet-madison.png`
 > Hi, I'm Madison.
 >
 > I've been in the crypto space since 2017 and in courtrooms across Middle
-> Tennessee as a litigator. I started MT Legal so clients would always know who
+> Tennessee as a trial attorney. I started MT Legal so clients would always know who
 > is handling their matter: me, from the first call to the last.
 >
 > Belmont Law graduate. Adjunct professor of Business Law at Fisk University.

@@ -282,7 +282,7 @@ PRACTICE_AREAS = {
                       "many skipped the legal work that makes it real.",
                       "I build the structure so the token actually represents what it claims "
                       "to: the right entity, the right securities exemption, clean title, and "
-                      "transfer rules that hold up. And because I am a litigator, I draft every "
+                      "transfer rules that hold up. And because I am a trial attorney, I draft every "
                       "offering with an eye to how it would read if it were ever challenged.",
                   ]},
         "helps": [
@@ -402,7 +402,7 @@ PRACTICE_AREAS = {
                       "digital wealth hides in a family's finances: the wallet that never made "
                       "it onto a disclosure, the exchange account an executor cannot open, the "
                       "business interest nobody valued. And when a matter does go to court, I "
-                      "prepare it the way a litigator prepares every contested case.",
+                      "prepare it the way a trial attorney prepares every contested case.",
                   ]},
         "helps": [
             'Explains Tennessee custody, support, and property rules before you agree to anything.',

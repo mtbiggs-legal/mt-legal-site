@@ -122,7 +122,7 @@ def practice_area(slug):
     attorney = {
         "name":  MANAGING_PARTNER["name"],
         "role":  MANAGING_PARTNER["title"],
-        "blurb": "A client-centered litigator with dedicated support for DeFi and digital assets. "
+        "blurb": "A client-centered trial attorney with dedicated support for DeFi and digital assets. "
                  "You work with him directly, start to "
                  "finish — no hand-offs to associates.",
         "photo": partner_photo_filename(),
@@ -234,7 +234,7 @@ def chat_message():
         "structuring, stablecoins and agentic commerce, and real-world asset tokenization. "
         "It also provides traditional practice: criminal defense, civil rights litigation, "
         "estate and family planning, and personal injury, across Nashville and Middle "
-        "Tennessee. The attorney is a litigator who has been involved in the crypto space since "
+        "Tennessee. The attorney is a trial attorney who has been involved in the crypto space since "
         "2017, and the firm focuses on representing individuals against bigger players. A core "
         "belief of the firm is that client representation and decentralization share one idea: protecting the individual, their privacy, and their "
         "fundamental rights from overreaching power. You help answer "
