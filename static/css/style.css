@@ -2769,7 +2769,20 @@ a.ed-layer--link:hover { background: var(--bg); border-top-color: var(--accent);
    "Read more" cue; tapping the paragraph opens the rest. */
 @media (max-width: 700px) {
   [data-lede-fold] { cursor: pointer; }
-  [data-lede-fold]:not(.is-open) .ed-lede-rest { display: none; }
+  /* Pin the headline: the hero grows downward when the paragraph opens,
+     instead of re-centring and pushing the title up. */
+  .ed-hero--layered:has([data-lede-fold]) { align-items: flex-start; }
+  .ed-hero--layered:has([data-lede-fold]) .ed-hero-text { padding-top: 5.8rem; }
+  /* The rest of the paragraph slides open below the first sentence. */
+  [data-lede-fold] .ed-lede-rest {
+    display: block;
+    overflow: hidden;
+    max-height: 22rem;
+    opacity: 1;
+    margin-top: .5rem;
+    transition: max-height .45s ease, opacity .35s ease .05s, margin-top .45s ease;
+  }
+  [data-lede-fold]:not(.is-open) .ed-lede-rest { max-height: 0; opacity: 0; margin-top: 0; }
   [data-lede-fold]:not(.is-open) .ed-lede-first::after {
     content: "Read more \2193";
     display: block;
