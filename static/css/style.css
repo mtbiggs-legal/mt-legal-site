@@ -2792,6 +2792,20 @@ a.ed-layer--link:hover { background: var(--bg); border-top-color: var(--accent);
      never changes the paragraph's height. It fades back in once the text has
      slid shut. */
   [data-lede-fold] { position: relative; }
+  /* A larger, invisible tap target: the whole paragraph plus the "Read more"
+     line and a little room below it. It belongs to the paragraph, so a tap
+     anywhere inside toggles it, and it never affects layout. */
+  [data-lede-fold]::before {
+    content: "";
+    position: absolute;
+    left: -.75rem;
+    right: -.75rem;
+    top: -.5rem;
+    bottom: -3.25rem;
+    z-index: 1;
+    -webkit-tap-highlight-color: transparent;
+  }
+  [data-lede-fold].is-open::before { bottom: -1.25rem; }
   [data-lede-fold] .ed-lede-first::after {
     content: "Read more \2193";
     position: absolute;
