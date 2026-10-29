@@ -185,4 +185,4 @@ def test_retired_practice_pages_redirect_to_emerging_tech(client, slug):
 
 def test_stablecoins_page_covers_agentic_payments(client):
     html = client.get("/practice/stablecoins").get_data(as_text=True)
-    assert "Stablecoins &amp; Agentic Payments" in html and "What are agentic payments?" in html
+    assert "Stablecoins &amp; Agentic Commerce" in html and "What are agentic payments?" in html

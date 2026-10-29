@@ -38,7 +38,7 @@
   })();
   </script>
   <title>{% block title %}{{ firm_name }} | Nashville DeFi, Digital Asset &amp; Litigation Attorney{% endblock %}</title>
-  <meta name="description" content="{% block meta_description %}{{ firm_name }} is a client-centered Nashville law firm with dedicated support for DeFi and digital-asset operations, backed by courtroom litigation experience. Digital asset estate planning, stablecoins and agentic payments, and real-world asset tokenization, plus criminal defense, civil rights, estate and family planning, and personal injury across Middle Tennessee. Schedule a consultation.{% endblock %}" />
+  <meta name="description" content="{% block meta_description %}{{ firm_name }} is a client-centered Nashville law firm with dedicated support for DeFi and digital-asset operations, backed by courtroom litigation experience. Digital asset structuring, stablecoins and agentic commerce, and real-world asset tokenization, plus criminal defense, civil rights, estate and family planning, and personal injury across Middle Tennessee. Schedule a consultation.{% endblock %}" />
   <link rel="canonical" href="{{ request.base_url }}" />
   <!-- Let Google show full-size image previews of these pages in search -->
   <meta name="robots" content="max-image-preview:large" />
@@ -76,7 +76,7 @@
     "founder": {"@type": "Person", "name": {{ partner.display | tojson }}, "jobTitle": {{ partner.title | tojson }}},
     "address": {"@type": "PostalAddress", "addressLocality": "Nashville", "addressRegion": "TN", "addressCountry": "US"},
     "areaServed": [{% for c in service_counties %}{"@type": "AdministrativeArea", "name": {{ (c ~ " County, Tennessee") | tojson }}}{% if not loop.last %}, {% endif %}{% endfor %}],
-    "knowsAbout": ["Decentralized finance (DeFi)", "Digital asset estate planning", "Stablecoins and agentic payments", "Real-world asset tokenization", "Crypto tax", "Criminal defense", "Civil rights litigation", "Estate and family planning", "Personal injury"]
+    "knowsAbout": ["Decentralized finance (DeFi)", "Digital asset structuring", "Stablecoins and agentic commerce", "Real-world asset tokenization", "Crypto tax", "Criminal defense", "Civil rights litigation", "Estate and family planning", "Personal injury"]
   }
   </script>
   <!-- Fonts are needed for the first paint; fetch them alongside the CSS. -->
@@ -363,12 +363,12 @@
       <div>
         <h5>Practice</h5>
         <ul>
-          <li><a href="{{ url_for('public.practice_area', slug='estate-business') }}">Digital Asset Estate &amp; Future Planning</a></li>
-          <li><a href="{{ url_for('public.practice_area', slug='stablecoins') }}">Stablecoins &amp; Agentic Payments</a></li>
-          <li><a href="{{ url_for('public.practice_area', slug='rwa-tokenization') }}">Real World Assets &amp; Tokenization</a></li>
+          <li><a href="{{ url_for('public.practice_area', slug='estate-business') }}">Digital Asset Structuring</a></li>
           <li><a href="{{ url_for('public.practice_area', slug='criminal-defense') }}">Criminal Defense</a></li>
           <li><a href="{{ url_for('public.practice_area', slug='civil-rights') }}">Civil Rights Litigation</a></li>
+          <li><a href="{{ url_for('public.practice_area', slug='stablecoins') }}">Stablecoins &amp; Agentic Commerce</a></li>
           <li><a href="{{ url_for('public.practice_area', slug='family-law') }}">Estate &amp; Family Planning</a></li>
+          <li><a href="{{ url_for('public.practice_area', slug='rwa-tokenization') }}">Real World Assets &amp; Tokenization</a></li>
           <li><a href="{{ url_for('public.practice_area', slug='personal-injury') }}">Personal Injury &amp; Liabilities</a></li>
         </ul>
       </div>

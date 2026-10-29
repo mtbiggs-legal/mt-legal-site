@@ -142,7 +142,7 @@ PRACTICE_AREAS = {
         ],
     },
     "stablecoins": {
-        "name":       "Stablecoins & Agentic Payments",
+        "name":       "Stablecoins & Agentic Commerce",
         "tagline":    "Issue, accept, or build on stablecoins under the new federal framework, "
                       "and set the rules for AI agents that pay and get paid on your behalf.",
         "case_types": ["Stablecoins / Agentic Payments"],
@@ -473,10 +473,10 @@ PRACTICE_AREAS = {
         ],
     },
     "estate-business": {
-        "name":       "Digital Asset Estate & Future Planning",
-        "tagline":    "Wills, trusts, and key-access plans for crypto, tokenized property, "
-                      "digital IP, and royalties: the assets you own today and the ones "
-                      "you'll own next.",
+        "name":       "Digital Asset Structuring",
+        "tagline":    "The legal structure around your crypto, tokenized property, digital "
+                      "IP, and royalties: trusts, entities, and key-access plans for the "
+                      "assets you own today and the ones you'll own next.",
         "case_types": ["Estate Planning"],
         "story": {"heading": "Where passion meets paper",
                   "paras": [
@@ -576,10 +576,10 @@ PRACTICE_AREAS = {
 }
 
 
-# Display order: the digital-asset practice first, then traditional practice.
+# Display order, as the firm wants it listed on every page.
 _ORDER = [
-    "estate-business", "stablecoins", "rwa-tokenization",
-    "criminal-defense", "civil-rights", "family-law", "personal-injury",
+    "estate-business", "criminal-defense", "civil-rights", "stablecoins",
+    "family-law", "rwa-tokenization", "personal-injury",
 ]
 PRACTICE_AREAS = {slug: PRACTICE_AREAS[slug] for slug in _ORDER}
 

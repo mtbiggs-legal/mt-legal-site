@@ -47,7 +47,7 @@ PRACTICE_BLURB = {
     "Crypto LLC Formation":       "crypto LLC formation",
     "Real World Assets Tokenization": "real-world asset tokenization",
     "AI / Technology Law":        "AI and technology law",
-    "Stablecoins / Agentic Payments": "stablecoins and agentic payments",
+    "Stablecoins / Agentic Payments": "stablecoins and agentic commerce",
     "Civil Rights":               "civil rights",
     "Civil Litigation":           "civil litigation",
     "Family Law — Divorce":       "family law / divorce",
