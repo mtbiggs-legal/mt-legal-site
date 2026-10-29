@@ -32,7 +32,9 @@ PRACTICE_AREAS = {
                       "County's criminal court, watching cases move from filing to disposition, "
                       "and I saw how often the person at the center of it all had the least "
                       "say. In law school I interned with the District Attorney's Office, so I "
-                      "know how the other side builds a case. Then I chose the defense table.",
+                      "know how the other side builds a case. Then I chose the defense table, "
+                      "and spent more than five years with the Nashville Defenders taking on "
+                      "every sort of case, many of them uphill battles against long odds.",
                       "That is still the job: you against the full weight of the state, and me "
                       "making sure the state has to prove every word. I read the discovery "
                       "myself, I stand beside you in court myself, and you can reach me "
@@ -46,10 +48,11 @@ PRACTICE_AREAS = {
             'Negotiates with prosecutors for dismissal, diversion, or reduced charges.',
             "Takes your case to trial when the State can't prove it, and pursues expungement afterward.",
         ],
-        "overview":   "Madison Biggs built his career on the defense side of the Davidson "
-                      "County docket and, before law school, worked inside the Rutherford "
-                      "County criminal court clerk's office. He knows how these cases move "
-                      "from General Sessions arraignment through Criminal Court, and what it "
+        "overview":   "Madison Biggs spent more than five years with the Nashville "
+                      "Defenders, handling every kind of criminal case, often as an uphill "
+                      "battle from the first day. Before law school he worked inside the "
+                      "Rutherford County criminal court clerk's office. He knows how these "
+                      "cases move from General Sessions through Criminal Court, and what it "
                       "takes to get a charge reduced, diverted, or dismissed.",
         "focus": [
             "Constitutional protections under the Fourth, Fifth, and Sixth Amendment challenges",
