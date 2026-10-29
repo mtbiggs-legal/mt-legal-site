@@ -206,6 +206,7 @@
     .law-quote-photo-content { padding: 2.5rem 1.5rem; }
   }
   /* The short bio beside the photo is for phones only. */
+  .mp-short-crypto { display: block; margin-top: .55rem; }
   .mp-short { display: none; }
   @media (max-width: 700px) {
     /* Phones: photo and short bio side by side, name and title beneath both. */
@@ -263,9 +264,10 @@
            width="760" height="1141"
            alt="{{ partner.display }}, {{ partner.title }} of {{ firm_name }}" />
     </picture>
-    <p class="mp-short">A Nashville litigator in the crypto space since 2017, offering
-      client-centered representation with dedicated DeFi and digital-asset support, and
-      standing with individuals against bigger players.</p>
+    <p class="mp-short">A Nashville trial attorney with more than five years defending
+      criminal cases.
+      <span class="mp-short-crypto">In the crypto space since 2017, offering dedicated DeFi
+      and digital-asset counsel.</span></p>
     <div class="mp-name">{{ partner.display }}</div>
     <div class="mp-title">{{ partner.title }}</div>
     <ul class="mp-facts">
