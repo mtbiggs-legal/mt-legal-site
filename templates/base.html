@@ -494,6 +494,27 @@
     });
     window.scrollBoxIntoView(opened);
   }, true);
+
+  // A tap on an open box's content closes it too, not just a tap on its
+  // title. Links, buttons, form fields, and text being selected are left alone.
+  window.isTapOnControl = function (e) {
+    if (e.target.closest("a, button, input, select, textarea, label, summary, [contenteditable]")) return true;
+    var sel = window.getSelection && window.getSelection();
+    return !!(sel && String(sel).length);
+  };
+  // If closing left the box's title above the screen, bring it back into view.
+  window.revealClosedBox = function (box, title) {
+    var header = document.querySelector(".site-header");
+    var top = (title || box).getBoundingClientRect().top;
+    if (top < (header ? header.getBoundingClientRect().height : 0)) window.scrollBoxIntoView(box);
+  };
+  document.addEventListener("click", function (e) {
+    var body = e.target.closest("details[open] > .ed-box-body");
+    if (!body || window.isTapOnControl(e)) return;
+    var box = body.parentElement;
+    box.open = false;
+    window.revealClosedBox(box, box.querySelector("summary"));
+  });
   </script>
   <script>
   // Phones only: always-open blocks ([data-mobile-collapse]) fold down to their
@@ -539,6 +560,13 @@
       var h = head(b);
       if (!h) return;
       h.addEventListener("click", function () { toggle(b); });
+      var body = b.querySelector(".ed-layer-body, .ed-panel-body");
+      if (body) body.addEventListener("click", function (e) {
+        if (!b.classList.contains("is-collapsible") || b.classList.contains("is-collapsed")) return;
+        if (window.isTapOnControl(e)) return;
+        toggle(b);
+        window.revealClosedBox(b, h);
+      });
       h.addEventListener("keydown", function (e) {
         if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(b); }
       });

@@ -2823,3 +2823,8 @@ a.ed-layer--link:hover { background: var(--bg); border-top-color: var(--accent);
   [data-lede-fold].is-open .ed-lede-first::after { opacity: 0; transition-delay: 0s; }
   [data-lede-fold]:focus-visible { outline: 1px solid var(--accent-lt); outline-offset: 4px; }
 }
+
+/* Open boxes close when their content is tapped, so the whole box reads as tappable. */
+details[open] > .ed-box-body,
+.is-collapsible:not(.is-collapsed) > .ed-layer-body,
+.is-collapsible:not(.is-collapsed) > .ed-panel-body { cursor: pointer; }
