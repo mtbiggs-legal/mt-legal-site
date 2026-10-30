@@ -65,7 +65,7 @@ import threading  # noqa: E402
 _REAL_BASE = Path(shared.BASE_DIR)          # captured before any monkeypatching
 _REAL_DATA_DIRS = ("client-accounts", "client-billing", "client-files", "client-data",
                    "leads", "firm-settings", "security-state", "draft-history",
-                   "research-history", "case-searches", "token-usage")
+                   "research-history", "case-searches", "token-usage", "blog")
 
 
 def _snapshot_real_data():
@@ -133,6 +133,13 @@ def patch_dirs(tmp_path, monkeypatch, sent_statement_emails):
     monkeypatch.setattr(shared, "SECURITY_STATE_DIR", security, raising=False)
     monkeypatch.setattr(shared, "CLIENT_BILLING_DIR", billing_dir, raising=False)
     monkeypatch.setattr(shared, "FIRM_SETTINGS_DIR",  settings_dir, raising=False)
+    blog_dir = tmp_path / "blog"
+    blog_seed = tmp_path / "blog_seed"
+    blog_dir.mkdir(exist_ok=True)
+    (blog_seed / "posts").mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(shared, "BLOG_DIR", blog_dir, raising=False)
+    monkeypatch.setattr(shared, "BLOG_SEED_DIR", blog_seed, raising=False)
+    monkeypatch.setattr(shared, "BLOG_AUTOGEN", False, raising=False)
     # Billing: treat the opening-statement migration as done, send notices
     # inline, and never call SendGrid. Tests that need otherwise override these.
     (settings_dir / "migrations.json").write_text('{"opening_statements": "test"}')

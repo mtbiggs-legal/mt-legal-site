@@ -1,0 +1,272 @@
+[
+  {
+    "id": "criminal-defense-01",
+    "area": "criminal-defense",
+    "title": "What to do in the first 48 hours after an arrest in Tennessee",
+    "used": true
+  },
+  {
+    "id": "criminal-defense-02",
+    "area": "criminal-defense",
+    "title": "How bond and pretrial release work in Davidson County",
+    "used": false
+  },
+  {
+    "id": "criminal-defense-03",
+    "area": "criminal-defense",
+    "title": "Should you talk to the police? Your right to remain silent and ask for a lawyer",
+    "used": false
+  },
+  {
+    "id": "criminal-defense-04",
+    "area": "criminal-defense",
+    "title": "What happens at your first court date in General Sessions",
+    "used": false
+  },
+  {
+    "id": "criminal-defense-05",
+    "area": "criminal-defense",
+    "title": "Judicial diversion and pretrial diversion: how they work and who qualifies",
+    "used": false
+  },
+  {
+    "id": "criminal-defense-06",
+    "area": "criminal-defense",
+    "title": "Can your Tennessee charge be expunged? What to know about record relief",
+    "used": false
+  },
+  {
+    "id": "criminal-defense-07",
+    "area": "criminal-defense",
+    "title": "DUI in Tennessee: implied consent and what happens if you refuse the test",
+    "used": false
+  },
+  {
+    "id": "criminal-defense-08",
+    "area": "criminal-defense",
+    "title": "Can police search your car or phone without a warrant?",
+    "used": false
+  },
+  {
+    "id": "criminal-defense-09",
+    "area": "criminal-defense",
+    "title": "From General Sessions to Criminal Court: how a felony case moves through the system",
+    "used": false
+  },
+  {
+    "id": "stablecoins-01",
+    "area": "stablecoins",
+    "title": "What the GENIUS Act means for businesses that use stablecoins",
+    "used": true
+  },
+  {
+    "id": "stablecoins-02",
+    "area": "stablecoins",
+    "title": "How a Nashville business can accept stablecoin payments",
+    "used": false
+  },
+  {
+    "id": "stablecoins-03",
+    "area": "stablecoins",
+    "title": "Holding stablecoins in your company treasury: custody and policy basics",
+    "used": false
+  },
+  {
+    "id": "stablecoins-04",
+    "area": "stablecoins",
+    "title": "Do you need a money-transmitter license to build a stablecoin payment app?",
+    "used": false
+  },
+  {
+    "id": "stablecoins-05",
+    "area": "stablecoins",
+    "title": "AML, KYC and sanctions checks for stablecoin payments",
+    "used": false
+  },
+  {
+    "id": "stablecoins-06",
+    "area": "stablecoins",
+    "title": "Can a stablecoin pay interest? Rewards programs and securities questions",
+    "used": false
+  },
+  {
+    "id": "stablecoins-07",
+    "area": "stablecoins",
+    "title": "Refunds, chargebacks and disputes when customers pay in stablecoins",
+    "used": false
+  },
+  {
+    "id": "stablecoins-08",
+    "area": "stablecoins",
+    "title": "Letting an AI agent spend money for you: mandates and spending limits",
+    "used": false
+  },
+  {
+    "id": "stablecoins-09",
+    "area": "stablecoins",
+    "title": "Who is responsible when an AI agent's payment goes wrong?",
+    "used": false
+  },
+  {
+    "id": "rwa-tokenization-01",
+    "area": "rwa-tokenization",
+    "title": "What is real estate tokenization, and how does it work?",
+    "used": false
+  },
+  {
+    "id": "rwa-tokenization-02",
+    "area": "rwa-tokenization",
+    "title": "Why tokenizing a property can be an unregistered securities offering",
+    "used": false
+  },
+  {
+    "id": "rwa-tokenization-03",
+    "area": "rwa-tokenization",
+    "title": "Choosing an entity for a tokenized property: SPV, series LLC or trust",
+    "used": false
+  },
+  {
+    "id": "rwa-tokenization-04",
+    "area": "rwa-tokenization",
+    "title": "Reg D, Reg A+ and Reg CF: how tokenized offerings reach investors",
+    "used": false
+  },
+  {
+    "id": "rwa-tokenization-05",
+    "area": "rwa-tokenization",
+    "title": "Does tokenizing a property change the deed?",
+    "used": false
+  },
+  {
+    "id": "rwa-tokenization-06",
+    "area": "rwa-tokenization",
+    "title": "Who can invest? Accredited investors and tokenized offerings",
+    "used": false
+  },
+  {
+    "id": "rwa-tokenization-07",
+    "area": "rwa-tokenization",
+    "title": "Transfer restrictions and whitelists: why tokens need rules built in",
+    "used": false
+  },
+  {
+    "id": "rwa-tokenization-08",
+    "area": "rwa-tokenization",
+    "title": "Can token holders resell? Holding periods and secondary trading",
+    "used": false
+  },
+  {
+    "id": "rwa-tokenization-09",
+    "area": "rwa-tokenization",
+    "title": "Due diligence before tokenizing: title, liens and lender consent",
+    "used": false
+  },
+  {
+    "id": "civil-rights-04",
+    "area": "civil-rights",
+    "title": "Your rights during a traffic stop in Tennessee",
+    "used": true
+  },
+  {
+    "id": "civil-rights-01",
+    "area": "civil-rights",
+    "title": "What is a 1983 claim, and when can you sue the government?",
+    "used": false
+  },
+  {
+    "id": "civil-rights-02",
+    "area": "civil-rights",
+    "title": "Qualified immunity explained in plain English",
+    "used": false
+  },
+  {
+    "id": "civil-rights-03",
+    "area": "civil-rights",
+    "title": "Excessive force by police: what the law looks at",
+    "used": false
+  },
+  {
+    "id": "civil-rights-05",
+    "area": "civil-rights",
+    "title": "False arrest and unlawful search: when a civil rights claim may exist",
+    "used": false
+  },
+  {
+    "id": "civil-rights-06",
+    "area": "civil-rights",
+    "title": "Recording the police in Tennessee: your rights, the limits and the 25-foot buffer law",
+    "used": false
+  },
+  {
+    "id": "civil-rights-07",
+    "area": "civil-rights",
+    "title": "Jail conditions and medical care: what the Constitution requires",
+    "used": false
+  },
+  {
+    "id": "civil-rights-08",
+    "area": "civil-rights",
+    "title": "Why the one-year deadline matters in Tennessee civil rights cases",
+    "used": false
+  },
+  {
+    "id": "civil-rights-09",
+    "area": "civil-rights",
+    "title": "Civil rights claims when a criminal case is still pending",
+    "used": false
+  },
+  {
+    "id": "estate-business-02",
+    "area": "estate-business",
+    "title": "Revocable living trust or will: which does your plan need?",
+    "used": true
+  },
+  {
+    "id": "estate-business-01",
+    "area": "estate-business",
+    "title": "What happens to your crypto when you die?",
+    "used": false
+  },
+  {
+    "id": "estate-business-03",
+    "area": "estate-business",
+    "title": "Why a trust is only as good as its funding",
+    "used": false
+  },
+  {
+    "id": "estate-business-09",
+    "area": "estate-business",
+    "title": "Naming a guardian for your minor children in your will",
+    "used": false
+  },
+  {
+    "id": "estate-business-04",
+    "area": "estate-business",
+    "title": "Leaving crypto to your heirs without handing over your keys",
+    "used": false
+  },
+  {
+    "id": "estate-business-07",
+    "area": "estate-business",
+    "title": "What probate is in Tennessee, and how planning can simplify it",
+    "used": false
+  },
+  {
+    "id": "estate-business-05",
+    "area": "estate-business",
+    "title": "Powers of attorney that cover your wallets and online accounts",
+    "used": false
+  },
+  {
+    "id": "estate-business-08",
+    "area": "estate-business",
+    "title": "Succession planning for a closely held Tennessee business",
+    "used": false
+  },
+  {
+    "id": "estate-business-06",
+    "area": "estate-business",
+    "title": "Choosing an executor and trustee for a plan that includes digital assets",
+    "used": false
+  }
+]

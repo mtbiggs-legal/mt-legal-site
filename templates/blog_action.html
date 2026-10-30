@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Blog review | {{ firm_name }}{% endblock %}
+{% block styles %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block content %}
+<section class="ed-section ed-section--tight">
+  <div class="blog-review">
+    <h1>{{ heading }}</h1>
+    <p>{{ message }}</p>
+    {% if form_action %}
+    <form method="post" action="{{ form_action }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="blog-review-actions">
+        <button type="submit" class="btn btn-primary">{{ confirm_label }}</button>
+      </div>
+    </form>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

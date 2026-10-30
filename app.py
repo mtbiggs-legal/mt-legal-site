@@ -1,6 +1,7 @@
 """app.py — Flask application factory: registers all blueprints."""
 
 import os
+import sys
 from datetime import timedelta
 from flask import Flask, abort, jsonify, request
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -8,6 +9,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+from services import blog_scheduler
 from services import security
 import shared
 from services import storage
@@ -21,6 +23,7 @@ from blueprints.drafting        import drafting_bp
 from blueprints.calendar        import calendar_bp
 from blueprints.portal_client   import portal_client_bp
 from blueprints.portal_attorney import portal_attorney_bp
+from blueprints.blog            import blog_bp
 from blueprints.insights        import insights_bp
 
 app = Flask(__name__)
@@ -173,6 +176,7 @@ app.register_blueprint(drafting_bp)
 app.register_blueprint(calendar_bp)
 app.register_blueprint(portal_client_bp)
 app.register_blueprint(portal_attorney_bp)
+app.register_blueprint(blog_bp)
 app.register_blueprint(insights_bp)
 
 # Under a production WSGI server (gunicorn) __main__ never runs, so check the
@@ -181,6 +185,10 @@ if shared.IS_PRODUCTION:
     _problems = check_startup_config()
     if _problems:
         raise RuntimeError("Cannot start in production:\n  * " + "\n  * ".join(_problems))
+    # The pytest check is a safety net: a test run with APP_ENV=production in
+    # the shell must not start a thread that reads and writes the real blog data.
+    if "pytest" not in sys.modules:
+        blog_scheduler.start_scheduler(app)
 
 if __name__ == "__main__":
     problems = check_startup_config()
@@ -222,4 +230,10 @@ if __name__ == "__main__":
     print("       selecting text in a Windows console pauses the server.")
     print("=" * 62 + "\n", flush=True)
 
-    app.run(debug=False, host=host, port=5000, ssl_context=ssl_ctx)
+    # With debug on, the reloader runs this file twice; only its child, marked
+    # by WERKZEUG_RUN_MAIN, should run the scheduler.
+    debug = False
+    if not debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+        blog_scheduler.start_scheduler(app)
+
+    app.run(debug=debug, host=host, port=5000, ssl_context=ssl_ctx)

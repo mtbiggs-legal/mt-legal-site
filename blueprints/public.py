@@ -6,6 +6,7 @@ from flask import (
     send_from_directory, url_for,
 )
 
+from services import blog
 from shared import (
     require_auth, require_attorney, LEADS_DIR, CASE_SEARCHES_DIR, CASE_ATTORNEY_MAP,
     FIRM_NAME, MANAGING_PARTNER, SERVICE_COUNTIES, partner_photo_filename,
@@ -65,6 +66,7 @@ def robots_txt():
         "Disallow: /portal/", "Disallow: /client-portal", "Disallow: /attorney-portal",
         "Disallow: /client-login", "Disallow: /attorney-login", "Disallow: /research",
         "Disallow: /drafting", "Disallow: /calendar/", "Disallow: /api/",
+        "Disallow: /blog/review/",
         "",
         "# Plain-text guide to this site for AI assistants: " + url_for("public.llms_txt", _external=True),
         "Sitemap: " + url_for("public.sitemap_xml", _external=True),
@@ -116,6 +118,12 @@ def llms_txt():
         link("public.emerging_tech", "Emerging Tech", "Hub for AI, blockchain, stablecoin and tokenization law, with short briefings."),
         link("public.why_nashville", "Why Nashville", "Nashville as a growing tech hub, including Oracle's East Bank campus."),
         link("public.case_search", "Case Search", "Free lookup of official Tennessee court records by county."),
+        "", "## Blog", "",
+        link("blog.index", "Blog", "Plain-English articles, Q&As and tips on criminal defense, crypto law, civil rights and estate planning."),
+        link("blog.feed", "RSS feed", "New posts, newest first."),
+    ]
+    lines += [link("blog.post", p["title"], p["summary"], slug=p["slug"]) for p in blog.published_posts()]
+    lines += [
         "", "## Optional", "",
         link("public.llms_full_txt", "Full text", "Every practice page and briefing in one plain-text file."),
     ]
@@ -145,6 +153,12 @@ def llms_full_txt():
     lines += ["## Emerging tech briefings", "", url_for("public.emerging_tech", _external=True), ""]
     for t in EMERGING_TECH_TOPICS:
         lines += [f"### {t['title']} ({t['label']})", "", t["body"], ""]
+    posts = blog.published_posts()
+    if posts:
+        lines += ["## Blog posts", ""]
+    for p in posts:
+        lines += [f"### {p['title']}", "", url_for("blog.post", slug=p["slug"], _external=True), "",
+                  p["summary"], "", p["body"], ""]
     return Response("\n".join(lines), mimetype="text/plain")
 
 
@@ -152,7 +166,13 @@ def llms_full_txt():
 def sitemap_xml():
     urls = [url_for(e, _external=True) for e in _SITEMAP_ENDPOINTS]
     urls += [url_for("public.practice_area", slug=s, _external=True) for s in PRACTICE_AREAS]
+    urls.append(url_for("blog.index", _external=True))
     body = "".join(f"  <url><loc>{u}</loc></url>\n" for u in urls)
+    for p in blog.published_posts():
+        day = (p.get("updated_at") or p.get("published_at") or "")[:10]
+        lastmod = f"<lastmod>{day}</lastmod>" if day else ""
+        loc = url_for("blog.post", slug=p["slug"], _external=True)
+        body += f"  <url><loc>{loc}</loc>{lastmod}</url>\n"
     xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
            + body + "</urlset>\n")

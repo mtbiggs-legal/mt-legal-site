@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Review draft | {{ firm_name }}{% endblock %}
+{% block styles %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block content %}
+<section class="ed-section ed-section--tight">
+  <div class="blog-review">
+    <h1>Review draft</h1>
+    <p>Status: {{ post.status }}. Edits are saved as plain text; use <code>## Heading</code> for headings, <code>- </code> for bullets and <code>1. </code> for numbered lists.{% if post.format == 'qa' %} On this Q&amp;A post, write each question as a <code>## </code> heading ending in <code>?</code> with its answer below it.{% endif %}</p>
+    {% if notice %}<p class="blog-review-note">{{ notice }}</p>{% endif %}
+    {% if error %}<p class="blog-review-note blog-review-note--error">{{ error }}</p>{% endif %}
+
+    <form method="post" action="{{ form_action }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label for="br-title">Title</label>
+      <input type="text" id="br-title" name="title" value="{{ form.title }}">
+      <label for="br-summary">Summary</label>
+      <textarea id="br-summary" name="summary" rows="3">{{ form.summary }}</textarea>
+      <label for="br-body">Body</label>
+      <textarea id="br-body" name="body" rows="24">{{ form.body }}</textarea>
+      <div class="blog-review-actions">
+        <button type="submit" name="op" value="save" class="btn btn-secondary">Save</button>
+        {% if post.status == 'draft' %}
+        <button type="submit" name="op" value="publish" class="btn btn-primary">Save and publish</button>
+        <button type="submit" name="op" value="pull" class="btn btn-secondary">Pull this post</button>
+        {% elif post.status == 'published' %}
+        <button type="submit" name="op" value="takedown" class="btn btn-secondary">Take down this post (removes it from the site)</button>
+        {% endif %}
+      </div>
+    </form>
+
+    <form method="post" action="{{ form_action }}" class="blog-review-topic">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="op" value="add_topic">
+      <h2>Add a topic idea</h2>
+      <label for="br-area">Practice area</label>
+      <select id="br-area" name="area">
+        {% for a in areas %}<option value="{{ a }}">{{ area_names[a] }}</option>{% endfor %}
+      </select>
+      <label for="br-topic">Topic</label>
+      <input type="text" id="br-topic" name="topic_title" maxlength="200">
+      <div class="blog-review-actions">
+        <button type="submit" class="btn btn-secondary">Add topic</button>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

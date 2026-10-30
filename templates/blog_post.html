@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}{{ post.title }} | {{ firm_name }}{% endblock %}
+{% block meta_description %}{{ post.summary }}{% endblock %}
+
+{% block styles %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": {{ post.title | tojson }},
+  "description": {{ post.summary | tojson }},
+  "datePublished": {{ (post.published_at or '') | tojson }},
+  "dateModified": {{ (post.updated_at or post.published_at or '') | tojson }},
+  "author": {"@type": "Person", "name": {{ partner.display | tojson }}},
+  "publisher": {"@type": "LegalService", "name": {{ firm_name | tojson }}},
+  "mainEntityOfPage": {{ request.base_url | tojson }}
+}
+</script>
+{% if faq %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [{% for f in faq %}
+    {"@type": "Question", "name": {{ f.q | tojson }},
+     "acceptedAnswer": {"@type": "Answer", "text": {{ f.a | tojson }}}}{% if not loop.last %},{% endif %}{% endfor %}
+  ]
+}
+</script>
+{% endif %}
+{% endblock %}
+
+{% block hero %}
+<section class="ed-page-head">
+  <span class="eyebrow eyebrow--rule">{{ area_name }} &middot; {{ format_label }}</span>
+  <h1>{{ post.title }}</h1>
+  <p>{{ post.summary }}</p>
+  <p class="blog-byline">By {{ partner.display }}{% if post.published_at %} &middot; {{ post.published_at[:10] }}{% endif %}</p>
+</section>
+{% endblock %}
+
+{% block content %}
+<section class="ed-section ed-section--tight">
+  <article class="blog-post">
+    {% for b in blocks %}
+      {% if b.type == 'h2' %}<h2>{{ b.text }}</h2>
+      {% elif b.type == 'ul' %}<ul>{% for i in b['items'] %}<li>{{ i }}</li>{% endfor %}</ul>
+      {% elif b.type == 'ol' %}<ol>{% for i in b['items'] %}<li>{{ i }}</li>{% endfor %}</ol>
+      {% else %}<p>{{ b.text }}</p>{% endif %}
+    {% endfor %}
+
+    {% if area_name %}
+    <p class="blog-more"><a href="{{ url_for('public.practice_area', slug=area_page) }}">Learn more about {{ area_page_name }}</a></p>
+    {% endif %}
+
+    <p class="blog-disclaimer">This article is general information about Tennessee and federal law, not legal advice for your situation. Reading it does not create an attorney-client relationship.</p>
+
+    <p><a href="{{ url_for('intake.intake') }}" class="btn btn-primary">Start your intake</a></p>
+    <p class="blog-more"><a href="{{ url_for('blog.index') }}">&larr; All posts</a></p>
+  </article>
+</section>
+{% endblock %}

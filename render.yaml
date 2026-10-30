@@ -8,7 +8,9 @@ services:
     plan: starter                  # a persistent disk requires a paid instance
     buildCommand: pip install -r requirements.txt
     # One worker: client records are files on disk, so keep a single writer
-    # process; threads handle concurrent requests.
+    # process; threads handle concurrent requests. Keep this at 1 worker and
+    # do not add --preload: the blog's locks are in-process, so a second process
+    # would start a second blog scheduler and could draft or publish twice.
     startCommand: gunicorn app:app --workers 1 --threads 4 --timeout 120 --bind 0.0.0.0:$PORT
     healthCheckPath: /healthz
     disk:
@@ -18,6 +20,8 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: "3.12.8"
+      - key: TZ                       # Nashville time: the blog's weekly draft lands Monday local, and its stored times are local
+        value: America/Chicago
       - key: APP_ENV
         value: production
       - key: PUBLIC_SITE_ONLY
@@ -40,7 +44,11 @@ services:
         sync: false
       - key: FIRM_PHONE
         sync: false
-      - key: FIRM_WEBSITE
+      - key: FIRM_WEBSITE             # must be the live https URL: blog review links are built from it
         sync: false
+      - key: BLOG_AUTOGEN             # weekly AI-drafted blog post, emailed for review
+        value: "1"
+      # - key: BLOG_MODEL             # optional; defaults to claude-sonnet-5-5
+      #   value: claude-sonnet-5-5
       - key: CAL_BOOKING_URL
         sync: false

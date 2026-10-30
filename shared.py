@@ -136,6 +136,8 @@ TOKEN_USAGE_DIR      = DATA_ROOT / "token-usage"
 SECURITY_STATE_DIR   = DATA_ROOT / "security-state"
 CLIENT_BILLING_DIR   = DATA_ROOT / "client-billing"
 FIRM_SETTINGS_DIR    = DATA_ROOT / "firm-settings"
+BLOG_DIR             = DATA_ROOT / "blog"          # created by blog.seed_from_repo()
+BLOG_SEED_DIR        = BASE_DIR / "blog_seed"      # versioned posts/topics merged into BLOG_DIR
 
 for _d in (
     CLIENT_DATA_DIR, RESEARCH_HISTORY_DIR, DRAFT_HISTORY_DIR, LEADS_DIR,
@@ -151,6 +153,8 @@ ANTHROPIC_API_KEY        = _env("ANTHROPIC_API_KEY") or None
 # requires the workspace ID with every request.
 ANTHROPIC_WORKSPACE_ID   = _env("ANTHROPIC_WORKSPACE_ID")
 MODEL                    = os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
+BLOG_MODEL               = os.getenv("BLOG_MODEL", "claude-sonnet-5-5")
+BLOG_AUTOGEN             = _env("BLOG_AUTOGEN").lower() in ("1", "true", "yes", "on")
 
 HOURLY_RATE              = float(os.getenv("HOURLY_RATE", "350"))
 MONTHLY_RENT             = float(os.getenv("MONTHLY_RENT")         or "0")

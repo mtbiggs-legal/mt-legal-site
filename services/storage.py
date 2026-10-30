@@ -136,10 +136,10 @@ def read_json(path: Path, default=None):
         return default
 
 
-def write_json(path: Path, data, indent: int | None = 2) -> None:
+def write_json(path: Path, data, indent: int | None = 2, ensure_ascii: bool = True) -> None:
     """Write `data` as JSON to `path` atomically, creating the folder if needed."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    _atomic_write(path, json.dumps(data, indent=indent).encode("utf-8"))
+    _atomic_write(path, json.dumps(data, indent=indent, ensure_ascii=ensure_ascii).encode("utf-8"))
 
 
 _CLIENT_LIST_DEFAULTS = ("co_counsel", "access_log", "opposing_parties",

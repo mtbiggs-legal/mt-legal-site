@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Blog | {{ firm_name }}{% endblock %}
+{% block meta_description %}Plain-English guides on criminal defense, digital assets, civil rights and estate planning in Tennessee, from {{ firm_name }} in Nashville.{% endblock %}
+
+{% block hero %}
+<section class="ed-page-head">
+  <span class="eyebrow eyebrow--rule">Blog &middot; Nashville &amp; Middle Tennessee</span>
+  <h1>Insights</h1>
+  <p>Plain-English guides on the legal questions we hear most often.</p>
+</section>
+{% endblock %}
+
+{% block content %}
+<section class="ed-section ed-section--tight">
+  {% if areas %}
+  <nav class="blog-chips" aria-label="Filter by practice area">
+    <a href="{{ url_for('blog.index') }}" class="blog-chip {% if not selected %}active{% endif %}">All</a>
+    {% for a in areas %}
+    <a href="{{ url_for('blog.index', area=a.slug) }}" class="blog-chip {% if selected == a.slug %}active{% endif %}">{{ a.name }}</a>
+    {% endfor %}
+  </nav>
+  {% endif %}
+
+  {% if posts %}
+  <div class="blog-list">
+    {% for p in posts %}
+    <a href="{{ url_for('blog.post', slug=p.slug) }}" class="blog-card">
+      <span class="blog-card-meta">{{ area_names.get(p.area, '') }} &middot; {{ format_labels.get(p.format, 'Article') }}{% if p.published_at %} &middot; {{ p.published_at[:10] }}{% endif %}</span>
+      <h2>{{ p.title }}</h2>
+      <p>{{ p.summary }}</p>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="ed-section-desc">No posts yet. Check back soon.</p>
+  {% endif %}
+</section>
+{% endblock %}

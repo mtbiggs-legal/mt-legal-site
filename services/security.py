@@ -10,7 +10,8 @@ import sys
 import threading
 import time
 
-from flask import current_app, jsonify, redirect, request, session, url_for
+from flask import (current_app, jsonify, make_response, redirect, render_template, request,
+                   session, url_for)
 
 import shared
 from services import storage
@@ -222,9 +223,24 @@ def csrf_protect():
     expected = session.get("_csrf", "")
     if expected and sent and hmac.compare_digest(sent, expected):
         return None
-    resp = jsonify({"error": "Invalid or missing CSRF token."})
+    if request.path.startswith("/blog/review/"):
+        resp = _review_expired_page()
+    else:
+        resp = jsonify({"error": "Invalid or missing CSRF token."})
     resp.status_code = 400
     resp.headers["X-CSRF-Failed"] = "1"
+    return resp
+
+
+def _review_expired_page():
+    """Review links are opened from email, so a lost session gets a page, not
+    JSON. The token is in the URL, hence the same headers as other review pages."""
+    resp = make_response(render_template(
+        "blog_action.html", heading="This page expired",
+        message="Nothing was changed. Reload the link in the email and try again."))
+    resp.headers["X-Robots-Tag"] = "noindex"
+    resp.headers["Referrer-Policy"] = "no-referrer"
+    resp.headers["Cache-Control"] = "no-store"
     return resp
 
 
