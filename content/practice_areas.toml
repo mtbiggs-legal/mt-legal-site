@@ -24,9 +24,8 @@
 [practice_areas.estate-business]
 name = "Digital Asset Structuring"
 tagline = """\
-    The legal structure around your crypto, tokenized property, digital IP, and \
-    royalties: trusts, entities, and key-access plans for the assets you own today \
-    and the ones you'll own next."""
+    Trusts, entities, and access plans built for digital assets, so what you own \
+    today and what you'll own next reach the right people."""
 case_types = ["Estate Planning"]
 helps = [
     """\
@@ -44,21 +43,15 @@ helps = [
 ]
 overview = """\
     Most estate plans were written for a house, a bank account, and a retirement \
-    fund. Today's families also hold cryptocurrency, tokenized real estate, music \
-    and content royalties, domain names, and stakes in startups. These assets can \
-    vanish if no one has the keys or the legal authority to reach them. We plan for \
-    what you have and for what is coming."""
+    fund. Today's families also hold digital assets that can vanish if no one has \
+    the keys or the legal authority to reach them. We plan for what you have and for \
+    what is coming."""
 focus = [
     "Wills, trusts, and probate-avoidance strategies",
     "Business entity formation and succession planning",
     "Fiduciary and guardian appointments",
-    """\
-        Digital-asset and cryptocurrency inheritance: crypto wills and multi-sig \
-        vaults""",
-    "Fiduciary access to digital accounts under Tennessee law",
-    "Trusts that can hold tokenized real estate and digital securities",
-    "Royalties, catalogs, and digital IP: music, content, and AI-assisted works",
-    "Powers of attorney and incapacity plans that cover wallets and online accounts",
+    "Digital-asset and cryptocurrency inheritance",
+    "Powers of attorney and incapacity plans",
 ]
 
 [practice_areas.estate-business.story]
@@ -77,50 +70,6 @@ paras = [
         of a platform's support desk. Your keys stay yours. The plan makes sure the \
         right people can reach them when it matters.""",
 ]
-
-[[practice_areas.estate-business.structures]]
-name = "Revocable Living Trust"
-summary = """\
-    Holds your assets during life and passes them at death without probate. Can own \
-    LLC interests, tokenized property, and digital accounts."""
-fits = "Most families who want privacy and a faster transfer."
-
-[[practice_areas.estate-business.structures]]
-name = "Digital Asset Access Plan"
-summary = """\
-    A letter of instruction, multi-signature or custodial arrangements, and \
-    fiduciary authority that let your executor reach crypto without anyone holding \
-    your keys today."""
-fits = "Anyone holding self-custodied crypto or NFTs."
-
-[[practice_areas.estate-business.structures]]
-name = "Tennessee Investment Services Trust"
-summary = """\
-    Tennessee's self-settled asset-protection trust: you can remain a beneficiary \
-    while shielding assets from future creditors, if formed correctly and in \
-    advance."""
-fits = "Founders, investors, and professionals with liability exposure."
-
-[[practice_areas.estate-business.structures]]
-name = "Long-Term (Dynasty) Trust"
-summary = """\
-    Tennessee allows trusts to last for generations, keeping appreciating assets \
-    (tokens, equity, real estate) in the family and out of repeated estate tax."""
-fits = "Assets expected to grow significantly over time."
-
-[[practice_areas.estate-business.structures]]
-name = "Family Holding LLC"
-summary = """\
-    Centralizes rental properties, tokenized interests, or a business under one \
-    entity with a succession plan written into the operating agreement."""
-fits = "Families with multiple properties or a family business."
-
-[[practice_areas.estate-business.structures]]
-name = "Tennessee Community Property Trust"
-summary = """\
-    Lets married couples treat trust assets as community property, which can produce \
-    a full basis step-up at the first spouse's death."""
-fits = "Couples holding highly appreciated assets, including crypto."
 
 [[practice_areas.estate-business.process]]
 title = "Asset inventory"
@@ -356,47 +305,27 @@ tagline = """\
 case_types = ["Stablecoins / Agentic Payments"]
 helps = [
     """\
-        Maps where your business fits under the GENIUS Act and Tennessee \
-        money-transmitter rules before you launch.""",
-    """\
-        Drafts merchant, wallet, and platform terms so customers, partners, and \
-        processors know who carries the risk.""",
-    """\
-        Sets up treasury and accounting policies for holding stablecoins, including \
-        reserves, custody, and tax treatment.""",
-    """\
-        Sets the mandates, spending limits, and liability terms for AI agents that \
-        send or receive money for you.""",
+        Maps where your business fits under federal and state rules before you \
+        launch.""",
+    "Drafts the terms that settle who carries the risk.",
+    "Sets the ground rules for AI agents that send or receive money for you.",
     """\
         Represents you with banks, payment partners, and regulators as rules are \
         finalized.""",
 ]
 overview = """\
-    Stablecoins are digital dollars on a blockchain, and they are now one of the \
-    fastest-growing payment rails in the world. The federal GENIUS Act (2025) \
-    created the first national framework for payment stablecoins, with reserve, \
-    disclosure, and licensing rules for issuers. For Nashville businesses that means \
-    a real opportunity: settle payments in minutes instead of days, cut card and \
-    wire fees, and reach customers abroad. We help you capture that growth on a \
-    compliant footing. The next wave is agentic payments: AI agents that buy, sell, \
-    and settle on a person's or company's behalf, often over stablecoin rails, \
-    raising new questions about authority, liability, and consumer protection."""
+    Stablecoins are digital dollars on a blockchain, and the federal GENIUS Act \
+    (2025) created the first national framework for them. For Nashville businesses \
+    that means a real opportunity, and we help you capture it on a compliant \
+    footing. The next wave is agentic payments: AI agents that buy, sell, and settle \
+    on a person's or company's behalf, raising new questions about authority, \
+    liability, and consumer protection."""
 focus = [
     "GENIUS Act analysis for issuers, wallets, exchanges, and payment platforms",
-    """\
-        Accepting stablecoin payments: merchant terms, refunds, chargebacks, and \
-        disclosures""",
-    "Corporate treasury: holding stablecoins, custody, and reserve policies",
-    "Tennessee and multi-state money-transmitter licensing questions",
-    "AML, KYC, and sanctions compliance for stablecoin flows",
-    "Stablecoin yield and rewards programs, and when they raise securities issues",
-    """\
-        Agentic payments: authorizing AI agents to transact, spending caps, and \
-        audit trails""",
-    """\
-        Who bears the loss when an AI agent's payment goes wrong, from card and bank \
-        error rules to irreversible on-chain transfers""",
-    "Tax and accounting treatment of stablecoin receipts and payments",
+    "Accepting and holding stablecoins in your business",
+    "State licensing and compliance questions",
+    "Agentic payments: authority and liability for AI agents",
+    "Tax and accounting treatment",
 ]
 
 [practice_areas.stablecoins.story]
@@ -405,9 +334,9 @@ paras = [
     """\
         I have watched stablecoins grow from a trading tool in 2017 into a payment \
         rail that banks, fintechs, and now AI agents are building on. I have spent \
-        real time in this community, at the national Bitcoin conferences, at DC \
-        Fintech Week, and around projects like 1inch and Groundwork, so I come to \
-        your project knowing how builders actually think.""",
+        real time in this community, at the national Bitcoin conferences and at DC \
+        Fintech Week, so I come to your project knowing how builders actually \
+        think.""",
     """\
         My role is to make sure the person or business building something new is not \
         outmatched by the incumbents and regulators who write the rules. I translate \
@@ -415,56 +344,6 @@ paras = [
         agreements in place that hold up when a bank, partner, or regulator pushes \
         back.""",
 ]
-
-[[practice_areas.stablecoins.structures]]
-name = "Merchant Acceptance Program"
-summary = """\
-    Accept stablecoins through a payment processor that converts to dollars or holds \
-    them, with customer terms covering pricing, refunds, and disputes."""
-fits = "Retailers, venues, and service businesses that want lower payment costs."
-
-[[practice_areas.stablecoins.structures]]
-name = "Corporate Treasury Allocation"
-summary = """\
-    A board-approved policy for holding part of operating cash in stablecoins: \
-    approved coins, custody, limits, and reporting."""
-fits = "Companies paying vendors or contractors abroad."
-
-[[practice_areas.stablecoins.structures]]
-name = "Payment Platform or Wallet"
-summary = """\
-    Software that lets users send, hold, or convert stablecoins. Licensing turns on \
-    whether you ever control customer funds."""
-fits = "Fintech startups and apps adding digital-dollar features."
-
-[[practice_areas.stablecoins.structures]]
-name = "State-Qualified Issuer Path"
-summary = """\
-    The GENIUS Act allows smaller issuers to operate under a state regulatory regime \
-    that meets federal standards, instead of a federal charter."""
-fits = "Issuers planning a smaller, regional, or niche stablecoin."
-
-[[practice_areas.stablecoins.structures]]
-name = "Cross-Border Payout Program"
-summary = """\
-    Pay international contractors, creators, or suppliers in stablecoins, with \
-    sanctions screening and local-law review built in."""
-fits = "Businesses with global teams or royalty payees."
-
-[[practice_areas.stablecoins.structures]]
-name = "Agentic Payment Program"
-summary = """\
-    Lets an AI agent buy, sell, or pay invoices for you over stablecoin or card \
-    rails, with written mandates, spending caps, and logs that make every payment \
-    authorized and traceable."""
-fits = "Businesses using AI agents for procurement, subscriptions, or checkout."
-
-[[practice_areas.stablecoins.structures]]
-name = "Tokenized Settlement for Real Assets"
-summary = """\
-    Use stablecoins as the payment leg for tokenized real estate or other digital \
-    securities, so delivery and payment settle together."""
-fits = "Tokenization sponsors and their investors."
 
 [[practice_areas.stablecoins.process]]
 title = "Use-case review"
@@ -603,8 +482,7 @@ a = """\
 name = "Real World Assets & Tokenization"
 tagline = """\
     Turn real-world assets, from Nashville real estate to loans and revenue streams, \
-    into compliant digital securities: fractional ownership, investor onboarding, \
-    and secondary transfers."""
+    into compliant digital securities."""
 case_types = ["Real World Assets Tokenization", "Real Estate"]
 helps = [
     """\
@@ -628,16 +506,11 @@ overview = """\
     securities offering. We handle the legal structure end to end, with deep \
     experience in Nashville-area real estate."""
 focus = [
-    "Choosing the ownership vehicle: SPV LLC, series LLC, DST, or fund",
-    "Securities exemptions: Reg D 506(b)/(c), Reg A+ Tier 1 and 2, Reg CF, Reg S",
-    """\
-        Offering documents: PPM, operating agreement, subscription agreement, token \
-        terms""",
-    "Permissioned token standards (ERC-3643, ERC-1400) and transfer restrictions",
-    "KYC/AML, accredited-investor verification, and investor whitelisting",
-    "Title, deed, and recording issues with the county Register of Deeds",
-    "Tennessee Securities Division notice filings and state blue-sky compliance",
-    "Distributions, K-1 reporting, and secondary trading through registered venues",
+    "Choosing the ownership vehicle",
+    "Securities exemptions and state filings",
+    "Offering documents and token terms",
+    "Investor verification and onboarding",
+    "Title and recording issues",
 ]
 fees_note = """\
     Full-service legal fee, confirmed in writing after asset review. A $2,500 \
@@ -659,50 +532,6 @@ paras = [
         rules that hold up. And because I am a trial attorney, I draft every \
         offering with an eye to how it would read if it were ever challenged.""",
 ]
-
-[[practice_areas.rwa-tokenization.structures]]
-name = "Single-Asset SPV LLC"
-summary = """\
-    The property is deeded to a new LLC and investors buy tokenized membership \
-    interests. Title stays on the county record; ownership changes happen on-chain \
-    at the entity level."""
-fits = "One building, like a duplex in East Nashville, a mixed-use lot in Murfreesboro."
-
-[[practice_areas.rwa-tokenization.structures]]
-name = "Tennessee Series LLC"
-summary = """\
-    One master LLC with a separate series for each property, each with its own \
-    token, investors, and liability shield. Fewer formations and cleaner reporting."""
-fits = "Sponsors tokenizing a portfolio of long- or short-term rentals."
-
-[[practice_areas.rwa-tokenization.structures]]
-name = "Delaware Statutory Trust (DST)"
-summary = """\
-    Investors hold tokenized beneficial interests in a trust that owns the property. \
-    A properly structured DST can qualify as replacement property in a Section 1031 \
-    exchange."""
-fits = "Stabilized, net-leased commercial property and 1031 investors."
-
-[[practice_areas.rwa-tokenization.structures]]
-name = "Tokenized Fund / Reg A+ REIT"
-summary = """\
-    A pooled vehicle owning several properties, offered to the public, including \
-    non-accredited investors, under Reg A+ Tier 2, with ongoing SEC reporting."""
-fits = "Larger raises aimed at retail investors."
-
-[[practice_areas.rwa-tokenization.structures]]
-name = "Tokenized Debt / Mortgage Note"
-summary = """\
-    Investors fund a loan secured by a deed of trust and receive tokenized notes \
-    paying interest, with no equity in the property itself."""
-fits = "Developers and renovators who want financing without giving up equity."
-
-[[practice_areas.rwa-tokenization.structures]]
-name = "Revenue-Share Token"
-summary = """\
-    Holders receive a share of rental income for a defined term while the owner \
-    keeps title. Almost always a security."""
-fits = "Owners raising capital against cash flow rather than the asset."
 
 [[practice_areas.rwa-tokenization.process]]
 title = "Asset and title diligence"

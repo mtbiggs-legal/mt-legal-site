@@ -69,11 +69,9 @@ def test_practice_area_case_types_exist_in_intake_dropdown():
             assert f'<option value="{case_type}">' in html, (slug, case_type)
 
 
-def test_tokenization_page_renders_structures_process_fees_and_faqs(client):
+def test_tokenization_page_renders_process_fees_and_faqs(client):
     html = client.get("/practice/rwa-tokenization").get_data(as_text=True)
     area = PRACTICE_AREAS["rwa-tokenization"]
-    for s in area["structures"]:
-        assert str(escape(s["name"])) in html
     for step in area["process"]:
         assert str(escape(step["title"])) in html
     for row in area["fees"]:
