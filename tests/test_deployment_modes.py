@@ -82,3 +82,37 @@ def test_robots_and_sitemap(client):
     sitemap = client.get("/sitemap.xml").get_data(as_text=True)
     assert "<loc>http://localhost/practice/stablecoins</loc>" in sitemap
     assert "/attorney-portal" not in sitemap
+
+
+def test_robots_names_ai_crawlers_and_points_to_llms_txt(client):
+    robots = client.get("/robots.txt").get_data(as_text=True)
+    for bot in ("GPTBot", "ClaudeBot", "PerplexityBot", "Google-Extended"):
+        assert f"User-agent: {bot}" in robots
+    # The AI crawlers share one group with "*", so the portal rules cover them too.
+    group = robots.split("\n\n")[0]
+    assert "User-agent: ClaudeBot" in group and "Disallow: /attorney-portal" in group
+    assert "http://localhost/llms.txt" in robots
+
+
+def test_llms_txt_lists_public_pages_only(client):
+    resp = client.get("/llms.txt")
+    assert resp.status_code == 200 and resp.mimetype == "text/plain"
+    text = resp.get_data(as_text=True)
+    assert text.startswith("# MT Legal\n\n> ")
+    assert "(http://localhost/practice/stablecoins)" in text
+    assert "(http://localhost/llms-full.txt)" in text
+    assert "portal" not in text.replace("secure client portal", "")
+
+
+def test_llms_full_txt_has_practice_content(client):
+    text = client.get("/llms-full.txt").get_data(as_text=True)
+    assert "## Stablecoins & Agentic Commerce" in text
+    assert "### Can my charge be expunged in Tennessee?" in text
+    assert "### Tennessee's DAO law (Blockchain)" in text
+
+
+def test_llms_txt_stays_up_in_public_site_only_mode(client, monkeypatch):
+    import shared
+    monkeypatch.setattr(shared, "PUBLIC_SITE_ONLY", True)
+    assert client.get("/llms.txt").status_code == 200
+    assert client.get("/llms-full.txt").status_code == 200

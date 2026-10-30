@@ -8,7 +8,8 @@ from flask import (
 
 from shared import (
     require_auth, require_attorney, LEADS_DIR, CASE_SEARCHES_DIR, CASE_ATTORNEY_MAP,
-    FIRM_NAME, MANAGING_PARTNER, partner_photo_filename, get_anthropic_client, MODEL,
+    FIRM_NAME, MANAGING_PARTNER, SERVICE_COUNTIES, partner_photo_filename,
+    get_anthropic_client, MODEL,
 )
 from services.storage import _load_page_visits, _save_page_visits, write_json
 from blueprints.email_service import send_lead_email
@@ -47,17 +48,104 @@ def favicon():
                                mimetype="image/vnd.microsoft.icon", max_age=86400)
 
 
+# AI search, assistant and training crawlers, named so the welcome is explicit.
+# They share the "*" group's rules: the public site yes, portals and tools no.
+_AI_CRAWLERS = (
+    "GPTBot", "OAI-SearchBot", "ChatGPT-User",
+    "ClaudeBot", "Claude-SearchBot", "Claude-User", "anthropic-ai",
+    "PerplexityBot", "Perplexity-User", "Google-Extended", "Applebot-Extended",
+    "Amazonbot", "meta-externalagent", "DuckAssistBot", "MistralAI-User", "CCBot",
+)
+
+
 @public_bp.route("/robots.txt")
 def robots_txt():
-    lines = [
-        "User-agent: *",
+    lines = (["User-agent: *"] + [f"User-agent: {bot}" for bot in _AI_CRAWLERS] + [
+        "Allow: /",
         "Disallow: /portal/", "Disallow: /client-portal", "Disallow: /attorney-portal",
         "Disallow: /client-login", "Disallow: /attorney-login", "Disallow: /research",
         "Disallow: /drafting", "Disallow: /calendar/", "Disallow: /api/",
         "",
+        "# Plain-text guide to this site for AI assistants: " + url_for("public.llms_txt", _external=True),
         "Sitemap: " + url_for("public.sitemap_xml", _external=True),
+    ])
+    return Response("\n".join(lines) + "\n", mimetype="text/plain")
+
+
+# ── AI assistants (llms.txt, see llmstxt.org) ────────────────────────────────
+
+def _llms_header():
+    return [
+        f"# {FIRM_NAME}",
+        "",
+        f"> {FIRM_NAME} is a client-centered solo law practice in Nashville, Tennessee, led by "
+        f"{MANAGING_PARTNER['display']}, {MANAGING_PARTNER['title']}. It pairs traditional "
+        "practice (criminal defense, civil rights litigation, estate and family planning, "
+        "personal injury) with dedicated support for DeFi and digital-asset operations "
+        "(digital asset structuring, stablecoins and agentic commerce, real-world asset "
+        "tokenization).",
+        "",
+        "- Service area: Nashville and Middle Tennessee ("
+        + ", ".join(SERVICE_COUNTIES) + " counties).",
+        "- The attorney is a trial attorney who has been involved in the crypto space since 2017. "
+        "Clients work with him directly, start to finish.",
+        "- Consultations: a brief intro call at no cost; the full consultation has a fee that is "
+        "credited toward the retainer if the client hires the firm.",
+        "- Nothing on this site is legal advice. Readers should consult an attorney about their "
+        "own situation.",
+        "",
+    ]
+
+
+@public_bp.route("/llms.txt")
+@require_auth
+def llms_txt():
+    def link(endpoint, title, note, **kw):
+        return f"- [{title}]({url_for(endpoint, _external=True, **kw)}): {note}"
+
+    lines = _llms_header() + ["## Practice areas", ""]
+    lines += [link("public.practice_area", a["name"], a["tagline"], slug=s)
+              for s, a in PRACTICE_AREAS.items()]
+    lines += [
+        "", "## The firm", "",
+        link("public.index", "Home", "Overview of the firm and every practice area."),
+        link("public.meet_the_firm", "Meet the Firm", f"About {MANAGING_PARTNER['name']}, the firm's attorney."),
+        link("public.how_it_works", "How It Works", "From the first message to a written engagement and a secure client portal."),
+        link("intake.intake", "Schedule a consultation", "Intake form for new clients."),
+        "", "## Emerging tech", "",
+        link("public.emerging_tech", "Emerging Tech", "Hub for AI, blockchain, stablecoin and tokenization law, with short briefings."),
+        link("public.why_nashville", "Why Nashville", "Nashville as a growing tech hub, including Oracle's East Bank campus."),
+        link("public.case_search", "Case Search", "Free lookup of official Tennessee court records by county."),
+        "", "## Optional", "",
+        link("public.llms_full_txt", "Full text", "Every practice page and briefing in one plain-text file."),
     ]
     return Response("\n".join(lines) + "\n", mimetype="text/plain")
+
+
+@public_bp.route("/llms-full.txt")
+@require_auth
+def llms_full_txt():
+    lines = _llms_header()
+    for slug, a in PRACTICE_AREAS.items():
+        lines += [f"## {a['name']}", "",
+                  url_for("public.practice_area", slug=slug, _external=True), "", a["tagline"], ""]
+        if a.get("overview"):
+            lines += [a["overview"], ""]
+        if a.get("helps"):
+            lines += ["How the firm helps:"] + [f"- {h}" for h in a["helps"]] + [""]
+        if a.get("focus"):
+            lines += ["Focus areas:"] + [f"- {f}" for f in a["focus"]] + [""]
+        if a.get("structures"):
+            lines += ["Structures:"]
+            lines += [f"- {s['name']}: {s['summary']}" + (f" Fits: {s['fits']}" if s.get("fits") else "")
+                      for s in a["structures"]]
+            lines += [""]
+        for f in a.get("faqs", []):
+            lines += [f"### {f['q']}", "", f["a"], ""]
+    lines += ["## Emerging tech briefings", "", url_for("public.emerging_tech", _external=True), ""]
+    for t in EMERGING_TECH_TOPICS:
+        lines += [f"### {t['title']} ({t['label']})", "", t["body"], ""]
+    return Response("\n".join(lines), mimetype="text/plain")
 
 
 @public_bp.route("/sitemap.xml")
