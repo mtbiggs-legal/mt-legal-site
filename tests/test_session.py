@@ -2,15 +2,16 @@
 
 import pytest
 
-import security
+from services import security
 import shared
+from services import accounts
 from conftest import flask_app
 
 
 @pytest.fixture
 def atty_pw(monkeypatch):
     monkeypatch.setitem(shared.ATTORNEYS["Endocide"], "password",
-                        shared.hash_password("correct-horse"))
+                        accounts.hash_password("correct-horse"))
 
 
 def test_login_resets_session_but_keeps_share_auth(client, atty_pw):

@@ -3,6 +3,7 @@
 import pytest
 
 import shared
+from services import storage
 
 
 DRAFT = "<p>IN THE CIRCUIT COURT ...</p>"
@@ -38,7 +39,7 @@ def test_claim_creates_account_and_saves_document(client, tmp_path):
 def test_claim_logs_activity(client):
     """The activity entry used to be wiped by a later save."""
     _claim(client)
-    record = shared.load_client("jsmith")
+    record = storage.load_client("jsmith")
     kinds = [e["action_type"] for e in record["activity_log"]]
     assert "document_generated" in kinds
 
@@ -53,7 +54,7 @@ def test_claim_with_wrong_password_is_refused(client):
     assert "already exists" in resp.get_json()["error"]
 
     # Nothing extra was written or billed to the existing account.
-    record = shared.load_client("jsmith")
+    record = storage.load_client("jsmith")
     docs = list((shared.CLIENT_FILES_DIR / "jsmith" / "documents" /
                  "Generated Documents").iterdir())
     assert len(docs) == 1
@@ -66,7 +67,7 @@ def test_claim_with_correct_password_adds_to_existing_account(client):
     assert resp.status_code == 200
     assert resp.get_json()["username"] == "jsmith"
 
-    record = shared.load_client("jsmith")
+    record = storage.load_client("jsmith")
     # 0.2 intake + 0.5 + 0.5 for the two documents
     assert record["hours_billed"] == pytest.approx(1.2)
     assert record["hours_billed"] == pytest.approx(

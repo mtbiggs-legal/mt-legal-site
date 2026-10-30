@@ -5,16 +5,16 @@ import types
 
 import pytest
 
-import shared
+from services import storage
 
 
 # ── Token usage: writer and reader must agree on one file format ──────────────
 
 def test_token_usage_writes_the_format_the_portal_reads(tmp_path, attorney_session):
     usage = types.SimpleNamespace(input_tokens=100, output_tokens=40)
-    shared._log_token_usage("Endocide", "Legal Issue Analysis", usage)
-    shared._log_token_usage("Endocide", "Legal Issue Analysis", usage)
-    shared._log_token_usage("Endocide", "Motion Draft Generation", usage)
+    storage._log_token_usage("Endocide", "Legal Issue Analysis", usage)
+    storage._log_token_usage("Endocide", "Legal Issue Analysis", usage)
+    storage._log_token_usage("Endocide", "Motion Draft Generation", usage)
 
     # One aggregate file per user, not one file per call.
     assert (tmp_path / "tokens" / "Endocide.json").exists()
@@ -47,18 +47,18 @@ def test_token_usage_empty_for_new_attorney(attorney_session):
     ("",              ""),
 ])
 def test_safe_username_strips_traversal(raw, expected):
-    assert shared.safe_username(raw) == expected
+    assert storage.safe_username(raw) == expected
 
 
 def test_load_client_refuses_traversal(tmp_path):
     outside = tmp_path / "outside.json"
     outside.write_text(json.dumps({"username": "outside"}))
-    assert shared.load_client("../outside") is None
+    assert storage.load_client("../outside") is None
 
 
 def test_save_client_refuses_unsafe_username():
     with pytest.raises(ValueError):
-        shared.save_client({"username": "../escape"})
+        storage.save_client({"username": "../escape"})
 
 
 def test_document_download_cannot_escape_client_dir(attorney_session, make_client, tmp_path):
@@ -129,7 +129,7 @@ def test_chat_ignores_posted_username(client, make_client, monkeypatch):
     # No client details leaked into the prompt...
     assert "Real Client" not in captured["system"]
     # ...and nothing was written to that client's message thread.
-    assert shared.load_client("testclient")["messages"] == []
+    assert storage.load_client("testclient")["messages"] == []
 
 
 def test_chat_rejects_empty_message(client):

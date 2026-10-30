@@ -1,0 +1,58 @@
+<!-- Client Info -->
+<div id="tab-client-info" class="portal-panel">
+  <div class="page-header" style="margin-bottom:1.25rem">
+    <h1 style="font-size:1.5rem">Client Information</h1>
+  </div>
+  <div class="card">
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="ci-name" />
+      </div>
+      <div class="form-group">
+        <label>Case Type</label>
+        <select id="ci-case-type">
+          <option value="Criminal Defense">Criminal Defense</option>
+          <option value="Civil Litigation">Civil Litigation</option>
+          <option value="Contract Dispute">Contract Dispute</option>
+          <option value="Personal Injury">Personal Injury</option>
+          <option value="Family Law — Divorce">Family Law — Divorce</option>
+          <option value="Family Law — Child Custody">Family Law — Child Custody</option>
+          <option value="Family Law — Other">Family Law — Other</option>
+          <option value="Real Estate">Real Estate</option>
+          <option value="Employment Law">Employment Law</option>
+          <option value="DeFi / Crypto Law">DeFi / Crypto Law</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Phone</label>
+        <input type="tel" id="ci-phone" />
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="ci-email" />
+      </div>
+      <div class="form-group">
+        <label>Next Court Date</label>
+        <input type="date" id="ci-court-date" />
+      </div>
+      <div class="form-group">
+        <label>Next Meeting</label>
+        <input type="text" id="ci-next-meeting" placeholder="e.g. March 10, 2026 at 2:00 PM" />
+      </div>
+      <div class="form-group full">
+        <label>Legal Issue Summary</label>
+        <textarea id="ci-legal-issue" rows="4" placeholder="Brief description of the legal matter…"></textarea>
+      </div>
+      <div class="form-group full">
+        <label>Google Drive Folder URL</label>
+        <input type="url" id="ci-drive-url" placeholder="https://drive.google.com/drive/folders/…" />
+      </div>
+    </div>
+    <div id="ci-result" style="margin-top:.75rem"></div>
+    <div class="btn-group" style="margin-top:1rem">
+      <button class="btn btn-primary" onclick="saveClientInfo()">Save Changes</button>
+    </div>
+  </div>
+</div>

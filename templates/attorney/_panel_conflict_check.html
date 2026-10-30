@@ -1,0 +1,19 @@
+<!-- Conflict Check (firm-wide tool) -->
+<div id="tab-conflict-check" class="portal-panel">
+  <div class="page-header" style="margin-bottom:1.1rem">
+    <h1 style="font-size:1.5rem">Conflict Check</h1>
+    <p style="font-size:.88rem">Search every client, former client, opposing party, related party, and lead. Every check is recorded.</p>
+  </div>
+  <div class="card">
+    <div class="form-group">
+      <label for="cc-names">Names to check (one per line)</label>
+      <textarea id="cc-names" rows="5" placeholder="Jane Doe&#10;Acme Roofing LLC"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="cc-attach">Attach result to client (optional)</label>
+      <select id="cc-attach"><option value="">— Not attached —</option></select>
+    </div>
+    <button type="button" class="btn btn-primary" id="cc-run">Run check</button>
+    <div id="cc-results" style="margin-top:1rem;overflow-x:auto"></div>
+  </div>
+</div>

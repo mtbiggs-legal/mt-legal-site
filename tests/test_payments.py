@@ -8,6 +8,7 @@ import types
 import pytest
 
 import shared
+from services import storage
 
 
 @pytest.fixture(autouse=True)
@@ -18,7 +19,7 @@ def rate(monkeypatch):
 def test_load_client_adds_payment_defaults(make_client):
     """load_client injects hours_paid=0 and payments=[] when they are missing."""
     make_client(hours_billed=3.0)
-    client = shared.load_client("testclient")
+    client = storage.load_client("testclient")
     assert client["hours_paid"] == 0
     assert client["payments"] == []
 
@@ -107,7 +108,7 @@ def test_stripe_webhook_credits_hours(client, make_client, monkeypatch):
                        content_type="application/json")
     assert resp.status_code == 200
 
-    credited = shared.load_client("testclient")
+    credited = storage.load_client("testclient")
     assert credited["hours_paid"] == pytest.approx(3.0)   # 1050 / 350
     assert len(credited["payments"]) == 1
     assert credited["payments"][0]["method"] == "stripe"
@@ -138,7 +139,7 @@ def test_stripe_webhook_is_idempotent(client, make_client, monkeypatch):
                     headers={"Stripe-Signature": "t=fake,v1=fake"},
                     content_type="application/json")
 
-    credited = shared.load_client("testclient")
+    credited = storage.load_client("testclient")
     assert len(credited["payments"]) == 1
     assert credited["hours_paid"] == pytest.approx(3.0)
 
@@ -213,7 +214,7 @@ def test_coinbase_webhook_credits_hours(client, make_client, monkeypatch):
                        content_type="application/json")
     assert resp.status_code == 200
 
-    credited = shared.load_client("testclient")
+    credited = storage.load_client("testclient")
     assert credited["hours_paid"] == pytest.approx(3.0)
     assert len(credited["payments"]) == 1
     assert credited["payments"][0]["method"] == "coinbase"
@@ -240,14 +241,13 @@ def test_coinbase_webhook_without_secret_returns_503(client, monkeypatch):
 
 def test_concurrent_same_reference_credits_once(make_client):
     import threading
-    import shared
     make_client("payRace")
     barrier = threading.Barrier(2)
     results = []
 
     def worker():
         barrier.wait()
-        results.append(shared._apply_payment("payRace", 100.0, "stripe", "ref-1"))
+        results.append(storage._apply_payment("payRace", 100.0, "stripe", "ref-1"))
 
     threads = [threading.Thread(target=worker) for _ in range(2)]
     for t in threads:
@@ -255,4 +255,4 @@ def test_concurrent_same_reference_credits_once(make_client):
     for t in threads:
         t.join()
     assert sorted(results) == [False, True]
-    assert len(shared.load_client("payRace")["payments"]) == 1
+    assert len(storage.load_client("payRace")["payments"]) == 1

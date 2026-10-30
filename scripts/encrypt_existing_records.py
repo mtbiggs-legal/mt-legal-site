@@ -25,12 +25,13 @@ from dotenv import load_dotenv  # noqa: E402
 load_dotenv(ROOT / ".env")
 
 import shared  # noqa: E402
+from services import storage
 
 
 def encrypt_all(accounts_dir: Path, backup_root: Path, project_root: Path = ROOT):
     backup_root  = Path(backup_root).resolve()
     project_root = Path(project_root).resolve()
-    shared.require_outside_dir(backup_root, project_root)
+    storage.require_outside_dir(backup_root, project_root)
     # Microseconds keep two runs in the same second from colliding.
     backup = backup_root / f"client-accounts-{datetime.now():%Y%m%d_%H%M%S_%f}"
     shutil.copytree(accounts_dir, backup)
@@ -39,12 +40,12 @@ def encrypt_all(accounts_dir: Path, backup_root: Path, project_root: Path = ROOT
     for path in sorted(Path(accounts_dir).glob("*.json")):
         try:
             raw = path.read_bytes()
-            if not shared._is_plaintext(raw):
+            if not storage._is_plaintext(raw):
                 counts["already"] += 1
                 continue
             original = json.loads(raw.decode("utf-8-sig"))
-            shared._write_record(path, original)
-            if shared._read_record(path) == original:
+            storage._write_record(path, original)
+            if storage._read_record(path) == original:
                 counts["encrypted"] += 1
                 continue
         except Exception:
@@ -62,7 +63,7 @@ def main():
     parser.add_argument("--backup-dir", required=True)
     args = parser.parse_args()
     try:
-        shared._fernet()
+        storage._fernet()
     except RuntimeError as exc:
         print(exc)
         return 2

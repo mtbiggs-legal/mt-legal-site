@@ -36,6 +36,24 @@ These go into Render's environment settings (step 4), not into code:
 Create a **private** repository (for example `mt-legal-site`) and push the code
 to it.
 
+### Updating it later
+
+The deploy repo is checked out at `mt-legal-site/` inside this folder. To bring
+it up to date with `master`, preview the changes, then apply them:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\sync_site.ps1
+```
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\sync_site.ps1 -Apply
+```
+
+The script copies only committed files, so `.env`, credentials and client data
+never reach the deploy repo. It doesn't commit or push: review with
+`git status` in `mt-legal-site`, then commit and push there. `-Ref <branch>`
+syncs a different branch.
+
 ## 3. Create the Render service
 
 1. Sign up at render.com and connect your GitHub account.

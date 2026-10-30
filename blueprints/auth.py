@@ -3,14 +3,15 @@
 from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify
 
-from shared import (
-    ATTORNEYS, CASE_ATTORNEY_MAP, MIN_PASSWORD_LENGTH,
-    load_client, save_client, hash_password, check_password, upgrade_password_if_needed,
-    _make_username, _log_activity,
+from shared import ATTORNEYS, CASE_ATTORNEY_MAP
+from services.accounts import (
+    MIN_PASSWORD_LENGTH, hash_password, check_password, upgrade_password_if_needed,
+    _make_username,
 )
+from services.storage import load_client, save_client, _log_activity
 
-from conflicts import record_check
-from security import start_login_session, begin_login_attempt, clear_login_failures, lockout_message
+from services.conflicts import record_check
+from services.security import start_login_session, begin_login_attempt, clear_login_failures, lockout_message
 
 auth_bp = Blueprint("auth", __name__)
 

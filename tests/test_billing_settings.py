@@ -2,7 +2,7 @@
 
 import pytest
 
-import billing
+from services import billing
 import shared
 
 

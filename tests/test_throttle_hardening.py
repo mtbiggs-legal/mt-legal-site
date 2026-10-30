@@ -5,7 +5,7 @@ import threading
 
 import pytest
 
-import security
+from services import security, storage
 
 
 @pytest.fixture
@@ -63,8 +63,9 @@ def test_cap_evicts_unlocked_before_locked(clock, monkeypatch):
 def test_save_failure_does_not_raise(clock, monkeypatch):
     def boom(*a, **k):
         raise PermissionError("locked")
-    monkeypatch.setattr(security.os, "replace", boom)
-    monkeypatch.setattr(security.time, "sleep", lambda s: None)
+    # The failures file is written through storage.write_json.
+    monkeypatch.setattr(storage.os, "replace", boom)
+    monkeypatch.setattr(storage.time, "sleep", lambda s: None)
     security.record_login_failure("client", "bob", "ip")   # must not raise
 
 

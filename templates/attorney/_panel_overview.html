@@ -1,0 +1,114 @@
+<!-- Case Overview -->
+<div id="tab-overview" class="portal-panel">
+  <div class="page-header" style="margin-bottom:1.25rem">
+    <h1 id="ov-name" style="font-size:1.5rem"></h1>
+    <p id="ov-case-type" style="font-size:.9rem;color:var(--gold)"></p>
+  </div>
+
+  <!-- Clickable stat cards -->
+  <div class="portal-stats">
+
+    <!-- Hours Billed → Time & Notes -->
+    <div class="portal-stat ov-stat-link" onclick="goToTab('time')" title="Go to Time &amp; Notes">
+      <div class="portal-stat-label">Hours Billed</div>
+      <div class="portal-stat-value" id="ov-hours">0</div>
+    </div>
+
+    <!-- Next Court Date → calendar picker -->
+    <div class="portal-stat ov-stat-link" id="ov-court-card"
+         onclick="openCourtDatePicker()" title="Click to set court date"
+         style="position:relative">
+      <div class="portal-stat-label">Next Court Date</div>
+      <div class="portal-stat-value" id="ov-court" style="font-size:1rem"></div>
+      <div class="ov-stat-hint">📅 click to change</div>
+      <input type="date" id="ov-court-date-picker"
+             style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;top:0;left:0"
+             onchange="saveCourtDateFromPicker(this.value)">
+    </div>
+
+    <!-- Last Communication → Messages -->
+    <div class="portal-stat ov-stat-link" onclick="goToTab('messages')" title="Go to Messages">
+      <div class="portal-stat-label">Last Communication</div>
+      <div class="portal-stat-value" id="ov-lastcomm" style="font-size:1rem"></div>
+    </div>
+
+    <!-- Next Meeting → scheduler modal -->
+    <div class="portal-stat ov-stat-link" onclick="openMeetingModal()" title="Schedule a meeting">
+      <div class="portal-stat-label">Next Meeting</div>
+      <div class="portal-stat-value" id="ov-meeting" style="font-size:.95rem"></div>
+    </div>
+
+  </div>
+
+  <div class="card" id="case-dates-card" style="margin-bottom:1.1rem">
+    <div class="portal-section-title">Case dates</div>
+    <div id="case-dates-list"></div>
+    <button type="button" class="btn btn-secondary" id="case-dates-history-btn" style="display:none"></button>
+    <div id="case-dates-history" style="display:none"></div>
+  </div>
+
+  <!-- Case Details card -->
+  <div class="card" style="margin-bottom:1.1rem">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <div class="portal-section-title" style="margin-bottom:0">Case Details</div>
+      <button class="doc-btn" onclick="saveCaseDetails()" style="font-size:.82rem;padding:.28rem .75rem">Save Changes</button>
+    </div>
+    <div class="form-grid" style="margin-bottom:.75rem">
+      <div class="form-group">
+        <label>Case No.</label>
+        <input type="text" id="ov-case-no" placeholder="e.g. 2026-CR-00142" />
+      </div>
+      <div class="form-group">
+        <label>Charge Level</label>
+        <select id="ov-charge-level">
+          <option value="">— Select —</option>
+          <option value="Felony">Felony</option>
+          <option value="Misdemeanor">Misdemeanor</option>
+          <option value="Civil">Civil</option>
+          <option value="Infraction">Infraction</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>County</label>
+        <div class="ss-wrap" id="ss-county-wrap">
+          <input class="ss-input" id="ov-county-input" type="text" placeholder="Type to search county…" autocomplete="off">
+          <div class="ss-dropdown" id="ss-county-dropdown"></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Court</label>
+        <div class="ss-wrap" id="ss-court-wrap">
+          <input class="ss-input" id="ov-court-input" type="text" placeholder="Select county first…" autocomplete="off">
+          <div class="ss-dropdown" id="ss-court-dropdown"></div>
+        </div>
+      </div>
+      <div class="form-group full">
+        <label>Legal Issue</label>
+        <input type="text" id="ov-charges" placeholder="e.g. DUI, Breach of Contract, Divorce Petition" />
+      </div>
+      <div class="form-group full">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap">
+          <label style="margin:0">Legal Issue Summary</label>
+          <button type="button" id="gen-summary-btn" onclick="generateLegalSummary()" style="font-size:.75rem;padding:.2rem .65rem;border:1px solid var(--accent);background:transparent;color:var(--accent);border-radius:4px;cursor:pointer;white-space:nowrap">⚡ Generate AI Summary</button>
+        </div>
+        <p id="ov-legal-issue" style="font-family:Arial,sans-serif;font-size:.93rem;line-height:1.7;color:var(--gray-4);margin:.4rem 0 0"></p>
+      </div>
+    </div>
+    <div id="ov-save-result"></div>
+  </div>
+
+  <!-- Last note preview card → Time & Notes -->
+  <div class="card ov-stat-link" onclick="goToTab('time')" title="Go to Time &amp; Notes" style="cursor:pointer">
+    <div class="portal-section-title">Last Note</div>
+    <div id="ov-last-note" style="font-family:Arial,sans-serif;font-size:.9rem;color:var(--gray-4);line-height:1.7">
+      <span style="color:var(--gray-3)">No notes yet.</span>
+    </div>
+  </div>
+
+  <!-- Archive actions -->
+  <div style="display:flex;gap:.75rem;align-items:center;margin-top:.5rem" id="ov-archive-bar">
+    <button class="btn-archive" id="ov-archive-btn" onclick="archiveClient()">Archive Client File</button>
+    <button class="btn-unarchive" id="ov-unarchive-btn" onclick="unarchiveClient()" style="display:none">Restore from Archive</button>
+    <span id="ov-archive-result" style="font-family:Arial,sans-serif;font-size:.8rem;color:var(--gray-3)"></span>
+  </div>
+</div>

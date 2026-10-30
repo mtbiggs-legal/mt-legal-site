@@ -1,0 +1,57 @@
+<!-- Documents -->
+<div id="tab-documents" class="portal-panel">
+  <div class="page-header" style="margin-bottom:1.1rem">
+    <h1 style="font-size:1.5rem">Client Documents</h1>
+    <p style="font-size:.88rem">All files organized by category. Drag &amp; drop or click to upload.</p>
+  </div>
+
+  <!-- Category tabs -->
+  <div class="doc-cat-tabs">
+    <button class="doc-cat-tab active"  onclick="setDocCategory('Intake',this)">Intake</button>
+    <button class="doc-cat-tab"         onclick="setDocCategory('Generated Documents',this)">Generated Documents</button>
+    <button class="doc-cat-tab"         onclick="setDocCategory('Motions',this)">Motions</button>
+    <button class="doc-cat-tab"         onclick="setDocCategory('Litigation Drafts',this)">Litigation Drafts</button>
+    <button class="doc-cat-tab"         onclick="setDocCategory('Court Orders',this)">Court Orders</button>
+    <button class="doc-cat-tab"         onclick="setDocCategory('Scheduling Orders',this)">Scheduling Orders</button>
+    <button class="doc-cat-tab"         onclick="setDocCategory('Warrants &amp; Discovery',this)">Warrants &amp; Discovery</button>
+    <button class="doc-cat-tab"         onclick="setDocCategory('Research',this)">Research</button>
+    <button class="doc-cat-tab"         onclick="setDocCategory('Other',this)">Other</button>
+  </div>
+
+  <!-- Drop zone -->
+  <div class="doc-drop-zone" id="doc-drop-zone">
+    <div style="font-size:2rem;margin-bottom:.4rem">📂</div>
+    <div class="doc-drop-title" id="doc-drop-label">Drop files here for "Motions"</div>
+    <div class="doc-drop-sub">PDF, DOCX, JPG, PNG, XLS and more — or click to browse</div>
+    <input type="file" id="doc-file-input" style="display:none" multiple
+           accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.bmp,.txt,.rtf"
+           onchange="uploadFiles(this.files)" />
+    <div class="doc-upload-progress" id="doc-upload-progress"></div>
+  </div>
+
+  <!-- File list -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.85rem">
+      <div class="portal-section-title" style="margin-bottom:0" id="doc-list-title">Motions</div>
+      <div id="doc-file-count" style="font-family:Arial,sans-serif;font-size:.78rem;color:var(--gray-3)"></div>
+    </div>
+    <div id="doc-file-list">
+      <p class="doc-empty">Select a client from the sidebar to view documents.</p>
+    </div>
+  </div>
+
+  <div class="card" id="sched-review" style="display:none;margin-top:1rem">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="portal-section-title" style="margin-bottom:0">Scheduling order dates</div>
+      <button type="button" class="btn btn-secondary" id="sched-cancel">Cancel</button>
+    </div>
+    <div class="sec-note" id="sched-file"></div>
+    <div id="sched-status"></div>
+    <div id="sched-rows"></div>
+    <div id="sched-notes"></div>
+    <div class="btn-group" style="margin-top:.8rem">
+      <button type="button" class="btn btn-primary" id="sched-save">Save to calendar</button>
+    </div>
+    <div id="sched-result" style="margin-top:.6rem"></div>
+  </div>
+</div>

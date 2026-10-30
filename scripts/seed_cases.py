@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 """
 seed_cases.py — MT Legal Case Seeder
-Usage: python seed_cases.py [--force]
+Usage: python scripts/seed_cases.py [--force]
 
 Creates two new full-detail client cases (RHollister, LChen) and enriches
 two existing clients (BobbyT, DerekW) with realistic case histories.
 Idempotent: skips clients already seeded/enriched unless --force is passed.
 """
 import sys, os, pathlib
-os.chdir(pathlib.Path(__file__).parent)
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+os.chdir(ROOT)
+sys.path.insert(0, str(ROOT))
 import app
 
 FORCE = "--force" in sys.argv

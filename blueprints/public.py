@@ -1,6 +1,5 @@
 """blueprints/public.py — Public-facing pages and lead capture."""
 
-import json
 from datetime import datetime
 from flask import (
     Blueprint, Response, abort, current_app, jsonify, redirect, render_template, request,
@@ -8,11 +7,10 @@ from flask import (
 )
 
 from shared import (
-    require_auth, require_attorney, LEADS_DIR, CASE_ATTORNEY_MAP,
-    FIRM_NAME, MANAGING_PARTNER, partner_photo_filename,
-    get_anthropic_client, MODEL,
-    _load_page_visits, _save_page_visits,
+    require_auth, require_attorney, LEADS_DIR, CASE_SEARCHES_DIR, CASE_ATTORNEY_MAP,
+    FIRM_NAME, MANAGING_PARTNER, partner_photo_filename, get_anthropic_client, MODEL,
 )
+from services.storage import _load_page_visits, _save_page_visits, write_json
 from blueprints.email_service import send_lead_email
 from blueprints.practice_areas import (
     PRACTICE_AREAS, EMERGING_TECH_AREAS, EMERGING_TECH_TOPICS,
@@ -158,8 +156,7 @@ def capture_lead():
         "assigned_attorney": CASE_ATTORNEY_MAP.get(case_type, MANAGING_PARTNER["username"]),
     }
 
-    with open(LEADS_DIR / filename, "w") as f:
-        json.dump(record, f, indent=2)
+    write_json(LEADS_DIR / filename, record)
 
     # Auto-reply email: warm acknowledgment + booking link
     if record.get("email", "").strip():
@@ -203,8 +200,7 @@ def follow_up_schedule():
         "assigned_attorney": CASE_ATTORNEY_MAP.get(case_type, MANAGING_PARTNER["username"]),
     }
 
-    with open(LEADS_DIR / filename, "w") as f:
-        json.dump(record, f, indent=2)
+    write_json(LEADS_DIR / filename, record)
 
     return jsonify({"success": True})
 
@@ -288,3 +284,46 @@ def api_track_visit():
 def api_page_visits():
     """Marketing analytics — attorney dashboard only, not public."""
     return jsonify(_load_page_visits())
+
+
+# ── Case-search helpers ────────────────────────────────────────────────────────
+
+_DAVIDSON_URLS = {
+    "criminal": ("https://sci.ccc.nashville.gov/Search/Search",
+                 "Criminal Court Clerk — Davidson County"),
+    "civil":    ("https://caselink.nashville.gov/public/",
+                 "Davidson County Civil Courts (CaseLink)"),
+}
+
+
+def _clerk_url(county: str, case_type: str):
+    key = case_type.lower()
+    if county.lower() == "davidson":
+        return _DAVIDSON_URLS.get(key, _DAVIDSON_URLS["criminal"])
+    subdomain = county.lower().replace(" ", "")
+    path = "cmCaseList.aspx" if key == "criminal" else "cvCaseList.aspx"
+    return (f"https://{subdomain}.tncrtinfo.com/{path}",
+            f"{county} County Court Clerk (TNCRTInfo)")
+
+
+# ── Case search ────────────────────────────────────────────────────────────────
+
+@public_bp.route("/api/case-search", methods=["POST"])
+@require_auth
+def api_case_search():
+    data      = request.get_json(force=True) or {}
+    county    = (data.get("county") or "").strip()
+    case_type = (data.get("case_type") or "").strip().lower()
+    if not county or case_type not in ("criminal", "civil"):
+        return jsonify({"error": "Please select a county and case type."}), 400
+    url, court_name = _clerk_url(county, case_type)
+    record = {
+        "timestamp":   datetime.now().isoformat(),
+        "county":      county,
+        "case_type":   case_type,
+        "ip":          request.remote_addr,
+        "destination": url,
+    }
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+    write_json(CASE_SEARCHES_DIR / f"search_{ts}.json", record)
+    return jsonify({"url": url, "court_name": court_name})

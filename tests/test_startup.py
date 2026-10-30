@@ -3,6 +3,7 @@
 from cryptography.fernet import Fernet
 
 import app as app_module
+from services import storage
 
 
 def test_security_headers(client):
@@ -44,10 +45,9 @@ def test_startup_reports_plaintext_records(monkeypatch, make_client):
 
 
 def test_startup_ok_with_encrypted_records(monkeypatch, make_client):
-    import shared
     monkeypatch.setenv("SECRET_KEY", "x" * 64)
     make_client("encOne")
-    shared.save_client(shared.load_client("encOne"))
+    storage.save_client(storage.load_client("encOne"))
     assert app_module.check_startup_config() == []
 
 

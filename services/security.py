@@ -5,7 +5,6 @@ Wire into the app with security.init_app(app).
 
 import hmac
 import json
-import os
 import secrets
 import sys
 import threading
@@ -14,6 +13,7 @@ import time
 from flask import current_app, jsonify, redirect, request, session, url_for
 
 import shared
+from services import storage
 
 MAX_FAILURES   = 5
 WINDOW_SECONDS = 15 * 60
@@ -59,25 +59,11 @@ def _save_failures(data: dict) -> None:
         ordered = sorted(keep.items(), key=rank)
         keep = dict(ordered[len(keep) - MAX_TRACKED_KEYS:])
     path = _failures_path()
-    tmp  = path.with_name(path.name + ".tmp")
     try:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        tmp.write_text(json.dumps(keep), encoding="utf-8")
-        for attempt in range(5):
-            try:
-                os.replace(tmp, path)
-                return
-            except PermissionError:
-                if attempt == 4:
-                    raise
-                time.sleep(0.05)
+        storage.write_json(path, keep, indent=None)
     except Exception as exc:
         # A login must never 500 because the throttle file is locked.
         print(f"[warn] could not save {path.name}: {exc}", file=sys.stderr)
-        try:
-            tmp.unlink(missing_ok=True)
-        except Exception:
-            pass
 
 
 def _key(kind: str, username: str, ip: str) -> str:

@@ -3,7 +3,7 @@
 import pytest
 
 import blueprints.calendar as cal
-import shared
+from services import storage
 
 
 class _Events:
@@ -30,16 +30,16 @@ BODY = {"client_name": "Test Client", "date": "2026-11-02", "time": "10:00"}
 def test_anonymous_cannot_touch_client(client, make_client):
     make_client("victim")
     assert client.post("/calendar/schedule", json=BODY).status_code == 200
-    assert shared.load_client("victim")["activity_log"] == []
+    assert storage.load_client("victim")["activity_log"] == []
 
 
 def test_attorney_logs_on_accessible_client(attorney_session, make_client):
     make_client("victim")
     attorney_session.post("/calendar/schedule", json=BODY)
-    assert shared.load_client("victim")["activity_log"][-1]["action_type"] == "meeting_scheduled"
+    assert storage.load_client("victim")["activity_log"][-1]["action_type"] == "meeting_scheduled"
 
 
 def test_attorney_cannot_log_on_inaccessible_client(other_attorney_session, make_client):
     make_client("victim")
     other_attorney_session.post("/calendar/schedule", json=BODY)
-    assert shared.load_client("victim")["activity_log"] == []
+    assert storage.load_client("victim")["activity_log"] == []

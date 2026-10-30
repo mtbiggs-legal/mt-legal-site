@@ -10,12 +10,13 @@ import re
 import secrets
 import sys
 import threading
-import time
 import unicodedata
 from datetime import datetime
 from difflib import SequenceMatcher
 
 import shared
+from services import storage
+from services import accounts
 
 LIKELY           = 0.85
 POSSIBLE         = 0.70
@@ -84,7 +85,7 @@ def _display(attorney: str) -> str:
 
 
 def _candidates(exclude_username=None, skipped=None):
-    for c in shared.all_clients(skipped):
+    for c in storage.all_clients(skipped):
         uname = c.get("username")
         if uname == exclude_username:
             continue
@@ -216,10 +217,10 @@ PUBLIC_HIT_FIELDS = ("searched_name", "searched_role", "matched_name", "score", 
 def _viewer_can_see(hit: dict, viewer: str) -> bool:
     if hit.get("username"):
         try:
-            c = shared.load_client(hit["username"])
-        except shared.RecordDecryptError:
+            c = storage.load_client(hit["username"])
+        except storage.RecordDecryptError:
             return False
-        return bool(c) and shared.can_access_client(viewer, c)
+        return bool(c) and accounts.can_access_client(viewer, c)
     return hit.get("assigned_attorney") == viewer
 
 
@@ -285,14 +286,4 @@ def append_firm_log(record: dict) -> None:
                 pass
             data = []
         data.append(entry)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        tmp = path.with_name(path.name + ".tmp")
-        tmp.write_text(json.dumps(data[-_FIRM_LOG_MAX:], indent=2), encoding="utf-8")
-        for attempt in range(5):
-            try:
-                os.replace(tmp, path)
-                return
-            except PermissionError:
-                if attempt == 4:
-                    raise
-                time.sleep(0.05)
+        storage.write_json(path, data[-_FIRM_LOG_MAX:])

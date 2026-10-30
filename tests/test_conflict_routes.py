@@ -3,6 +3,7 @@
 import json
 
 import shared
+from services import storage
 
 
 def test_create_client_records_and_returns_redacted(other_attorney_session, make_client):
@@ -12,7 +13,7 @@ def test_create_client_records_and_returns_redacted(other_attorney_session, make
         "opposing_parties": ["Zed Corp"],
         "related_parties": [{"name": "Kim Smith", "relationship": "Spouse"}]}).get_json()
     assert d["conflict_warnings"] and "username" not in d["conflict_hits"][0]
-    rec = shared.load_client("bsmith")
+    rec = storage.load_client("bsmith")
     assert rec["opposing_parties"] == ["Zed Corp"]
     assert rec["related_parties"] == [{"name": "Kim Smith", "relationship": "Spouse"}]
     assert rec["conflict_checks"][0]["trigger"] == "create"
@@ -32,7 +33,7 @@ def test_manual_check_attached(attorney_session, make_client):
     make_client("c2", client_name="Other Person")
     attorney_session.post("/portal/attorney/conflict-check",
                           json={"names": ["Bob Smith"], "username": "c2"})
-    c2 = shared.load_client("c2")
+    c2 = storage.load_client("c2")
     assert c2["conflict_checks"][0]["trigger"] == "manual"
     assert c2["access_log"][-1]["action"] == "conflict_check"
 
@@ -61,7 +62,7 @@ def test_decision_flow(attorney_session, make_client):
                                          "decision": "waiver_obtained",
                                          "note": "Signed waiver 10/1"})
     assert r.status_code == 200
-    saved = shared.load_client("c2")["conflict_checks"][0]
+    saved = storage.load_client("c2")["conflict_checks"][0]
     assert saved["decision"] == "waiver_obtained" and saved["decided_by"] == "Endocide"
 
 
@@ -74,7 +75,7 @@ def test_update_client_rechecks_new_parties_only(attorney_session, make_client):
     r = attorney_session.post("/portal/attorney/update-client", json={
         "username": "c2", "related_parties": [{"name": "Bob Smith", "relationship": "Witness"}]})
     assert r.get_json()["conflict_hits"][0]["matched_name"] == "Robert Smith"
-    assert shared.load_client("c2")["conflict_checks"][-1]["trigger"] == "edit"
+    assert storage.load_client("c2")["conflict_checks"][-1]["trigger"] == "edit"
 
 
 def test_client_get_includes_redacted_checks_and_sidebar_badge(attorney_session, make_client):
@@ -110,7 +111,7 @@ def test_decision_history_kept(attorney_session, make_client):
                                      "decision": "declined", "note": "first"})
     attorney_session.post(url, json={"username": "c2", "check_id": chk["id"],
                                      "decision": "cleared", "note": "second"})
-    saved = shared.load_client("c2")["conflict_checks"][0]
+    saved = storage.load_client("c2")["conflict_checks"][0]
     assert saved["decision"] == "cleared"
     assert saved["decision_history"][0]["decision"] == "declined"
     assert saved["decision_history"][0]["decision_note"] == "first"
@@ -118,7 +119,7 @@ def test_decision_history_kept(attorney_session, make_client):
 
 def test_client_get_hits_redacted_to_public_fields(other_attorney_session, make_client,
                                                   monkeypatch):
-    from conflicts import PUBLIC_HIT_FIELDS
+    from services.conflicts import PUBLIC_HIT_FIELDS
     # The firm is solo, so every case type routes to the managing partner.
     # Route this one to the second account to keep covering cross-attorney redaction.
     monkeypatch.setitem(shared.CASE_ATTORNEY_MAP, "Civil Litigation", "SophiaH")

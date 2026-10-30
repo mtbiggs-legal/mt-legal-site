@@ -1,6 +1,6 @@
 """Public intake never reveals other clients (spec D3.1)."""
 
-import shared
+from services import storage
 
 
 def test_intake_returns_no_conflict_data(client, make_client):
@@ -13,7 +13,7 @@ def test_intake_returns_no_conflict_data(client, make_client):
     assert r.status_code == 200
     assert "conflict_warnings" not in d and "conflict_hits" not in d
     assert "Robert Smith" not in r.get_data(as_text=True)
-    rec = shared.load_client(d["portal_account"]["username"])
+    rec = storage.load_client(d["portal_account"]["username"])
     assert rec["opposing_parties"] == ["Acme Roofing"]
     chk = rec["conflict_checks"][0]
     assert chk["trigger"] == "intake" and chk["hits"][0]["matched_name"] == "Robert Smith"
@@ -24,7 +24,7 @@ def test_self_register_records_check(client, make_client):
     d = client.post("/client-register", json={"full_name": "Bob Smith",
                                                "password": "long-enough-1"}).get_json()
     assert "conflict" not in str(d).lower()
-    assert shared.load_client(d["username"])["conflict_checks"][0]["trigger"] == "self_register"
+    assert storage.load_client(d["username"])["conflict_checks"][0]["trigger"] == "self_register"
 
 
 def test_claim_document_new_account_records_check(client, make_client):
@@ -33,7 +33,7 @@ def test_claim_document_new_account_records_check(client, make_client):
         "full_name": "Bob Smith", "password": "long-enough-1",
         "draft_content": "<p>x</p>"}).get_json()
     assert "conflict" not in str(d).lower()
-    assert shared.load_client(d["username"])["conflict_checks"][0]["trigger"] == "claim"
+    assert storage.load_client(d["username"])["conflict_checks"][0]["trigger"] == "claim"
 
 
 def _intake(client, **overrides):
@@ -52,13 +52,13 @@ def test_intake_requires_email_and_phone(client):
 def test_intake_case_type_is_optional_and_defaults_to_other(client):
     r = _intake(client)
     assert r.status_code == 200
-    rec = shared.load_client(r.get_json()["portal_account"]["username"])
+    rec = storage.load_client(r.get_json()["portal_account"]["username"])
     assert rec["case_type"] == "Other"
 
 
 def test_intake_does_not_bill_the_prospective_client(client):
     r = _intake(client, case_type="Estate Planning")
-    rec = shared.load_client(r.get_json()["portal_account"]["username"])
+    rec = storage.load_client(r.get_json()["portal_account"]["username"])
     # The intake is logged as a zero-hour note; nothing is charged.
     assert all(float(e.get("hours", 0)) == 0 for e in rec.get("billing_log", []))
     assert not rec.get("hours_billed")

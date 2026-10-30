@@ -4,7 +4,7 @@ import types
 
 import pytest
 
-import shared
+from services import storage
 
 
 def _stub_anthropic(monkeypatch, reply_text="I understand your concern."):
@@ -28,7 +28,7 @@ def test_message_saved_and_ai_reply_returned(client_session, make_client, monkey
     assert data["success"] is True
     assert "Thank you for reaching out." in data["ai_reply"]
 
-    client = shared.load_client("testclient")
+    client = storage.load_client("testclient")
     assert len(client["messages"]) == 2
     assert client["messages"][0]["from"] == "client"
     assert client["messages"][1]["from"] == "ai"
@@ -40,7 +40,7 @@ def test_ai_reply_billed_01_hours(client_session, make_client, monkeypatch):
 
     client_session.post("/portal/client/message", json={"text": "Hello"})
 
-    client = shared.load_client("testclient")
+    client = storage.load_client("testclient")
     assert client["hours_billed"] == pytest.approx(0.1)
     ai_entries = [e for e in client["billing_log"] if e.get("type") == "ai_message"]
     assert len(ai_entries) == 1
@@ -57,7 +57,7 @@ def test_ai_billing_matches_billing_log_over_multiple_messages(
     for _ in range(3):
         client_session.post("/portal/client/message", json={"text": "Hello again"})
 
-    client = shared.load_client("testclient")
+    client = storage.load_client("testclient")
     assert client["hours_billed"] == pytest.approx(0.3)
     assert client["hours_billed"] == pytest.approx(
         sum(e["hours"] for e in client["billing_log"])
@@ -80,7 +80,7 @@ def test_anthropic_failure_still_saves_message(client_session, make_client, monk
     assert data["success"] is True
     assert "ai_reply" not in data
 
-    client = shared.load_client("testclient")
+    client = storage.load_client("testclient")
     assert len(client["messages"]) == 1          # only the client's message
     assert client["hours_billed"] == 0
     assert client["billing_log"] == []
@@ -130,7 +130,7 @@ def test_concurrent_attorney_reply_survives_the_ai_call(client_session, make_cli
     assert resp.status_code == 200
     assert resp.get_json()["ai_reply"] == "AI reply"
 
-    client = shared.load_client("testclient")
+    client = storage.load_client("testclient")
     by_text = {m["text"] for m in client["messages"]}
     assert by_text == {"Client message", "Attorney reply mid-call", "AI reply"}, (
         f"expected all three messages to survive, got: {client['messages']}"

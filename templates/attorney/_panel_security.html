@@ -1,0 +1,51 @@
+<!-- Parties & Security -->
+<div id="tab-security" class="portal-panel">
+  <div class="page-header" style="margin-bottom:1.1rem">
+    <h1 style="font-size:1.5rem">Parties &amp; Security</h1>
+    <p style="font-size:.88rem">Opposing and related parties feed the conflict checker. Access history is visible to attorneys only.</p>
+  </div>
+
+  <div class="card" style="margin-bottom:1rem">
+    <div class="portal-section-title">Parties</div>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label for="sec-opposing">Opposing parties (one per line)</label>
+        <textarea id="sec-opposing" rows="3"></textarea>
+      </div>
+      <div class="form-group full">
+        <label id="sec-related-label">Related parties</label>
+        <div id="sec-related-list" role="group" aria-labelledby="sec-related-label"></div>
+        <button class="btn btn-secondary" type="button" id="sec-add-related">+ Add related party</button>
+      </div>
+    </div>
+    <div class="btn-group" style="margin-top:.8rem">
+      <button type="button" class="btn btn-primary" id="sec-save-parties">Save parties &amp; re-check</button>
+    </div>
+    <div id="sec-parties-result" style="margin-top:.6rem"></div>
+  </div>
+
+  <div class="card" style="margin-bottom:1rem">
+    <div class="portal-section-title">Conflict checks</div>
+    <div id="sec-checks"></div>
+  </div>
+
+  <div class="card" style="margin-bottom:1rem">
+    <div class="portal-section-title">Co-counsel</div>
+    <div id="sec-cocounsel-list" style="margin-bottom:.6rem"></div>
+    <div id="sec-cocounsel-add" style="display:flex;gap:.5rem;align-items:center">
+      <select id="sec-cocounsel-select" aria-label="Attorney to add as co-counsel"></select>
+      <button type="button" class="btn btn-secondary" id="sec-cocounsel-add-btn">Add</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="portal-section-title">Access history</div>
+    <button type="button" class="btn btn-secondary" id="sec-load-access">Load access history</button>
+    <div id="sec-access-log" style="margin-top:.6rem;overflow-x:auto"></div>
+  </div>
+
+  <datalist id="sec-rel-options">
+    <option value="Spouse"><option value="Co-defendant"><option value="Witness">
+    <option value="Business partner"><option value="Employer"><option value="Parent/Guardian"><option value="Other">
+  </datalist>
+</div>

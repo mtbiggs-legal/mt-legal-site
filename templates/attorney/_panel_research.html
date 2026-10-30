@@ -1,0 +1,153 @@
+<!-- Research -->
+<div id="tab-research" class="portal-panel">
+  <div class="page-header" style="margin-bottom:1.1rem">
+    <h1 style="font-size:1.5rem">Legal Research</h1>
+    <p style="font-family:Arial,sans-serif;font-size:.88rem;color:var(--gray-3);margin:0">
+      AI-assisted issue analysis, authority research, and motion drafting. Always verify citations independently.
+    </p>
+  </div>
+
+  <!-- Client Picker — shown when accessing Research from global sidebar -->
+  <div id="res-client-picker" class="card" style="margin-bottom:1.1rem;padding:.85rem 1.1rem;display:none">
+    <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
+      <label style="font-size:.82rem;font-weight:700;color:var(--gray-3);white-space:nowrap">Link to Client:</label>
+      <input type="search" id="res-client-search" placeholder="Search clients by name…"
+             oninput="filterResClientList(this.value)"
+             style="flex:1;min-width:160px;font-size:.88rem;padding:.35rem .6rem;border:1px solid var(--gray-2);border-radius:4px">
+      <div id="res-client-badge" style="font-size:.82rem;font-weight:700;color:#2e7d32;display:none"></div>
+    </div>
+    <div id="res-client-dropdown" style="margin-top:.5rem;max-height:160px;overflow-y:auto;display:none;border:1px solid var(--gray-2);border-radius:4px;background:#fff"></div>
+  </div>
+  <!-- Token Usage Stats -->
+  <div id="token-usage-card" class="card" style="margin-bottom:1.1rem;padding:1rem 1.25rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+      <div style="font-size:.82rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gray-3)">AI Token Usage — This Account</div>
+      <button onclick="loadTokenUsage()" title="Refresh" style="background:none;border:none;color:var(--gray-3);cursor:pointer;font-size:.9rem;padding:0">↻</button>
+    </div>
+    <div id="token-usage-stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem">
+      <div class="tu-stat"><div class="tu-stat-val" id="tu-today-total">—</div><div class="tu-stat-lbl">Today's Tokens</div></div>
+      <div class="tu-stat"><div class="tu-stat-val" id="tu-total-all">—</div><div class="tu-stat-lbl">Total Tokens (All Time)</div></div>
+      <div class="tu-stat"><div class="tu-stat-val" id="tu-total-in">—</div><div class="tu-stat-lbl">Input Tokens (All Time)</div></div>
+      <div class="tu-stat"><div class="tu-stat-val" id="tu-total-out">—</div><div class="tu-stat-lbl">Output Tokens (All Time)</div></div>
+    </div>
+    <div id="tu-breakdown" style="margin-top:.85rem;display:none">
+      <div style="font-size:.75rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--gray-3);margin-bottom:.4rem">Breakdown by Operation</div>
+      <table id="tu-breakdown-table" style="width:100%;font-family:Arial,sans-serif;font-size:.82rem;border-collapse:collapse">
+        <thead>
+          <tr style="color:var(--gray-3);border-bottom:1px solid rgba(255,255,255,.07)">
+            <th style="text-align:left;padding:.25rem .4rem;font-weight:600">Operation</th>
+            <th style="text-align:right;padding:.25rem .4rem;font-weight:600">Calls</th>
+            <th style="text-align:right;padding:.25rem .4rem;font-weight:600">Input</th>
+            <th style="text-align:right;padding:.25rem .4rem;font-weight:600">Output</th>
+            <th style="text-align:right;padding:.25rem .4rem;font-weight:600">Total</th>
+          </tr>
+        </thead>
+        <tbody id="tu-breakdown-body"></tbody>
+      </table>
+    </div>
+    <div id="tu-error" style="font-size:.8rem;color:var(--red);display:none">Could not load token usage.</div>
+  </div>
+
+  <!-- Card 1: Legal Issue Analysis -->
+  <div class="card" style="margin-bottom:1.1rem">
+    <div class="portal-section-title">Legal Issue Analysis</div>
+
+    <div class="form-group" style="margin-bottom:.9rem">
+      <label style="font-size:.82rem">Case Summary <span style="color:var(--gray-3);font-weight:normal">(pulled from intake — edit as needed)</span></label>
+      <textarea id="res-legal-issue" rows="5"
+        placeholder="Select a client to load their case summary…"
+        style="font-family:Arial,sans-serif;font-size:.88rem;line-height:1.6"></textarea>
+    </div>
+
+    <button class="btn btn-primary" onclick="analyzeIssues()" id="res-analyze-btn">Identify Legal Issues →</button>
+    <span id="res-analyze-spinner" style="display:none"><span class="res-spinner"></span>Analyzing…</span>
+    <div id="res-analyze-err" style="color:var(--red);font-family:Arial,sans-serif;font-size:.85rem;margin-top:.5rem"></div>
+
+    <div id="res-issues-section" style="display:none">
+      <div class="res-section-label">Identified Issues</div>
+      <div id="res-issues-content" class="res-issues-block"></div>
+      <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.75rem">
+        <button class="btn btn-primary" onclick="saveResearchReport('analysis')" style="padding:.4rem .85rem;font-size:.84rem">&#8595; Save to Documents</button>
+        <span id="res-analysis-save-result" style="font-family:Arial,sans-serif;font-size:.84rem"></span>
+      </div>
+      <button class="btn btn-primary" onclick="findAuthority()" id="res-authority-btn" style="margin-top:.2rem">Research Legal Authority →</button>
+      <span id="res-authority-spinner" style="display:none"><span class="res-spinner"></span>Researching…</span>
+      <div id="res-authority-err" style="color:var(--red);font-family:Arial,sans-serif;font-size:.85rem;margin-top:.5rem"></div>
+    </div>
+
+    <div id="res-authority-section" style="display:none">
+      <div class="res-section-label">Legal Authority</div>
+      <div id="res-authority-content" class="res-memo-block"></div>
+      <div style="display:flex;align-items:center;gap:.6rem;margin-top:.6rem">
+        <button class="btn btn-primary" onclick="saveResearchReport('authority')" style="padding:.4rem .85rem;font-size:.84rem">&#8595; Save to Documents</button>
+        <span id="res-authority-save-result" style="font-family:Arial,sans-serif;font-size:.84rem"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 2: Document Review & Motion Drafting -->
+  <div class="card">
+    <div class="portal-section-title">Document Review &amp; Motion Drafting</div>
+    <p style="font-family:Arial,sans-serif;font-size:.84rem;color:var(--gray-3);margin:.0 0 1rem">
+      Select a warrant, affidavit, or other document from the client's folder. The AI will read it, spot issues, and draft a motion.
+    </p>
+
+    <div class="form-grid" style="margin-bottom:.75rem">
+      <div class="form-group">
+        <label>Select Document</label>
+        <select id="res-doc-select" style="font-size:.88rem">
+          <option value="">— Select a document —</option>
+        </select>
+      </div>
+      <div class="form-group" style="display:flex;align-items:flex-end">
+        <button class="btn btn-primary" onclick="issueSpotDocument()">Read &amp; Issue Spot →</button>
+        <span id="res-spot-spinner" style="display:none;margin-left:.6rem"><span class="res-spinner"></span>Reading…</span>
+      </div>
+    </div>
+    <div id="res-spot-err" style="color:var(--red);font-family:Arial,sans-serif;font-size:.85rem;margin-bottom:.5rem"></div>
+
+    <div id="res-spot-section" style="display:none">
+      <div class="res-section-label">Issues Found in Document</div>
+      <div id="res-spot-content" class="res-issues-block"></div>
+    </div>
+
+    <!-- Drafting -->
+    <div style="margin-top:1.1rem">
+      <div class="res-section-label" style="margin-top:0">Draft a Motion</div>
+      <div class="form-grid" style="margin-bottom:.75rem">
+        <div class="form-group">
+          <label>Motion Type</label>
+          <select id="res-motion-type" style="font-size:.88rem">
+            <option>Motion to Suppress</option>
+            <option>Motion to Dismiss</option>
+            <option>Motion for Bond Reduction</option>
+            <option>Motion in Limine</option>
+            <option>Motion for Discovery</option>
+            <option>Response to State's Motion</option>
+            <option>Motion for New Trial</option>
+          </select>
+        </div>
+        <div class="form-group" style="display:flex;align-items:flex-end">
+          <button class="btn btn-primary" onclick="draftMotion()">Draft Motion →</button>
+          <span id="res-draft-spinner" style="display:none;margin-left:.6rem"><span class="res-spinner"></span>Drafting…</span>
+        </div>
+      </div>
+      <div id="res-draft-err" style="color:var(--red);font-family:Arial,sans-serif;font-size:.85rem;margin-bottom:.5rem"></div>
+
+      <div id="res-draft-section" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;margin-bottom:.6rem">
+          <div class="res-section-label" style="margin:0">Draft</div>
+          <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+            <select id="res-save-cat" style="font-size:.82rem;padding:.3rem .6rem;border:1px solid var(--gray-2);border-radius:4px">
+              <option value="Motions">Save to: Motions</option>
+              <option value="Litigation Drafts">Save to: Litigation Drafts</option>
+            </select>
+            <button class="btn btn-primary" onclick="saveResearchDraft()" style="padding:.4rem .85rem;font-size:.84rem">↓ Save to Documents</button>
+          </div>
+        </div>
+        <textarea id="res-draft-content" class="res-draft-area"></textarea>
+        <div id="res-save-result" style="margin-top:.5rem;font-family:Arial,sans-serif;font-size:.85rem"></div>
+      </div>
+    </div>
+  </div>
+</div>

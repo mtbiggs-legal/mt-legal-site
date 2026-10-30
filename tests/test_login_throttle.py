@@ -2,8 +2,9 @@
 
 import pytest
 
-import security
+from services import security
 import shared
+from services import accounts
 
 
 @pytest.fixture
@@ -16,7 +17,7 @@ def clock(monkeypatch):
 @pytest.fixture
 def atty_pw(monkeypatch):
     monkeypatch.setitem(shared.ATTORNEYS["Endocide"], "password",
-                        shared.hash_password("correct-horse"))
+                        accounts.hash_password("correct-horse"))
 
 
 def _login(c, pw):
@@ -60,7 +61,7 @@ def test_success_clears_failures(client, clock, atty_pw):
 
 
 def test_client_login_throttled(client, clock, make_client):
-    make_client("jdoe", password=shared.hash_password("right-pass"))
+    make_client("jdoe", password=accounts.hash_password("right-pass"))
     for _ in range(5):
         client.post("/client-login", data={"username": "jdoe", "password": "nope"})
     r = client.post("/client-login", data={"username": "jdoe", "password": "right-pass"})
@@ -68,7 +69,7 @@ def test_client_login_throttled(client, clock, make_client):
 
 
 def test_claim_document_throttled(client, clock, make_client):
-    make_client("tclient", client_name="Test Client", password=shared.hash_password("right-pass"))
+    make_client("tclient", client_name="Test Client", password=accounts.hash_password("right-pass"))
     body = {"full_name": "Test Client", "password": "wrong-pass", "draft_content": "<p>x</p>"}
     for _ in range(5):
         assert client.post("/drafting/claim-document", json=body).status_code == 403

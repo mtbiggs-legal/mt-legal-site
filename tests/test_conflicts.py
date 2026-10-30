@@ -4,8 +4,9 @@ import json
 
 import pytest
 
-import conflicts
+from services import conflicts
 import shared
+from services import storage
 from conftest import flask_app
 
 
@@ -158,7 +159,7 @@ def test_all_clients_skipped_list(make_client, tmp_path):
     make_client("c1")
     (tmp_path / "accounts" / "bad.json").write_bytes(b"not-a-fernet-token")
     skipped = []
-    assert len(shared.all_clients(skipped)) == 1
+    assert len(storage.all_clients(skipped)) == 1
     assert skipped == ["bad"]
 
 

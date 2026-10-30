@@ -54,6 +54,7 @@ if not hasattr(_bcrypt, "hashpw"):
     _bcrypt.checkpw = lambda pw, hashed: hashed == b"$2b$test$" + pw
 
 import shared          # noqa: E402
+from services import storage
 import blueprints.email_service as _email_real  # noqa: E402
 REAL_SEND_STATEMENT_EMAIL = getattr(_email_real, "send_statement_email", None)
 import app as _app_module  # noqa: E402
@@ -135,7 +136,7 @@ def patch_dirs(tmp_path, monkeypatch, sent_statement_emails):
     # Billing: treat the opening-statement migration as done, send notices
     # inline, and never call SendGrid. Tests that need otherwise override these.
     (settings_dir / "migrations.json").write_text('{"opening_statements": "test"}')
-    import billing as _billing
+    from services import billing as _billing
     monkeypatch.setattr(_billing, "NOTICE_ASYNC", False, raising=False)
     import blueprints.email_service as _email
     monkeypatch.setattr(_email, "send_statement_email",
@@ -208,13 +209,13 @@ def other_attorney_session(patch_dirs):
 def issue_test_statement():
     """Give a client billed, statement-issued hours: appends a log entry and
     issues a manual statement (no notice)."""
-    import billing
+    from services import billing
     def _issue(username, hours, date="2026-10-01"):
-        c = shared.load_client(username)
+        c = storage.load_client(username)
         c.setdefault("billing_log", []).append(
             {"date": date, "hours": hours, "note": "test work", "category": "Other"})
         c["hours_billed"] = round(sum(float(e.get("hours", 0)) for e in c["billing_log"]), 2)
-        shared._write_record(shared.CLIENT_ACCOUNTS_DIR / f"{username}.json", c)
+        storage._write_record(shared.CLIENT_ACCOUNTS_DIR / f"{username}.json", c)
         return billing.issue_statement(username, reason="manual", issued_by="test", notify=False)
     return _issue
 

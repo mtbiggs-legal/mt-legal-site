@@ -5,7 +5,7 @@ import types
 
 import pytest
 
-import scheduling_orders as so
+from services import scheduling_orders as so
 import shared
 
 

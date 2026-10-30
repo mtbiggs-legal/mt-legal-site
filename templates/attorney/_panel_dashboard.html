@@ -1,0 +1,101 @@
+<!-- ── Global Attorney Dashboard ─────────────────────────────────────────── -->
+<div id="atty-dashboard" class="portal-panel active">
+  <div class="page-header" style="margin-bottom:1.5rem">
+    <h1 style="font-size:1.5rem">Dashboard</h1>
+    <p style="font-family:Arial,sans-serif;font-size:.88rem;color:var(--gray-3);margin:0">
+      {{ attorney.display }} &mdash; All active clients
+    </p>
+  </div>
+  <div class="dash-grid">
+
+    <!-- Master Calendar — spans cols 1–2 -->
+    <div class="card dash-card" style="grid-column:1 / 3">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">
+        <div class="portal-section-title" style="margin-bottom:0">Master Calendar</div>
+        <div style="display:flex;gap:.4rem;align-items:center">
+          <button class="month-cal-nav-btn" onclick="calPrevMonth()" title="Previous month">&#8249;</button>
+          <span id="cal-month-label" style="font-family:Arial,sans-serif;font-size:.9rem;font-weight:700;color:var(--navy);min-width:130px;text-align:center"></span>
+          <button class="month-cal-nav-btn" onclick="calNextMonth()" title="Next month">&#8250;</button>
+          <button class="doc-btn" onclick="openAddEventModal()" style="margin-left:.4rem">+ Add Event</button>
+        </div>
+      </div>
+      <div class="month-cal-wrap">
+        <div id="month-cal-container" style="min-height:200px">
+          <p class="dash-empty">Loading…</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Master Billable Hours — col 3 row 1 -->
+    <div class="card dash-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.85rem">
+        <div class="portal-section-title" style="margin-bottom:0">Billable Hours</div>
+        <button class="doc-btn" onclick="openDashLogTimeModal()">+ Log Time</button>
+      </div>
+      <div class="dash-table-wrap">
+        <table class="dash-table">
+          <thead><tr><th>Client</th><th>Hours</th></tr></thead>
+          <tbody id="dash-billing-tbody"><tr><td colspan="2" class="dash-empty">Loading…</td></tr></tbody>
+          <tfoot>
+            <tr>
+              <td style="font-family:Arial,sans-serif;font-size:.78rem;font-weight:bold;color:var(--gray-3);padding:.55rem .7rem">Total (all clients)</td>
+              <td id="dash-billing-total" style="font-family:Georgia,serif;font-weight:bold;color:var(--navy);padding:.55rem .7rem">0</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- Deadline Alerts — col 1 row 2 -->
+    <div class="card dash-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.85rem">
+        <div class="portal-section-title" style="margin-bottom:0">Deadline Alerts</div>
+        <span style="font-family:Arial,sans-serif;font-size:.72rem;color:var(--gray-3)">Next 90 days</span>
+      </div>
+      <div class="dash-table-wrap">
+        <table class="dash-table">
+          <thead><tr><th>Client</th><th>Legal Issue / Matter</th><th>Court Date</th><th>Days</th></tr></thead>
+          <tbody id="dash-deadlines-tbody"><tr><td colspan="4" class="dash-empty">Loading…</td></tr></tbody>
+        </table>
+      </div>
+
+      <!-- Follow-up needed sub-box -->
+      <div style="margin-top:1rem;border-top:1px solid var(--gray-2);padding-top:.85rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem">
+          <div style="font-family:Arial,sans-serif;font-size:.8rem;font-weight:700;color:#c0392b;display:flex;align-items:center;gap:.35rem">
+            <span>⚠</span> Follow-Up Needed
+          </div>
+          <span style="font-family:Arial,sans-serif;font-size:.7rem;color:var(--gray-3)">No contact in 30+ days</span>
+        </div>
+        <div class="dash-table-wrap">
+          <table class="dash-table">
+            <thead><tr><th>Client</th><th>Last Contact</th><th>Days</th></tr></thead>
+            <tbody id="dash-followup-tbody"><tr><td colspan="3" class="dash-empty">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Activity — spans cols 2–3 row 2 -->
+    <div class="card dash-card" style="grid-column:2 / 4">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.85rem">
+        <div class="portal-section-title" style="margin-bottom:0">Recent Activity</div>
+        <span style="font-family:Arial,sans-serif;font-size:.72rem;color:var(--gray-3)">20 most recent</span>
+      </div>
+      <div id="dash-activity-list" style="max-height:280px;overflow-y:auto">
+        <p class="dash-empty">Loading...</p>
+      </div>
+      <div style="border-top:1px solid var(--gray-1);margin-top:.85rem;padding-top:.75rem">
+        <div style="font-family:Arial,sans-serif;font-size:.72rem;color:var(--gray-3);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.05em">Recent Files</div>
+        <div class="dash-table-wrap">
+          <table class="dash-table">
+            <thead><tr><th>File Name</th><th>Client</th><th>Category</th><th>Modified</th></tr></thead>
+            <tbody id="dash-files-tbody"><tr><td colspan="4" class="dash-empty">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+
+  </div><!-- end .dash-grid -->
+</div>

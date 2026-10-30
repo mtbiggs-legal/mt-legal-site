@@ -1,21 +1,17 @@
 """blueprints/intake.py — Client intake form and submission."""
 
-import json
 from datetime import datetime, date, timedelta
 from flask import Blueprint, render_template, request, jsonify
 
 from shared import (
-    require_auth,
-    CLIENT_DATA_DIR, CLIENT_FILES_DIR,
-    ATTORNEYS, CASE_ATTORNEY_MAP, MODEL,
-    get_anthropic_client, create_intake_doc,
-    save_client, hash_password, generate_temp_password,
-    _log_activity, _make_username,
-    GOOGLE_LIBS, TOKEN_FILE,
-    _push_court_date_to_gcal,
+    require_auth, CLIENT_DATA_DIR, CLIENT_FILES_DIR, ATTORNEYS, CASE_ATTORNEY_MAP,
+    MODEL, get_anthropic_client, TOKEN_FILE,
 )
+from services.gcal import create_intake_doc, GOOGLE_LIBS, _push_court_date_to_gcal
+from services.storage import save_client, _log_activity, write_json
+from services.accounts import hash_password, generate_temp_password, _make_username
 from blueprints.email_service import send_intake_email
-from conflicts import clean_names, record_check
+from services.conflicts import clean_names, record_check
 
 intake_bp = Blueprint("intake", __name__)
 
@@ -91,8 +87,7 @@ def intake_submit():
         "urgent_dates":      urgent_dates,
         "saved_file":        filename,
     }
-    with open(CLIENT_DATA_DIR / filename, "w") as f:
-        json.dump(record, f, indent=2)
+    write_json(CLIENT_DATA_DIR / filename, record)
 
     # Optional: save Google Doc
     doc_link = None
@@ -195,19 +190,19 @@ def intake_submit():
 
     # Auto-save intake PDF
     try:
-        from blueprints.portal_attorney import _generate_client_pdf, _generate_intake_html
+        from services.documents import generate_client_pdf, generate_intake_html
         pdf_fields = {
             **data, "portal_username": portal_username,
             "atty_display": atty_display, "urgent_dates": urgent_dates,
         }
-        pdf_bytes     = _generate_client_pdf(pdf_fields)
+        pdf_bytes     = generate_client_pdf(pdf_fields)
         intake_doc_dir = CLIENT_FILES_DIR / portal_username / "documents" / "Intake"
         intake_doc_dir.mkdir(parents=True, exist_ok=True)
         if pdf_bytes:
             with open(intake_doc_dir / f"intake_{timestamp}.pdf", "wb") as pf:
                 pf.write(pdf_bytes)
         else:
-            intake_html = _generate_intake_html(data, urgent_dates, portal_username, atty_display)
+            intake_html = generate_intake_html(data, urgent_dates, portal_username, atty_display)
             with open(intake_doc_dir / f"intake_{timestamp}.html", "w", encoding="utf-8") as hf:
                 hf.write(intake_html)
     except Exception:

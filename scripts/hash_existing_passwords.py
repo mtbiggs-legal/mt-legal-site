@@ -27,6 +27,8 @@ from dotenv import load_dotenv  # noqa: E402
 load_dotenv(ROOT / ".env")
 
 import shared  # noqa: E402
+from services import storage
+from services import accounts
 
 
 def main():
@@ -39,10 +41,10 @@ def main():
     if args.apply and not args.backup_dir:
         parser.error("--backup-dir is required with --apply")
     if args.apply:
-        shared.require_outside_dir(args.backup_dir, ROOT)
+        storage.require_outside_dir(args.backup_dir, ROOT)
 
     skipped = []
-    pending = shared.upgrade_all_plaintext_passwords(apply=False, skipped=skipped)
+    pending = accounts.upgrade_all_plaintext_passwords(apply=False, skipped=skipped)
     if skipped:
         print("Could not decrypt:")
         for name in skipped:
@@ -62,7 +64,7 @@ def main():
     backup.parent.mkdir(parents=True, exist_ok=True)
     shutil.copytree(shared.CLIENT_ACCOUNTS_DIR, backup)
     print(f"\nBackup written to: {backup}")
-    done = shared.upgrade_all_plaintext_passwords()
+    done = accounts.upgrade_all_plaintext_passwords()
     print(f"Done — {len(done)} password(s) hashed; those clients must set a new "
           "password at next login.")
     return 0

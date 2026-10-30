@@ -7,18 +7,18 @@ undo a statement or a sent notice. billing_log is append-only; the ledger
 records how many leading entries are covered ("covered_through").
 
 LOCK-ORDER INVARIANT: a ledger lock may be held while briefly taking a client
-lock (shared.load_client). Never take a ledger lock, call any billing function,
-or call shared.save_client while holding a client lock.
+lock (storage.load_client). Never take a ledger lock, call any billing function,
+or call storage.save_client while holding a client lock.
 """
 
 import json
 import math
-import os
 import sys
 import threading
 from datetime import datetime
 
 import shared
+from services import storage
 
 DEFAULT_STATEMENT_THRESHOLD = 2000.0
 MIN_THRESHOLD = 100.0
@@ -39,21 +39,11 @@ def _now() -> str:
 # ── Small JSON files (settings, migration flag) ──────────────────────────────
 
 def _read_json(path) -> dict:
-    if not path.exists():
-        return {}
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-        return data if isinstance(data, dict) else {}
-    except Exception:
-        print(f"[warn] {path.name} unreadable — using defaults", file=sys.stderr)
-        return {}
+    data = storage.read_json(path, {})
+    return data if isinstance(data, dict) else {}
 
 
-def _write_json(path, data: dict) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_name(path.name + ".tmp")
-    tmp.write_text(json.dumps(data, indent=2), encoding="utf-8")
-    os.replace(tmp, path)
+_write_json = storage.write_json
 
 
 # ── Thresholds ───────────────────────────────────────────────────────────────
@@ -111,7 +101,7 @@ def _ledger_lock(username: str) -> threading.Lock:
 
 
 def _ledger_path(username: str):
-    if not username or shared.safe_username(username) != username:
+    if not username or storage.safe_username(username) != username:
         raise ValueError("unsafe username")
     return shared.CLIENT_BILLING_DIR / f"{username}.json"
 
@@ -124,7 +114,7 @@ def _read_ledger(username: str) -> dict:
     path = _ledger_path(username)
     if not path.exists():
         return _empty_ledger()
-    ledger = shared._read_record(path)
+    ledger = storage._read_record(path)
     for key, value in _empty_ledger().items():
         ledger.setdefault(key, value)
     return ledger
@@ -132,12 +122,12 @@ def _read_ledger(username: str) -> dict:
 
 def _write_ledger(username: str, ledger: dict) -> None:
     shared.CLIENT_BILLING_DIR.mkdir(parents=True, exist_ok=True)
-    shared._write_record(_ledger_path(username), ledger)
+    storage._write_record(_ledger_path(username), ledger)
 
 
 def load_ledger(username: str) -> dict:
     """Read-only snapshot of a client's ledger (empty if none)."""
-    if not username or shared.safe_username(username) != username:
+    if not username or storage.safe_username(username) != username:
         return _empty_ledger()
     return _read_ledger(username)
 
@@ -185,10 +175,10 @@ def issue_statement(username: str, *, reason: str, issued_by: str, notify: bool,
     """Issue a statement for all unbilled entries. Returns the statement, or
     None when there's nothing (or nothing positive) to bill, or when
     only_if_over_threshold and the threshold isn't reached."""
-    if not username or shared.safe_username(username) != username:
+    if not username or storage.safe_username(username) != username:
         return None
     with _ledger_lock(username):
-        client = shared.load_client(username)
+        client = storage.load_client(username)
         if not client:
             return None
         ledger = _read_ledger(username)
@@ -229,10 +219,10 @@ def issue_statement(username: str, *, reason: str, issued_by: str, notify: bool,
 def set_baseline(username: str) -> bool:
     """Mark every current entry as visible without issuing a statement
     (used by the migration for clients with no positive time)."""
-    if not username or shared.safe_username(username) != username:
+    if not username or storage.safe_username(username) != username:
         return False
     with _ledger_lock(username):
-        client = shared.load_client(username)
+        client = storage.load_client(username)
         if not client:
             return False
         ledger = _read_ledger(username)
@@ -320,7 +310,7 @@ def _claimable(statement: dict) -> bool:
 
 def send_pending_notices(username: str) -> None:
     """Claim pending notices under the ledger lock, send outside it, finalise."""
-    if not username or shared.safe_username(username) != username:
+    if not username or storage.safe_username(username) != username:
         return
     with _ledger_lock(username):
         ledger = _read_ledger(username)
@@ -341,7 +331,7 @@ def send_pending_notices(username: str) -> None:
 def _deliver(username: str, claimed: list) -> None:
     try:
         from blueprints import email_service
-        client = shared.load_client(username) or {}
+        client = storage.load_client(username) or {}
         email = (client.get("email") or "").strip()
         name = client.get("client_name") or username
         results = {}
@@ -375,7 +365,7 @@ def _deliver(username: str, claimed: list) -> None:
 
 
 def request_resend(username: str, statement_id: str) -> bool:
-    if not username or shared.safe_username(username) != username:
+    if not username or storage.safe_username(username) != username:
         return False
     with _ledger_lock(username):
         ledger = _read_ledger(username)
@@ -405,7 +395,7 @@ def _check_fingerprint(username: str, client: dict, ledger: dict) -> None:
 
 
 def after_client_save(username: str) -> None:
-    """Called by shared.save_client after it releases the client lock.
+    """Called by storage.save_client after it releases the client lock.
     Cost per save: the migration-flag read, then one locked load_client +
     ledger read in issue_statement (which also checks the fingerprint), then
     one locked ledger read in send_pending_notices — fine at this app's scale."""

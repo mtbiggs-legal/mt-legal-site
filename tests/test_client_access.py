@@ -6,6 +6,7 @@ import re
 import pytest
 
 import shared
+from services import storage
 from conftest import flask_app
 
 
@@ -58,7 +59,7 @@ def _call(c, method, url, payload):
 def test_unassigned_attorney_gets_404(other_attorney_session, method, url, payload, expected):
     resp = _call(other_attorney_session, method, url, payload)
     assert resp.status_code == 404
-    assert shared.load_client("victim")["access_log"] == []
+    assert storage.load_client("victim")["access_log"] == []
 
 
 @pytest.mark.parametrize("method,url,payload,expected", ROUTES + ASSIGNED_ONLY)
@@ -68,24 +69,24 @@ def test_assigned_attorney_allowed(attorney_session, method, url, payload, expec
 
 @pytest.mark.parametrize("method,url,payload,expected", ROUTES)
 def test_co_counsel_allowed(other_attorney_session, method, url, payload, expected):
-    c = shared.load_client("victim")
+    c = storage.load_client("victim")
     c["co_counsel"] = ["SophiaH"]
-    shared.save_client(c)
+    storage.save_client(c)
     assert _call(other_attorney_session, method, url, payload).status_code in expected
 
 
 @pytest.mark.parametrize("method,url,payload,expected", ASSIGNED_ONLY)
 def test_co_counsel_denied_assigned_only_routes(other_attorney_session, method, url, payload, expected):
-    c = shared.load_client("victim")
+    c = storage.load_client("victim")
     c["co_counsel"] = ["SophiaH"]
-    shared.save_client(c)
+    storage.save_client(c)
     assert _call(other_attorney_session, method, url, payload).status_code == 404
 
 
 def test_denied_update_does_not_change_record(other_attorney_session):
     other_attorney_session.post("/portal/attorney/update-client",
                                 json={"username": "victim", "phone": "555"})
-    assert not shared.load_client("victim").get("phone")
+    assert not storage.load_client("victim").get("phone")
 
 
 def test_denied_delete_keeps_file(other_attorney_session, tmp_path):
@@ -97,7 +98,7 @@ def test_denied_delete_keeps_file(other_attorney_session, tmp_path):
 def test_repeated_previews_logged_once(attorney_session):
     for _ in range(2):
         attorney_session.get("/portal/attorney/preview/victim/Motions/a.txt")
-    log = shared.load_client("victim")["access_log"]
+    log = storage.load_client("victim")["access_log"]
     assert [e["action"] for e in log] == ["view_document_preview"]
 
 
@@ -139,7 +140,10 @@ def test_every_client_route_is_guarded():
     load_client_for_attorney, or this test fails."""
     offenders = []
     for rule in flask_app.url_map.iter_rules():
-        if not rule.endpoint.startswith("portal_attorney."):
+        # Attorney routes live in several blueprints (research, insights), so
+        # match on the URL as well as the portal_attorney blueprint.
+        if not (rule.endpoint.startswith("portal_attorney.")
+                or rule.rule.startswith("/portal/attorney/")):
             continue
         name = rule.endpoint.split(".", 1)[1]
         fn   = inspect.unwrap(flask_app.view_functions[rule.endpoint])

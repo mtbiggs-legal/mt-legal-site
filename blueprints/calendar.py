@@ -4,11 +4,10 @@ import os
 from datetime import datetime, timedelta
 from flask import Blueprint, request, jsonify, session
 
-from shared import (
-    require_auth,
-    GOOGLE_LIBS, CALENDAR_SCOPES, CREDENTIALS_FILE, TOKEN_FILE,
-    get_calendar_service, all_clients, _log_activity, can_access_client,
-)
+from shared import require_auth, CALENDAR_SCOPES, CREDENTIALS_FILE, TOKEN_FILE
+from services.gcal import GOOGLE_LIBS, get_calendar_service
+from services.storage import all_clients, _log_activity
+from services.accounts import can_access_client
 
 calendar_bp = Blueprint("calendar", __name__)
 

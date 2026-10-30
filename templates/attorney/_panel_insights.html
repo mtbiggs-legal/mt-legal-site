@@ -1,0 +1,159 @@
+<!-- ── Insights Panel ──────────────────────────────────────────────────── -->
+<div id="tab-insights" class="portal-panel">
+  <div class="page-header" style="margin-bottom:1rem">
+    <h1 style="font-size:1.5rem">&#128202; Firm Insights</h1>
+    <p style="font-family:Arial,sans-serif;font-size:.88rem;color:var(--gray-3);margin:0">
+      Macro data, lead analytics, and tax reporting for {{ firm_name }}
+    </p>
+  </div>
+
+  <!-- Billing settings -->
+  <div class="card" id="bill-settings-card" style="margin-bottom:1rem">
+    <div class="ins-section-title" style="margin-top:0">Billing Settings</div>
+    <div class="form-group">
+      <label for="bill-threshold">Statement threshold ($)</label>
+      <input type="number" id="bill-threshold" min="100" max="100000" step="50" />
+    </div>
+    <button type="button" class="btn btn-secondary" id="bill-threshold-save">Save</button>
+    <div id="bill-settings-result"></div>
+    <p class="sec-note">A statement is issued automatically when a client's unbilled time reaches this amount.</p>
+  </div>
+
+  <!-- ── Site Traffic ────────────────────────────────────────── -->
+  <div class="card" style="margin-bottom:1rem">
+    <div class="ins-section-title" style="margin-top:0">Site Traffic — Page Views</div>
+    <div class="ins-stat-grid" id="ins-traffic-grid" style="grid-template-columns:repeat(5,1fr)">
+      <div class="ins-stat"><div class="ins-stat-val" id="pv-index">—</div><div class="ins-stat-lbl">Home</div></div>
+      <div class="ins-stat"><div class="ins-stat-val" id="pv-meet_the_firm">—</div><div class="ins-stat-lbl">Meet the Firm</div></div>
+      <div class="ins-stat"><div class="ins-stat-val" id="pv-intake">—</div><div class="ins-stat-lbl">Client Intake</div></div>
+      <div class="ins-stat"><div class="ins-stat-val" id="pv-research">—</div><div class="ins-stat-lbl">Research Bot</div></div>
+      <div class="ins-stat"><div class="ins-stat-val" id="pv-drafting">—</div><div class="ins-stat-lbl">Legal Documents</div></div>
+    </div>
+    <p style="font-family:Arial,sans-serif;font-size:.72rem;color:var(--gray-3);margin:.4rem 0 0">Counts one visit per browser session per page. Resets only if visitors clear their browser data.</p>
+  </div>
+
+  <!-- ── Firm Snapshot ───────────────────────────────────────── -->
+  <div class="card" style="margin-bottom:1rem">
+    <div class="ins-section-title" style="margin-top:0">Firm Snapshot — All Time</div>
+    <div class="ins-stat-grid" id="ins-snapshot-grid">
+      <div class="ins-stat"><div class="ins-stat-val" id="ins-total-clients">—</div><div class="ins-stat-lbl">Total Clients</div></div>
+      <div class="ins-stat"><div class="ins-stat-val" id="ins-total-hours">—</div><div class="ins-stat-lbl">Hours Billed (All Time)</div></div>
+      <div class="ins-stat"><div class="ins-stat-val gold" id="ins-revenue-billed">—</div><div class="ins-stat-lbl">Revenue Billed</div></div>
+      <div class="ins-stat"><div class="ins-stat-val gold" id="ins-revenue-collected">—</div><div class="ins-stat-lbl">Revenue Collected</div></div>
+      <div class="ins-stat"><div class="ins-stat-val" id="ins-court-dates">—</div><div class="ins-stat-lbl">Clients w/ Court Dates</div></div>
+      <div class="ins-stat"><div class="ins-stat-val" id="ins-meetings">—</div><div class="ins-stat-lbl">Meetings Scheduled</div></div>
+      <div class="ins-stat"><div class="ins-stat-val" id="ins-intakes">—</div><div class="ins-stat-lbl">Intake Forms Completed</div></div>
+      <div class="ins-stat"><div class="ins-stat-val" id="ins-messages">—</div><div class="ins-stat-lbl">Total Messages</div></div>
+      <div class="ins-stat"><div class="ins-stat-val" id="ins-time-logs">—</div><div class="ins-stat-lbl">Time Log Entries</div></div>
+      <div class="ins-stat"><div class="ins-stat-val" id="ins-client-files">—</div><div class="ins-stat-lbl">Client Documents</div></div>
+      <div class="ins-stat"><div class="ins-stat-val" id="ins-research-sessions">—</div><div class="ins-stat-lbl">Research Sessions</div></div>
+      <div class="ins-stat"><div class="ins-stat-val" id="ins-draft-sessions">—</div><div class="ins-stat-lbl">Draft Sessions</div></div>
+      <div class="ins-stat"><div class="ins-stat-val" id="ins-leads-total">—</div><div class="ins-stat-lbl">Total Leads Received</div></div>
+      <div class="ins-stat"><div class="ins-stat-val gold" id="ins-conversion">—</div><div class="ins-stat-lbl">Lead→Client Rate</div></div>
+      <div class="ins-stat"><div class="ins-stat-val" id="ins-overhead-reserve">—</div><div class="ins-stat-lbl">Overhead Reserve (est.)</div></div>
+      <div class="ins-stat"><div class="ins-stat-val" id="ins-net-profit">—</div><div class="ins-stat-lbl">Est. Net Profit</div></div>
+    </div>
+
+    <div class="ins-two-col">
+      <!-- Case Type Breakdown -->
+      <div>
+        <div class="ins-section-title" style="margin-top:.2rem">Case Type Breakdown</div>
+        <div id="ins-case-bars">—</div>
+      </div>
+      <!-- Lead Pipeline -->
+      <div>
+        <div class="ins-section-title" style="margin-top:.2rem">Lead Pipeline</div>
+        <div class="ins-two-col" style="gap:.5rem;margin-bottom:.75rem">
+          <div class="ins-stat" style="padding:.55rem .7rem">
+            <div class="ins-stat-val" id="ins-leads-active">—</div>
+            <div class="ins-stat-lbl">Active Leads</div>
+          </div>
+          <div class="ins-rate-ring">
+            <div class="ins-rate-num" id="ins-rate-num">—</div>
+            <div class="ins-rate-lbl">Conversion Rate</div>
+          </div>
+        </div>
+        <div class="ins-section-title" style="margin-top:.2rem">Leads by Source</div>
+        <div id="ins-source-bars">—</div>
+        <div class="ins-section-title" style="margin-top:.8rem">Leads by Case Type</div>
+        <div id="ins-lead-ct-bars">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Per-Attorney Breakdown ───────────────────────────────── -->
+  <div class="card" style="margin-bottom:1rem">
+    <div class="ins-section-title" style="margin-top:0">By Attorney — All Time</div>
+    <div id="ins-atty-breakdown">—</div>
+  </div>
+
+  <!-- ── Tax Reports ───────────────────────────────────────────── -->
+  <div class="card">
+    <div class="ins-section-title" style="margin-top:0">Tax Reports &amp; W-2 Summaries</div>
+    <div class="ins-year-row">
+      <label>Tax Year:</label>
+      <select id="ins-tax-year" onchange="loadInsights()"></select>
+      <button class="btn btn-primary" style="padding:.3rem .85rem;font-size:.84rem" onclick="loadInsights()">Refresh ↻</button>
+    </div>
+
+    <table class="ins-table" style="margin-bottom:1rem">
+      <thead>
+        <tr>
+          <th>Attorney</th>
+          <th class="num">Cases</th>
+          <th class="num">Hours (Year)</th>
+          <th class="num">Revenue Attributed</th>
+          <th class="num">Revenue Collected</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="ins-tax-tbody"></tbody>
+    </table>
+
+    <div class="ins-export-row">
+      <button class="btn btn-primary" style="font-size:.84rem" onclick="exportTaxAll()">
+        &#128438; Print All W-2 Summaries
+      </button>
+      <div id="ins-atty-export-btns"></div>
+    </div>
+    <p style="font-family:Arial,sans-serif;font-size:.75rem;color:var(--gray-3);margin:.6rem 0 0">
+      W-2 summaries are internal compensation reference documents only and are not official IRS filings.
+      Consult a licensed CPA for official tax preparation.
+    </p>
+  </div>
+
+  <!-- ── Liabilities & Overhead ───────────────────────────────────────── -->
+  <div class="card" style="margin-bottom:1rem">
+    <div class="ins-section-title" style="margin-top:0">Liabilities &amp; Overhead Estimate</div>
+    <p style="font-family:Arial,sans-serif;font-size:.8rem;color:var(--gray-3);margin:0 0 .75rem">
+      Based on monthly overhead configured in <code>.env</code>.
+      Set <code>OVERHEAD_RESERVE_PCT</code> (default 35%) to control how much of collected revenue is earmarked for expenses.
+    </p>
+    <table class="ins-table" style="margin-bottom:1rem" id="ins-overhead-table">
+      <thead>
+        <tr>
+          <th>Expense Category</th>
+          <th class="num">Monthly (est.)</th>
+          <th class="num">Annual (est.)</th>
+        </tr>
+      </thead>
+      <tbody id="ins-overhead-tbody"></tbody>
+      <tfoot id="ins-overhead-tfoot"></tfoot>
+    </table>
+    <div class="ins-stat-grid" style="grid-template-columns:repeat(3,1fr);gap:.75rem" id="ins-pl-grid">
+      <div class="ins-stat">
+        <div class="ins-stat-val gold" id="ins-pl-collected">—</div>
+        <div class="ins-stat-lbl">Revenue Collected</div>
+      </div>
+      <div class="ins-stat">
+        <div class="ins-stat-val" style="color:var(--red,#c0392b)" id="ins-pl-overhead">—</div>
+        <div class="ins-stat-lbl">Overhead Reserve (<span id="ins-pl-pct">—</span>%)</div>
+      </div>
+      <div class="ins-stat">
+        <div class="ins-stat-val" id="ins-pl-net">—</div>
+        <div class="ins-stat-lbl">Est. Net Profit</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /tab-insights -->

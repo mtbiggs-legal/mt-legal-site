@@ -11,16 +11,15 @@ from werkzeug.utils import secure_filename
 # Payment settings and the hourly rate are read through `shared.` at call time
 # rather than imported by value, so a changed setting takes effect without a
 # reimport (and so tests can patch one place).
-import billing
+from services import billing
 import shared
+from services import storage
 from shared import (
-    require_client,
-    ATTORNEYS, MIN_PASSWORD_LENGTH,
-    CLIENT_FILES_DIR,
-    DOCS_CATEGORIES,
-    load_client, save_client, hash_password, recalc_hours,
-    _apply_payment, get_anthropic_client, MODEL,
+    require_client, ATTORNEYS, CLIENT_FILES_DIR, DOCS_CATEGORIES, get_anthropic_client,
+    MODEL,
 )
+from services.accounts import MIN_PASSWORD_LENGTH, hash_password
+from services.storage import load_client, save_client, recalc_hours, _apply_payment
 
 portal_client_bp = Blueprint("portal_client", __name__)
 
@@ -90,7 +89,7 @@ def client_send_message():
         c.setdefault("messages", []).append({"from": "client", "date": now, "text": text})
         c["last_communication"] = date.today().isoformat()
 
-    client = shared.update_client_atomic(session["username"], _add_client_message)
+    client = storage.update_client_atomic(session["username"], _add_client_message)
     if not client:
         return jsonify({"error": "Account not found."}), 404
 
@@ -134,7 +133,7 @@ def client_send_message():
             recalc_hours(c)
             c["last_communication"] = date.today().isoformat()
 
-        shared.update_client_atomic(session["username"], _add_ai_reply)
+        storage.update_client_atomic(session["username"], _add_ai_reply)
     except Exception:
         pass  # AI failure is non-fatal
 
@@ -162,7 +161,7 @@ def client_billing():
     if payload["has_new_statement"]:
         # Record the newest statement shown (not "now"), so a statement issued
         # while this request was running is still flagged as new next time.
-        shared.update_client_field_atomic(
+        storage.update_client_field_atomic(
             username, "billing_seen_at", payload["statements"][0]["issued_at"])
     return jsonify(payload)
 

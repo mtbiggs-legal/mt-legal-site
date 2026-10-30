@@ -2,9 +2,9 @@
 
 import threading
 
-import billing
+from services import billing
 import blueprints.email_service as email_service
-import shared
+from services import storage
 
 
 def _issue(make_client, email="c@example.com", username="nt"):
@@ -77,9 +77,9 @@ def test_concurrent_dispatch_sends_once(make_client, monkeypatch):
 
 def test_stale_client_save_does_not_resend(make_client, sent_statement_emails):
     _issue(make_client)
-    stale = shared.load_client("nt")
+    stale = storage.load_client("nt")
     billing.send_pending_notices("nt")
-    shared.save_client(stale)            # triggers after_client_save
+    storage.save_client(stale)            # triggers after_client_save
     assert len(sent_statement_emails) == 1
 
 

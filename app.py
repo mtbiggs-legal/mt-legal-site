@@ -8,8 +8,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-import security
+from services import security
 import shared
+from services import storage
+from services import accounts
 
 from blueprints.auth            import auth_bp
 from blueprints.public          import public_bp
@@ -19,6 +21,7 @@ from blueprints.drafting        import drafting_bp
 from blueprints.calendar        import calendar_bp
 from blueprints.portal_client   import portal_client_bp
 from blueprints.portal_attorney import portal_attorney_bp
+from blueprints.insights        import insights_bp
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY") or os.urandom(24)
@@ -108,7 +111,7 @@ def _firm_identity():
     }
 
 
-@app.errorhandler(shared.RecordDecryptError)
+@app.errorhandler(storage.RecordDecryptError)
 def _record_decrypt_error(exc):
     print(f"[error] could not decrypt client record: {exc}", flush=True)
     return jsonify({"error": "Client record could not be decrypted."}), 500
@@ -128,21 +131,21 @@ def check_startup_config() -> list:
             "  Back the key up OUTSIDE this folder — if it is lost, encrypted\n"
             "  client records cannot be recovered.")
     else:
-        shared._fernet_cache = None
+        storage._fernet_cache = None
         try:
-            shared._fernet()
+            storage._fernet()
         except RuntimeError as exc:
             problems.append(str(exc))
     plaintext = 0
     for path in shared.CLIENT_ACCOUNTS_DIR.glob("*.json"):
         raw = path.read_bytes()
-        if shared._is_plaintext(raw):
+        if storage._is_plaintext(raw):
             plaintext += 1
     if plaintext:
         problems.append(
             f"{plaintext} client record(s) are not yet encrypted. Back up and encrypt them first:\n"
             "    python scripts/encrypt_existing_records.py --backup-dir <folder outside OneDrive>")
-    import billing
+    from services import billing
     if not billing.is_migrated():
         if not any(shared.CLIENT_ACCOUNTS_DIR.glob("*.json")):
             billing.mark_migrated()          # fresh install: nothing to migrate
@@ -170,6 +173,7 @@ app.register_blueprint(drafting_bp)
 app.register_blueprint(calendar_bp)
 app.register_blueprint(portal_client_bp)
 app.register_blueprint(portal_attorney_bp)
+app.register_blueprint(insights_bp)
 
 # Under a production WSGI server (gunicorn) __main__ never runs, so check the
 # configuration at import time and refuse to start if secrets are missing.
@@ -188,7 +192,7 @@ if __name__ == "__main__":
     for w in startup_warnings():
         print(f"[warn] {w}")
     skipped  = []
-    upgraded = shared.upgrade_all_plaintext_passwords(skipped=skipped)
+    upgraded = accounts.upgrade_all_plaintext_passwords(skipped=skipped)
     if upgraded:
         print(f"Secured {len(upgraded)} plaintext client password(s); those clients "
               "must choose a new password at next login.")

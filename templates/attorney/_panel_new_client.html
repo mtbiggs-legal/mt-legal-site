@@ -1,0 +1,84 @@
+<!-- New Client Account -->
+<div id="tab-new-client" class="portal-panel">
+  <div class="page-header" style="margin-bottom:1.25rem">
+    <h1 style="font-size:1.5rem">+ New Client</h1>
+    <p style="font-size:.9rem">Create a portal account. The client will be prompted to change their password on first login.</p>
+  </div>
+
+  <!-- Success credentials card (hidden until created) -->
+  <div id="nc-success-card" style="display:none;margin-bottom:1.1rem" class="card">
+    <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.75rem">
+      <div style="font-size:1.4rem">✅</div>
+      <div style="font-family:Georgia,serif;font-size:1.05rem;font-weight:bold;color:var(--navy)">Account Created</div>
+    </div>
+    <div style="background:var(--gray-1);border-radius:var(--radius);padding:.85rem 1rem;font-family:'Courier New',monospace;font-size:.92rem;line-height:2">
+      <div><span style="color:var(--gray-3);font-family:Arial,sans-serif;font-size:.78rem">USERNAME</span><br><strong id="nc-success-username"></strong></div>
+      <div style="margin-top:.4rem"><span style="color:var(--gray-3);font-family:Arial,sans-serif;font-size:.78rem">TEMP PASSWORD</span><br><strong id="nc-success-password"></strong><div id="nc-success-pw-note" style="margin-top:.3rem;color:var(--gray-3);font-family:Arial,sans-serif;font-size:.78rem"></div></div>
+    </div>
+    <p style="font-family:Arial,sans-serif;font-size:.8rem;color:var(--gray-3);margin:.65rem 0 0">Share these credentials securely with the client. They must change their password on first login.</p>
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.85rem">
+      <button class="btn btn-primary" onclick="confirmNewClient()">Confirm &amp; Close</button>
+      <button class="btn btn-secondary" onclick="resetNewClientForm()">Create Another Client</button>
+    </div>
+  </div>
+
+  <!-- Form card -->
+  <div id="nc-form-card" class="card">
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="nc-name">Full Name *</label>
+        <input type="text" id="nc-name" placeholder="Jane A. Smith"
+          oninput="autoFillUsername()" />
+      </div>
+      <div class="form-group">
+        <label for="nc-case-type">Case Type</label>
+        <select id="nc-case-type">
+          <option value="Criminal Defense">Criminal Defense</option>
+          <option value="Civil Litigation">Civil Litigation</option>
+          <option value="Contract Dispute">Contract Dispute</option>
+          <option value="Personal Injury">Personal Injury</option>
+          <option value="Family Law — Divorce">Family Law — Divorce</option>
+          <option value="Family Law — Child Custody">Family Law — Child Custody</option>
+          <option value="Family Law — Other">Family Law — Other</option>
+          <option value="Real Estate">Real Estate</option>
+          <option value="Employment Law">Employment Law</option>
+          <option value="DeFi / Crypto Law">DeFi / Crypto Law</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="nc-phone">Phone</label>
+        <input type="tel" id="nc-phone" placeholder="(555) 000-0000" />
+      </div>
+      <div class="form-group">
+        <label for="nc-email">Email</label>
+        <input type="email" id="nc-email" placeholder="client@example.com" />
+      </div>
+      <div class="form-group">
+        <label for="nc-username">Username <span style="color:var(--gray-3);font-weight:normal;font-size:.8rem">(auto-generated, editable)</span></label>
+        <input type="text" id="nc-username" placeholder="Auto-filled from name" style="width:100%;box-sizing:border-box" />
+      </div>
+      <div class="form-group">
+        <label for="nc-password">Temporary Password</label>
+        <input type="text" id="nc-password" value="" placeholder="Leave blank to generate one" style="width:100%;box-sizing:border-box" />
+      </div>
+      <div class="form-group full">
+        <label for="nc-legal-issue">Legal Issue Summary</label>
+        <textarea id="nc-legal-issue" rows="3" placeholder="Brief description of the matter…"></textarea>
+      </div>
+      <div class="form-group full">
+        <label for="nc-opposing">Opposing parties (one per line)</label>
+        <textarea id="nc-opposing" rows="2"></textarea>
+      </div>
+      <div class="form-group full">
+        <label id="nc-related-label">Related parties</label>
+        <div id="nc-related-list" role="group" aria-labelledby="nc-related-label"></div>
+        <button class="btn btn-secondary" type="button" id="nc-add-related">+ Add related party</button>
+      </div>
+    </div>
+    <div id="nc-result" style="margin-top:.75rem"></div>
+    <div class="btn-group" style="margin-top:1rem">
+      <button class="btn btn-primary" id="nc-create-btn" onclick="createClient()">Create Account →</button>
+    </div>
+  </div>
+</div>

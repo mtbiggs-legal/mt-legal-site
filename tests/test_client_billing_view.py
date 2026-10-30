@@ -5,8 +5,9 @@ import types
 
 import pytest
 
-import billing
+from services import billing
 import shared
+from services import storage
 
 
 @pytest.fixture(autouse=True)
@@ -17,16 +18,16 @@ def _rate(monkeypatch):
 def test_billing_route_view_and_seen(client_session, make_client, issue_test_statement):
     make_client(email="t@example.com")
     issue_test_statement("testclient", 1.0)
-    c = shared.load_client("testclient")
+    c = storage.load_client("testclient")
     c["billing_log"].append({"date": "2026-10-03", "hours": 4.0, "note": "UNBILLED-SECRET"})
-    shared._write_record(shared.CLIENT_ACCOUNTS_DIR / "testclient.json", c)
+    storage._write_record(shared.CLIENT_ACCOUNTS_DIR / "testclient.json", c)
     r = client_session.get("/portal/client/billing")
     body = r.get_data(as_text=True)
     assert r.status_code == 200
     assert "UNBILLED-SECRET" not in body and "threshold" not in body and "notice" not in body
     d = r.get_json()
     assert d["has_new_statement"] is True and d["billed_hours"] == 1.0
-    assert shared.load_client("testclient")["billing_seen_at"] != ""
+    assert storage.load_client("testclient")["billing_seen_at"] != ""
     assert client_session.get("/portal/client/billing").get_json()["has_new_statement"] is False
 
 
@@ -46,9 +47,9 @@ def test_stripe_charges_statement_amount_only(client_session, make_client, issue
     )
     make_client()
     issue_test_statement("testclient", 2.0)                      # $700
-    c = shared.load_client("testclient")
+    c = storage.load_client("testclient")
     c["billing_log"].append({"date": "2026-10-03", "hours": 3.0, "note": "unbilled"})
-    shared._write_record(shared.CLIENT_ACCOUNTS_DIR / "testclient.json", c)
+    storage._write_record(shared.CLIENT_ACCOUNTS_DIR / "testclient.json", c)
     resp = client_session.post("/portal/client/payment/stripe", json={})
     assert resp.status_code == 200
     assert captured["line_items"][0]["price_data"]["unit_amount"] == 70000
@@ -57,10 +58,10 @@ def test_stripe_charges_statement_amount_only(client_session, make_client, issue
 def test_overview_shows_billed_hours(client_session, make_client, issue_test_statement):
     make_client()
     issue_test_statement("testclient", 1.5)
-    c = shared.load_client("testclient")
+    c = storage.load_client("testclient")
     c["billing_log"].append({"date": "2026-10-03", "hours": 4.0, "note": "unbilled"})
     c["hours_billed"] = 5.5                                       # live total must not show
-    shared._write_record(shared.CLIENT_ACCOUNTS_DIR / "testclient.json", c)
+    storage._write_record(shared.CLIENT_ACCOUNTS_DIR / "testclient.json", c)
     html = client_session.get("/client-portal").get_data(as_text=True)
     values = re.findall(r'portal-stat-value[^>]*>\s*([^<]*?)\s*<', html)
     assert "1.5" in values and "5.5" not in values
@@ -92,11 +93,11 @@ def test_view_without_new_statement_leaves_seen_at(client_session, make_client, 
     make_client()
     issue_test_statement("testclient", 1.0)
     client_session.get("/portal/client/billing")
-    seen = shared.load_client("testclient")["billing_seen_at"]
+    seen = storage.load_client("testclient")["billing_seen_at"]
     assert seen
     client_session.get("/portal/client/billing")
-    assert shared.load_client("testclient")["billing_seen_at"] == seen
-    c = shared.load_client("testclient")
+    assert storage.load_client("testclient")["billing_seen_at"] == seen
+    c = storage.load_client("testclient")
     assert seen == billing.load_ledger("testclient")["statements"][-1]["issued_at"]
 
 
@@ -111,9 +112,9 @@ def test_client_research_save_returns_billed_hours(client_session, make_client):
 def test_coinbase_charges_statement_amount_only(client_session, make_client, issue_test_statement, monkeypatch):
     make_client()
     issue_test_statement("testclient", 2.0)                      # $700
-    c = shared.load_client("testclient")
+    c = storage.load_client("testclient")
     c["billing_log"].append({"date": "2026-10-03", "hours": 3.0, "note": "unbilled"})
-    shared._write_record(shared.CLIENT_ACCOUNTS_DIR / "testclient.json", c)
+    storage._write_record(shared.CLIENT_ACCOUNTS_DIR / "testclient.json", c)
     monkeypatch.setattr(shared, "COINBASE_COMMERCE_API_KEY", "fake_key")
 
     captured = {}

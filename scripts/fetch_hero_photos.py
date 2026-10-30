@@ -4,7 +4,7 @@ fetch_hero_photos.py
 Downloads hero background photos from Unsplash and activates them in the app.
 
 Usage:
-    python fetch_hero_photos.py
+    python scripts/fetch_hero_photos.py
 """
 
 import urllib.request
@@ -15,8 +15,8 @@ import re
 import pathlib
 
 BASE_URL   = "https://api.unsplash.com"
-STATIC_DIR = pathlib.Path(__file__).parent / "static" / "images"
-CSS_FILE   = pathlib.Path(__file__).parent / "static" / "css" / "style.css"
+STATIC_DIR = pathlib.Path(__file__).resolve().parent.parent / "static" / "images"
+CSS_FILE   = pathlib.Path(__file__).resolve().parent.parent / "static" / "css" / "style.css"
 
 SEARCHES = [
     {

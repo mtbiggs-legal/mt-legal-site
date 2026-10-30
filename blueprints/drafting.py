@@ -1,20 +1,23 @@
 """blueprints/drafting.py — Document drafting (attorney tool + portal claim)."""
 
 import html
-import json
 from datetime import datetime
 from flask import Blueprint, render_template, request, jsonify
 import anthropic
-import billing
+from services import billing
 
-from conflicts import record_check
-from security import begin_login_attempt, clear_login_failures, lockout_message
+from services.conflicts import record_check
+from services.security import begin_login_attempt, clear_login_failures, lockout_message
 from shared import (
-    require_auth, require_attorney,
-    DRAFT_HISTORY_DIR, MODEL, MIN_PASSWORD_LENGTH,
-    get_anthropic_client, load_client, save_client, hash_password, check_password,
+    require_auth, require_attorney, DRAFT_HISTORY_DIR, MODEL, get_anthropic_client,
     ATTORNEYS, CASE_ATTORNEY_MAP,
-    _make_username, base_username, _log_activity, _client_docs_dir, recalc_hours,
+)
+from services.accounts import (
+    MIN_PASSWORD_LENGTH, hash_password, check_password, _make_username, base_username,
+)
+from services.storage import (
+    load_client, save_client, _log_activity, _client_docs_dir, recalc_hours,
+    write_json,
 )
 
 drafting_bp = Blueprint("drafting", __name__)
@@ -236,9 +239,9 @@ def drafting_generate():
         try:
             ts   = datetime.now().strftime("%Y%m%d_%H%M%S")
             slug = template_type.lower().replace(" ", "_")
-            with open(DRAFT_HISTORY_DIR / f"{ts}_{slug}.json", "w") as f:
-                json.dump({"timestamp": ts, "template_type": template_type,
-                           "variables": all_vars, "draft": draft_text}, f, indent=2)
+            write_json(DRAFT_HISTORY_DIR / f"{ts}_{slug}.json",
+                       {"timestamp": ts, "template_type": template_type,
+                        "variables": all_vars, "draft": draft_text})
         except Exception:
             pass
         return jsonify({"success": True, "draft": draft_text})

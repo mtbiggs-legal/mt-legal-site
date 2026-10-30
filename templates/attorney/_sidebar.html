@@ -1,0 +1,123 @@
+<!-- ── Sidebar ─────────────────────────────────────────────────────────── -->
+<aside class="portal-sidebar">
+  <div class="portal-sidebar-header">
+    <div class="sidebar-role">Attorney Portal</div>
+    <div class="sidebar-name">{{ attorney.display }}</div>
+  </div>
+
+  <!-- Permanent action buttons -->
+  <div style="border-top:1px solid rgba(255,255,255,.08)">
+    <button class="portal-tab-btn" onclick="showDashboard(this)" id="dashboard-btn">
+      Dashboard
+    </button>
+    <button class="portal-tab-btn" onclick="showInsights(this)" id="insights-tab-btn">
+      Insights
+    </button>
+    <button class="portal-tab-btn" onclick="showGlobalResearch(this)" id="global-research-btn">Research</button>
+    <a class="portal-tab-btn" href="{{ url_for('research.research') }}" style="display:block;text-decoration:none">Research Bot</a>
+    <a class="portal-tab-btn" href="{{ url_for('drafting.drafting') }}" style="display:block;text-decoration:none">Legal Documents</a>
+    <button class="portal-tab-btn" onclick="loadLeads(this)" id="leads-tab-btn">
+      Incoming Leads <span id="leads-badge" class="leads-badge" style="display:none"></span>
+    </button>
+    <button class="portal-tab-btn" onclick="showNewClientTab(this)" id="new-client-tab-btn">
+      + New Client
+    </button>
+    <button class="portal-tab-btn" onclick="showConflictCheck(this)" id="conflict-check-btn">
+      Conflict Check
+    </button>
+  </div>
+
+  <!-- Tab nav (hidden until client selected) -->
+  <nav id="atty-tabs" style="display:none">
+    <button class="portal-tab-btn active" onclick="showAttyTab('overview',   this)">Case Overview</button>
+    <button class="portal-tab-btn"        onclick="showAttyTab('client-info', this)">Client Info</button>
+    <button class="portal-tab-btn"        onclick="showAttyTab('time',        this)">Time &amp; Notes</button>
+    <button class="portal-tab-btn"        onclick="showAttyTab('messages',    this)">Messages</button>
+    <button class="portal-tab-btn"        onclick="showAttyTab('documents',   this)">Documents</button>
+    <button class="portal-tab-btn" onclick="showAttyTab('research', this)">Research</button>
+    <button class="portal-tab-btn" onclick="showAttyTab('security', this)">Parties &amp; Security</button>
+  </nav>
+
+  <div class="client-list-label">Recent Clients</div>
+  <div class="client-search-wrap">
+    <input class="client-search" id="client-search-input" type="search"
+           placeholder="&#128269; Search clients…"
+           oninput="filterClientList(this.value)">
+  </div>
+  <div class="client-list" id="client-list">
+    {% if clients %}
+      {% for c in clients %}
+      <button class="client-list-item{% if loop.index > 5 %} sidebar-hidden{% endif %}"
+              onclick="selectClient('{{ c.username }}')" id="cli-{{ c.username }}"
+              data-name="{{ (c.client_name or c.username)|lower }}">
+        {{ c.client_name or c.username }}{% if c.is_co_counsel %} <span class="cc-badge">Co-counsel</span>{% endif %}{% if c.conflict_unresolved %} <span class="conflict-badge" title="Unresolved conflict check">Conflict</span>{% endif %}
+      </button>
+      {% endfor %}
+    {% else %}
+      <p style="font-family:Arial,sans-serif;font-size:.8rem;color:rgba(255,255,255,.3);padding:.5rem 1.1rem">No clients yet.</p>
+    {% endif %}
+  </div>
+  <div style="padding:.3rem .9rem .6rem">
+    <button class="see-all-btn" id="see-all-clients-btn" onclick="showAllClients(this)">See all clients →</button>
+  </div>
+
+  <!-- Clerk Office Case Searches -->
+  <div class="sidebar-clerk-section">
+    <div class="client-list-label">Case Searches</div>
+    <div class="clerk-search-stack">
+
+      <a href="https://sci.ccc.nashville.gov/Search/Search"
+         target="_blank" rel="noopener"
+         class="clerk-search-box clerk-criminal">
+        <div class="clerk-search-icon">⚖</div>
+        <div class="clerk-search-info">
+          <div class="clerk-search-label">Criminal — Davidson Co.</div>
+          <div class="clerk-search-court">Criminal Court Clerk</div>
+        </div>
+        <div class="clerk-search-arrow">→</div>
+      </a>
+
+      <a href="https://caselink.nashville.gov/public/"
+         target="_blank" rel="noopener"
+         class="clerk-search-box clerk-civil">
+        <div class="clerk-search-icon">📜</div>
+        <div class="clerk-search-info">
+          <div class="clerk-search-label">Civil — Davidson Co.</div>
+          <div class="clerk-search-court">Civil Court Clerk</div>
+        </div>
+        <div class="clerk-search-arrow">→</div>
+      </a>
+
+      <a href="https://www.tncrtinfo.com/"
+         target="_blank" rel="noopener"
+         class="clerk-search-box clerk-other">
+        <div class="clerk-search-icon">🗺</div>
+        <div class="clerk-search-info">
+          <div class="clerk-search-label">Other Counties</div>
+          <div class="clerk-search-court">Tennessee Court Info</div>
+        </div>
+        <div class="clerk-search-arrow">→</div>
+      </a>
+
+    </div>
+  </div>
+
+  {% if archived_clients %}
+  <div class="archived-section-label" onclick="toggleArchivedList()" id="archived-label">
+    <span>Archived ({{ archived_clients|length }})</span>
+    <span id="archived-chevron">▸</span>
+  </div>
+  <div id="archived-client-list" style="display:none">
+    {% for c in archived_clients %}
+    <button class="client-list-item client-archived" onclick="selectClient('{{ c.username }}')" id="cli-{{ c.username }}"
+            data-name="{{ (c.client_name or c.username)|lower }}">
+      {{ c.client_name or c.username }}{% if c.is_co_counsel %} <span class="cc-badge">Co-counsel</span>{% endif %}{% if c.conflict_unresolved %} <span class="conflict-badge" title="Unresolved conflict check">Conflict</span>{% endif %}
+    </button>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="portal-sidebar-footer">
+    <a href="{{ url_for('auth.logout') }}" class="portal-logout-btn">Sign Out</a>
+  </div>
+</aside>

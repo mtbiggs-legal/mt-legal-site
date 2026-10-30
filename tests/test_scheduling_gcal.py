@@ -3,6 +3,8 @@
 import types
 
 import shared
+from services import storage
+from services import gcal
 
 
 class _Req:
@@ -40,47 +42,47 @@ class _Events:
 def _connect(monkeypatch, fail=None):
     store = {}
     svc = types.SimpleNamespace(events=lambda: _Events(store, fail))
-    monkeypatch.setattr(shared, "GOOGLE_LIBS", True)
+    monkeypatch.setattr(gcal, "GOOGLE_LIBS", True)
     monkeypatch.setattr(shared, "TOKEN_FILE", types.SimpleNamespace(exists=lambda: True))
-    monkeypatch.setattr(shared, "get_calendar_service", lambda: svc)
+    monkeypatch.setattr(gcal, "get_calendar_service", lambda: svc)
     return store
 
 
 def test_not_connected(monkeypatch):
-    monkeypatch.setattr(shared, "GOOGLE_LIBS", False)
-    assert shared.gcal_create_all_day("S", "D", "2026-11-04") is None
-    assert shared.gcal_update_all_day("x", "S", "D", "2026-11-04") == "error"
-    assert shared.gcal_delete_event("x") == "error"
+    monkeypatch.setattr(gcal, "GOOGLE_LIBS", False)
+    assert gcal.gcal_create_all_day("S", "D", "2026-11-04") is None
+    assert gcal.gcal_update_all_day("x", "S", "D", "2026-11-04") == "error"
+    assert gcal.gcal_delete_event("x") == "error"
 
 
 def test_create_update_delete_ok(monkeypatch):
     store = _connect(monkeypatch)
-    assert shared.gcal_create_all_day("Trial: A", "desc", "2026-11-04") == "e1"
+    assert gcal.gcal_create_all_day("Trial: A", "desc", "2026-11-04") == "e1"
     assert store["e1"]["start"] == {"date": "2026-11-04"} and store["e1"]["end"] == {"date": "2026-11-05"}
-    assert shared.gcal_update_all_day("e1", "Trial: A", "desc", "2026-12-01") == "ok"
+    assert gcal.gcal_update_all_day("e1", "Trial: A", "desc", "2026-12-01") == "ok"
     assert store["e1"]["start"] == {"date": "2026-12-01"}
-    assert shared.gcal_delete_event("e1") == "ok" and "e1" not in store
+    assert gcal.gcal_delete_event("e1") == "ok" and "e1" not in store
 
 
 def test_gone_vs_error(monkeypatch):
     _connect(monkeypatch, fail="gone")
-    assert shared.gcal_update_all_day("e1", "S", "D", "2026-11-04") == "gone"
-    assert shared.gcal_delete_event("e1") == "gone"
+    assert gcal.gcal_update_all_day("e1", "S", "D", "2026-11-04") == "gone"
+    assert gcal.gcal_delete_event("e1") == "gone"
     _connect(monkeypatch, fail="error")
-    assert shared.gcal_update_all_day("e1", "S", "D", "2026-11-04") == "error"
-    assert shared.gcal_delete_event("e1") == "error"
+    assert gcal.gcal_update_all_day("e1", "S", "D", "2026-11-04") == "error"
+    assert gcal.gcal_delete_event("e1") == "error"
 
 
 def test_create_failure_and_bad_date(monkeypatch):
     _connect(monkeypatch, fail="insert")
-    assert shared.gcal_create_all_day("S", "D", "2026-11-04") is None
+    assert gcal.gcal_create_all_day("S", "D", "2026-11-04") is None
     _connect(monkeypatch)
-    assert shared.gcal_create_all_day("S", "D", "not-a-date") is None
+    assert gcal.gcal_create_all_day("S", "D", "not-a-date") is None
 
 
 def test_defaults_and_category(make_client):
     make_client("cd1")
-    c = shared.load_client("cd1")
+    c = storage.load_client("cd1")
     assert c["case_dates"] == {} and c["case_dates_history"] == []
     cats = shared.DOCS_CATEGORIES
     assert "Scheduling Orders" in cats and cats.index("Scheduling Orders") == cats.index("Court Orders") + 1

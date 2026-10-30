@@ -4,7 +4,7 @@ from datetime import datetime
 
 import pytest
 
-import shared
+from services import storage
 
 
 def test_save_report_analysis_creates_file_and_bills(attorney_session, make_client, tmp_path):
@@ -53,7 +53,7 @@ def test_save_report_hours_match_billing_log(attorney_session, make_client):
         "/portal/attorney/research/save-report",
         json={"username": "testclient", "report_type": "analysis", "text": "x"})
 
-    client = shared.load_client("testclient")
+    client = storage.load_client("testclient")
     assert client["hours_billed"] == pytest.approx(
         sum(e["hours"] for e in client["billing_log"])
     )

@@ -29,7 +29,8 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 import shared   # noqa: E402
-import billing  # noqa: E402
+from services import storage
+from services import billing  # noqa: E402
 
 try:
     from dotenv import load_dotenv
@@ -70,7 +71,7 @@ def migrate(backup_root, project_root: Path = ROOT, dry_run: bool = False) -> di
     LAST_REPORT = []
     dest = None
     if not dry_run:
-        shared.require_outside_dir(backup_root, project_root)
+        storage.require_outside_dir(backup_root, project_root)
         stamp = f"{datetime.now():%Y%m%d_%H%M%S_%f}"
         dest = Path(backup_root).resolve() / f"billing-migration-{stamp}"
         shutil.copytree(shared.CLIENT_ACCOUNTS_DIR, dest / "client-accounts")
@@ -83,7 +84,7 @@ def migrate(backup_root, project_root: Path = ROOT, dry_run: bool = False) -> di
         username = path.stem
         legacy = None
         try:
-            client = shared.load_client(username)
+            client = storage.load_client(username)
             if not client:
                 print(f"  ! skipped (not loadable): {path.name}")
                 counts["skipped"] += 1
@@ -103,7 +104,7 @@ def migrate(backup_root, project_root: Path = ROOT, dry_run: bool = False) -> di
                 else:
                     action = "covered"
                 if action != "opening":
-                    fresh = shared.load_client(username)
+                    fresh = storage.load_client(username)
                     new_due = billing.amount_due(fresh, billing.load_ledger(username))
             counts[action] += 1
             LAST_REPORT.append((username, legacy, new_due, round(new_due - legacy, 2), action))
@@ -142,7 +143,7 @@ def main():
     if not args.dry_run and not args.backup_dir:
         parser.error("--backup-dir is required unless --dry-run is given")
     try:
-        shared._fernet()
+        storage._fernet()
     except RuntimeError as exc:
         print(exc)
         return 2

@@ -6,8 +6,9 @@ from pathlib import Path
 
 import pytest
 
-import billing
+from services import billing
 import shared
+from services import storage
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
@@ -33,7 +34,7 @@ def test_migration_issues_silent_opening_statements(make_client, tmp_path, monke
     assert billing.load_ledger("m2")["covered_through"] == 1
     assert sent_statement_emails == []
     assert billing.is_migrated()
-    c = shared.load_client("m1")
+    c = storage.load_client("m1")
     due = billing.amount_due(c, billing.load_ledger("m1"))
     assert due == round(7.0 * 350.0, 2) - 350.0
     legacy = round(round(c["hours_billed"] - c["hours_paid"], 2) * 350.0, 2)
@@ -54,8 +55,8 @@ def test_startup_blocks_until_migrated(make_client, monkeypatch):
     from cryptography.fernet import Fernet
     monkeypatch.setenv("SECRET_KEY", "x" * 64)
     monkeypatch.setenv("DATA_ENCRYPTION_KEY", Fernet.generate_key().decode())
-    monkeypatch.setattr(shared, "_fernet_cache", None)
-    shared.save_client({"username": "sx"})
+    monkeypatch.setattr(storage, "_fernet_cache", None)
+    storage.save_client({"username": "sx"})
     (shared.FIRM_SETTINGS_DIR / "migrations.json").unlink()
     assert any("Opening statements" in p for p in app_module.check_startup_config())
     billing.mark_migrated()
@@ -67,7 +68,7 @@ def test_fresh_install_auto_marks(monkeypatch):
     from cryptography.fernet import Fernet
     monkeypatch.setenv("SECRET_KEY", "x" * 64)
     monkeypatch.setenv("DATA_ENCRYPTION_KEY", Fernet.generate_key().decode())
-    monkeypatch.setattr(shared, "_fernet_cache", None)
+    monkeypatch.setattr(storage, "_fernet_cache", None)
     (shared.FIRM_SETTINGS_DIR / "migrations.json").unlink()
     assert app_module.check_startup_config() == []
     assert billing.is_migrated()
@@ -163,7 +164,7 @@ def test_main_exit_codes(make_client, tmp_path, monkeypatch, capsys):
 
     def boom():
         raise RuntimeError("bad key")
-    monkeypatch.setattr(shared, "_fernet", boom)
+    monkeypatch.setattr(storage, "_fernet", boom)
     code, out = _run_main(mig, monkeypatch, capsys, "--backup-dir", str(tmp_path / "bk3"))
     assert code == 2 and "bad key" in out
 

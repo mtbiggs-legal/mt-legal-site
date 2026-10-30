@@ -1,0 +1,49 @@
+<!-- ── All Clients Master List ──────────────────────────────────────────── -->
+<div id="tab-all-clients" class="portal-panel">
+  <div class="page-header" style="margin-bottom:1.25rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem">
+    <div>
+      <h1 style="font-size:1.5rem;margin:0">All Clients</h1>
+      <p style="font-family:Arial,sans-serif;font-size:.88rem;color:var(--gray-3);margin:.2rem 0 0">{{ clients|length }} active client{{ 's' if clients|length != 1 }}</p>
+    </div>
+    <input type="search" id="all-clients-search" class="client-search"
+           placeholder="&#128269; Filter…"
+           oninput="filterAllClientsTable(this.value)"
+           style="width:200px;background:#fff;color:var(--navy);border:1px solid var(--gray-2)">
+  </div>
+  <div style="overflow-x:auto">
+    <table class="all-clients-table" id="all-clients-table">
+      <thead>
+        <tr>
+          <th onclick="sortAllClients('name',this)" style="min-width:160px">Client <span class="sort-arrow">↕</span></th>
+          <th onclick="sortAllClients('case',this)">Case Number <span class="sort-arrow">↕</span></th>
+          <th onclick="sortAllClients('court',this)">Court Date <span class="sort-arrow">↕</span></th>
+          <th onclick="sortAllClients('hours',this)" style="text-align:right;width:70px">Billed <span class="sort-arrow">↕</span></th>
+          <th onclick="sortAllClients('balance',this)" style="text-align:right">Amount Due ($) <span class="sort-arrow">↕</span></th>
+          <th onclick="sortAllClients('contact',this)">Last Contact <span class="sort-arrow">↕</span></th>
+          <th>Phone</th>
+          <th>Email</th>
+        </tr>
+      </thead>
+      <tbody id="all-clients-tbody">
+        {% for c in clients %}
+        <tr class="all-clients-row" onclick="selectClientAndTab('{{ c.username }}','overview')"
+            data-name="{{ (c.client_name or c.username)|lower }}"
+            data-username="{{ c.username }}">
+          <td data-col="name">{% set _nm = (c.client_name or c.username).split() %}{% if _nm|length >= 2 %}{{ _nm[-1] }}, {{ _nm[0] }}{% else %}{{ _nm[0] if _nm else c.username }}{% endif %}</td>
+          <td data-col="case">{{ c.case_no or '—' }}</td>
+          <td data-col="court">{% if c.next_court_date and '-' in c.next_court_date %}{% set _dp = c.next_court_date.split('-') %}{{ _dp[1] }}-{{ _dp[2] }}-{{ _dp[0] }}{% else %}{{ c.next_court_date or '—' }}{% endif %}</td>
+          <td data-col="hours" style="text-align:right;font-weight:600">{{ c.hours_billed or 0 }}</td>
+          <td data-col="balance" style="text-align:right;font-weight:600;color:{% if c.amount_due > 0 %}#c0392b{% else %}var(--navy){% endif %}">
+            {{ '%.2f'|format(c.amount_due) }}
+          </td>
+          <td data-col="contact">{{ c.last_communication or '—' }}</td>
+          <td>{{ c.phone or '—' }}</td>
+          <td>{{ c.email or '—' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="dash-empty" style="text-align:center;padding:2rem">No clients yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>

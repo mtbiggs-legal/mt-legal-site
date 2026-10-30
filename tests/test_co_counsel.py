@@ -1,6 +1,6 @@
 """Co-counsel management (spec A3)."""
 
-import shared
+from services import storage
 
 
 def _post(c, **body):
@@ -11,7 +11,7 @@ def test_assigned_attorney_adds_and_removes(attorney_session, make_client):
     make_client("victim")
     r = _post(attorney_session, action="add", attorney="SophiaH")
     assert r.status_code == 200 and r.get_json()["co_counsel"] == ["SophiaH"]
-    log = shared.load_client("victim")["access_log"]
+    log = storage.load_client("victim")["access_log"]
     assert log[-1]["action"] == "co_counsel_change"
     r = _post(attorney_session, action="remove", attorney="SophiaH")
     assert r.get_json()["co_counsel"] == []

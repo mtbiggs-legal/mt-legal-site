@@ -1,4 +1,4 @@
-"""attorney_portal.html's message thread must never parse message text as HTML.
+"""The attorney portal's message thread must never parse message text as HTML.
 
 Regression test for a stored-XSS bug (found during the voicemail-summaries
 design review, see docs/superpowers/specs/2026-10-02-voicemail-summaries-design.md):
@@ -19,13 +19,13 @@ used instead.
 import re
 from pathlib import Path
 
-TEMPLATE = Path(__file__).parent.parent / "templates" / "attorney_portal.html"
+PORTAL_JS = Path(__file__).parent.parent / "static" / "js" / "attorney_portal.js"
 
 
 def _populate_messages_body() -> str:
-    text = TEMPLATE.read_text(encoding="utf-8")
+    text = PORTAL_JS.read_text(encoding="utf-8")
     m = re.search(r"function populateMessages\(c\) \{(.*?)\n\}", text, re.S)
-    assert m, "populateMessages() not found in attorney_portal.html"
+    assert m, "populateMessages() not found in static/js/attorney_portal.js"
     return m.group(1)
 
 
