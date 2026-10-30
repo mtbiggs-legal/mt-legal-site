@@ -23,7 +23,7 @@ Attorney advertising. Not legal advice.
 **Link:** `https://midtennlegal.com`
 **Profile photo:** `brand/mt-legal-mark.png` (the MT mark with LEGAL)
 **Category:** Lawyer & Law Firm
-**Contact buttons:** Call (615-601-0633) and Email (Mtbiggs@midtennlegal.com)
+**Contact buttons:** Call (615-606-2603) and Email (Mtbiggs@midtennlegal.com)
 
 **Highlights to set up later:** About, DeFi, Estate, Know Your Rights, FAQ
 
