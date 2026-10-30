@@ -512,10 +512,6 @@ focus = [
     "Investor verification and onboarding",
     "Title and recording issues",
 ]
-fees_note = """\
-    Full-service legal fee, confirmed in writing after asset review. A $2,500 \
-    retainer deposit begins the engagement. Smart-contract audit, appraisal, and CPA \
-    fees are billed separately by those providers."""
 
 [practice_areas.rwa-tokenization.story]
 heading = "Where passion meets paper"
@@ -568,22 +564,6 @@ title = "Issuance and ongoing compliance"
 detail = """\
     Cap table and transfer-agent setup, distributions, annual reporting, and resales \
     through compliant venues."""
-
-[[practice_areas.rwa-tokenization.fees]]
-tier = "Asset value under $500K"
-fee = "5%"
-
-[[practice_areas.rwa-tokenization.fees]]
-tier = "$500K – $2M"
-fee = "3%"
-
-[[practice_areas.rwa-tokenization.fees]]
-tier = "$2M – $10M"
-fee = "1.5%"
-
-[[practice_areas.rwa-tokenization.fees]]
-tier = "$10M and above"
-fee = "Custom"
 
 [[practice_areas.rwa-tokenization.faqs]]
 q = "Does tokenizing a property change the deed?"
