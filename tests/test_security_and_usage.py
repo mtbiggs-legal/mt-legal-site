@@ -75,6 +75,8 @@ def test_document_download_cannot_escape_client_dir(attorney_session, make_clien
 # ── Public chat: anonymous, and carries conversation history ──────────────────
 
 def _stub_chat(monkeypatch, capture):
+    import shared
+    monkeypatch.setattr(shared, "CHAT_OPENS_ON", __import__("datetime").date.min)
     def _create(**kw):
         capture.update(kw)
         return types.SimpleNamespace(
@@ -130,6 +132,19 @@ def test_chat_ignores_posted_username(client, make_client, monkeypatch):
     assert "Real Client" not in captured["system"]
     # ...and nothing was written to that client's message thread.
     assert storage.load_client("testclient")["messages"] == []
+
+
+def test_chat_sends_closed_reply_before_opening_without_calling_the_model(client, monkeypatch):
+    import datetime
+    import shared
+    import blueprints.public as pub
+    monkeypatch.setattr(shared, "CHAT_OPENS_ON", datetime.date.max)
+    monkeypatch.setattr(pub, "get_anthropic_client",
+                        lambda: pytest.fail("the model must not be called"))
+    resp = client.post("/chat/message", json={"message": "Can you take my DUI case?"})
+    assert resp.status_code == 200
+    assert resp.get_json()["reply"] == pub.CHAT_CLOSED_REPLY
+    assert "January 1, 2027" in pub.CHAT_CLOSED_REPLY
 
 
 def test_chat_rejects_empty_message(client):

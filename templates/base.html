@@ -45,7 +45,9 @@
   <meta name="robots" content="max-image-preview:large" />
   <!-- Link previews (texts, iMessage, WhatsApp, LinkedIn, Facebook, Slack) -->
   {# No ?v= cache-buster here: search engines and link previews should see one stable image URL. #}
-  {% set og_image = url_for('static', filename='images/og-image.jpg', v=None, _external=True) %}
+  {% set site_image = url_for('static', filename='images/og-image.jpg', v=None, _external=True) %}
+  {# A page can pass og_image_file / og_image_alt to show its own 1200x630 preview. #}
+  {% set og_image = url_for('static', filename='images/' ~ og_image_file, v=None, _external=True) if og_image_file else site_image %}
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="{{ firm_name }}" />
   <meta property="og:title" content="{{ self.title() }}" />
@@ -54,7 +56,7 @@
   <meta property="og:image" content="{{ og_image }}" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="{{ firm_name }}: Counsel for what comes next. Nashville and Middle Tennessee." />
+  <meta property="og:image:alt" content="{{ og_image_alt or (firm_name ~ ': Counsel for what comes next. Nashville and Middle Tennessee.') }}" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="{{ self.title() }}" />
   <meta name="twitter:description" content="{{ self.meta_description() }}" />
@@ -73,7 +75,7 @@
     "description": "Solo law practice serving Nashville and Middle Tennessee.",
     "url": {{ request.url_root | tojson }},
     "logo": {{ url_for('static', filename='icons/icon-512.png', _external=True) | tojson }},
-    "image": [{{ og_image | tojson }}, {{ url_for('static', filename='images/quote-justice.jpg', v=None, _external=True) | tojson }}],
+    "image": [{{ site_image | tojson }}, {{ url_for('static', filename='images/quote-justice.jpg', v=None, _external=True) | tojson }}],
     "founder": {"@type": "Person", "name": {{ partner.display | tojson }}, "jobTitle": {{ partner.title | tojson }}},
     "address": {"@type": "PostalAddress", "addressLocality": "Nashville", "addressRegion": "TN", "addressCountry": "US"},
     "areaServed": [{% for c in service_counties %}{"@type": "AdministrativeArea", "name": {{ (c ~ " County, Tennessee") | tojson }}}{% if not loop.last %}, {% endif %}{% endfor %}],

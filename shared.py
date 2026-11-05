@@ -7,6 +7,7 @@ services/accounts.py, and Google Calendar/Drive in services/gcal.py.
 """
 
 import os
+from datetime import date
 import functools
 import anthropic
 
@@ -153,6 +154,9 @@ ANTHROPIC_API_KEY        = _env("ANTHROPIC_API_KEY") or None
 # requires the workspace ID with every request.
 ANTHROPIC_WORKSPACE_ID   = _env("ANTHROPIC_WORKSPACE_ID")
 MODEL                    = os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
+# Until this date the website chat sends a fixed "not taking new clients" reply
+# and never calls the model.
+CHAT_OPENS_ON            = date(2027, 1, 2)
 BLOG_MODEL               = os.getenv("BLOG_MODEL", "claude-sonnet-5-5")
 BLOG_AUTOGEN             = _env("BLOG_AUTOGEN").lower() in ("1", "true", "yes", "on")
 

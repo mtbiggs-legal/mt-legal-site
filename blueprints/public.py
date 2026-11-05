@@ -1,11 +1,12 @@
 """blueprints/public.py — Public-facing pages and lead capture."""
 
-from datetime import datetime
+from datetime import date, datetime
 from flask import (
     Blueprint, Response, abort, current_app, jsonify, redirect, render_template, request,
     send_from_directory, url_for,
 )
 
+import shared
 from services import blog
 from shared import (
     require_auth, require_attorney, LEADS_DIR, CASE_SEARCHES_DIR, CASE_ATTORNEY_MAP,
@@ -30,7 +31,10 @@ def index():
 @public_bp.route("/meet-the-firm")
 @require_auth
 def meet_the_firm():
-    return render_template("meet_the_firm.html", all_areas=PRACTICE_AREAS)
+    return render_template(
+        "meet_the_firm.html", all_areas=PRACTICE_AREAS,
+        og_image_file="og-meet-madison.jpg",
+        og_image_alt=f"{MANAGING_PARTNER['display']}, trial attorney, {FIRM_NAME}, Nashville")
 
 
 # ── Search engines and browsers ───────────────────────────────────────────────
@@ -316,6 +320,16 @@ def follow_up_schedule():
 # How many prior turns of the public chat to replay to the model.
 _CHAT_HISTORY_TURNS = 12
 
+CHAT_CLOSED_REPLY = (
+    f"Thanks for reaching out to {FIRM_NAME}. Our office is not accepting new clients "
+    "or offering consultations until after January 1, 2027, so this chat can't answer "
+    "questions or set up an appointment yet. If you have an urgent legal problem, such "
+    "as an arrest, an upcoming court date, or a filing deadline, please contact another "
+    "licensed Tennessee attorney right away rather than waiting. Please don't share "
+    "personal or confidential details here. We look forward to hearing from you in the "
+    "new year."
+)
+
 
 @public_bp.route("/chat/message", methods=["POST"])
 @require_auth
@@ -330,6 +344,8 @@ def chat_message():
     text = data.get("message", "").strip()
     if not text:
         return jsonify({"error": "Message is empty."}), 400
+    if date.today() < shared.CHAT_OPENS_ON:
+        return jsonify({"success": True, "reply": CHAT_CLOSED_REPLY})
 
     system = (
         f"You are a helpful legal assistant for {FIRM_NAME}, a Nashville, Tennessee law "
