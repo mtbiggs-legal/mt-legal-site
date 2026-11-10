@@ -118,6 +118,10 @@ function _liveRefreshClient(username) {
 
       if (typeof billRender === "function") billRender(c.username, c.billing_summary);
       if (window.felonyRender) felonyRender(c.username, c.felony_checklist, c.discovery_draft);
+      if (window.engagementRender &&
+          JSON.stringify((old.engagement || {}).draft) !== JSON.stringify((c.engagement || {}).draft)) {
+        engagementRender(c.username, c.engagement);
+      }
       if (window.populateCaseDates) populateCaseDates(c);
       var sec = document.getElementById("tab-security");
       if (window.populateSecurity && !(sec && sec.classList.contains("active"))) populateSecurity(c);

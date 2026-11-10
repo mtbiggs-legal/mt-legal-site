@@ -3,9 +3,11 @@
 import logging
 
 from datetime import datetime
-from flask import Blueprint, current_app, render_template, request, jsonify
+from flask import Blueprint, Response, current_app, render_template, request, jsonify
 import anthropic
+import shared
 from services import gcal
+from services.docx_writer import text_to_docx
 
 from shared import (
     require_auth, require_attorney, DRAFT_HISTORY_DIR, MODEL, get_anthropic_client,
@@ -232,6 +234,51 @@ Include scope and exclusions, fees and billing, handling of advance fees in trus
 RPC 1.5 and 1.15), client responsibilities, communication, file retention, termination, no guarantee of
 outcome, and signature blocks.""",
 
+    # The nonrefundable-fee paragraphs are the firm's reviewed wording and must
+    # come through unchanged (Tenn. RPC 1.5(f) needs a signed writing that says
+    # what the client agreed to), so the prompt hands them over verbatim.
+    "Flat-Fee Engagement Letter (Criminal)": """Draft a flat-fee engagement letter from MT Legal (attorney Madison T. Biggs) to a criminal defense client with:
+Client: {client_name} | Charge(s): {charges}
+Court: {court_name} | County: {county} | Case/Warrant No.: {case_no}
+Option A, paid in full: {flat_fee_full}
+Option B, two payments (total, first payment, second payment): {flat_fee_split} | Second payment due: {second_payment_due}
+Extra work included in the fee beyond the standard scope: {included_services}
+
+Plain text only. Write it as a letter: "[Date]", "VIA E-MAIL", the client's name, a "Re:" line naming the
+charge(s), court and case number, "Dear [client name]:", then paragraphs under these ALL-CAPS headings, in order.
+Do not add a letterhead; it is added automatically.
+SCOPE OF REPRESENTATION: representation on the charge(s) in the court named above through disposition in that
+court (review of the warrant and discovery, investigation, negotiation, court appearances including any
+preliminary and motion hearings, a plea or dismissal). Then list what is NOT included unless listed above as
+included or agreed later in a signed writing: a trial; representation after bind-over or indictment; appeals;
+probation violations; expungement; a restricted driver's license petition; administrative, civil, forfeiture or
+immigration proceedings; any other charge. Say the client will be told any additional fee in writing first.
+FLAT FEE AND PAYMENT OPTION: a flat fee, not hourly, with no hourly invoices. Give a line starting "____ Option A"
+and a line starting "____ Option B" with the amounts above, and ask the client to initial ONE. Option B costs more
+because the firm carries part of the fee while the case is underway. If the second payment is late, the firm may
+stop all work except what protects the client and may ask the court's permission to withdraw.
+NONREFUNDABLE FLAT FEE: include these three paragraphs exactly as written:
+"You and MT Legal agree that the flat fee, and each installment of it, is nonrefundable and is earned by MT Legal when paid. Because the fee is earned when paid, it is the firm's property on receipt. It will be deposited into the firm's operating account and will not be held in a client trust account. This agreement is made under Rule 1.5(f) of the Tennessee Rules of Professional Conduct, which permits a nonrefundable fee only when it is agreed to in a writing signed by the client that explains the intent of the parties as to the nature and amount of the fee."
+"The flat fee is charged for my commitment to your case and my availability to handle it, not for a particular number of hours. The fee does not change if your case resolves quickly or takes longer than expected within the scope above. MT Legal keeps internal records of the time spent on your case for its own purposes; you will not be billed by the hour."
+"Even though the fee is nonrefundable, the Tennessee Rules of Professional Conduct require every fee to be reasonable. If the representation ends before the work described above is complete, whether because you discharge MT Legal or because MT Legal withdraws, you may be entitled to a refund of any part of the fee that it would be unreasonable for MT Legal to keep in light of the work performed. The fee is not refundable simply because of the outcome of the case, including if charges are dismissed early."
+COSTS AND EXPENSES: costs are not part of the fee (court costs, fines, filing, service and subpoena fees,
+transcripts, investigator, independent testing of blood or other evidence, experts); the client approves any
+single cost over $100 first.
+YOUR OBLIGATIONS IN A CRIMINAL CASE: appear at every court date unless excused in writing, follow bond
+conditions, keep contact information current, and do not discuss the case with anyone else or on social media;
+a missed court date can mean a warrant and bond forfeiture. Ask the client to say if they are not a U.S.
+citizen, because a plea can have immigration consequences.
+NO GUARANTEE: reasonable efforts, no promised outcome; the client cooperates and is truthful.
+ENDING THE REPRESENTATION: the client may discharge the firm at any time; the firm may withdraw as the Rules
+permit, with the court's permission once it has appeared; any refund follows the nonrefundable-fee section;
+otherwise the representation ends at disposition in the named court. The file is kept five (5) years, then may
+be destroyed.
+Close by asking the client to initial the payment option, sign and return; then "Sincerely,", "/s/ Madison T. Biggs",
+"Madison T. Biggs", "Attorney at Law", "MT Legal", "BPR No. {attorney_bpr}". Then this acceptance paragraph
+exactly: "ACCEPTED AND AGREED. I have read this agreement, including the section titled Nonrefundable Flat Fee,
+and I understand that the flat fee is earned when paid and is nonrefundable except as stated above."
+followed by "______________________________", the client's name, and "Date: ________________".""",
+
     # ── Family practice ──────────────────────────────────────────────────────
 
     "Answer and Counter-Complaint for Divorce": """Draft an Answer and Counter-Complaint for Divorce for Tennessee court with:
@@ -369,6 +416,8 @@ _ALL_VARS = {
     "motion_grounds": "", "hearing_date": "", "discovery_sets": "", "discovery_topics": "",
     "settlement_amount": "", "payment_terms": "", "release_scope": "",
     "scope_of_representation": "", "fee_terms": "", "retainer_amount": "",
+    "charges": "", "flat_fee_full": "", "flat_fee_split": "", "second_payment_due": "",
+    "included_services": "", "attorney_bpr": "",
     "existing_order_date": "", "changed_circumstances": "", "requested_changes": "",
     "child_support": "", "violations": "", "arrears_amount": "",
     "relocation_destination": "", "relocation_date": "", "relocation_reason": "",
@@ -412,6 +461,7 @@ def drafting_generate():
 
     all_vars = dict(_ALL_VARS)
     all_vars.update({k: v for k, v in variables.items() if v})
+    all_vars["attorney_bpr"] = shared.ATTORNEY_BPR or "[TO BE COMPLETED]"
     user_prompt = TEMPLATE_PROMPTS[template_type].format(**all_vars)
 
     try:
@@ -437,6 +487,25 @@ def drafting_generate():
 
 
 MAX_GOOGLE_DOC_CHARS = 500_000
+
+
+@drafting_bp.route("/drafting/docx", methods=["POST"])
+@require_auth
+@require_attorney
+def drafting_docx():
+    """The draft as a Word document. Letters come out on the firm letterhead."""
+    data    = request.get_json() or {}
+    title   = (data.get("title") or "").strip()[:200] or "Draft"
+    content = (data.get("content") or "").strip()
+    if not content:
+        return jsonify({"error": "There is no draft to download."}), 400
+    if len(content) > MAX_GOOGLE_DOC_CHARS:
+        return jsonify({"error": "The draft is too long to download."}), 400
+    safe = "".join(c if c.isalnum() else "_" for c in title).strip("_") or "Draft"
+    name = f"{safe}_{datetime.now().strftime('%Y-%m-%d')}.docx"
+    return Response(text_to_docx(title, content, shared.MANAGING_PARTNER["display"]),
+                    mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    headers={"Content-Disposition": f'attachment; filename="{name}"'})
 
 
 @drafting_bp.route("/drafting/google-doc", methods=["POST"])

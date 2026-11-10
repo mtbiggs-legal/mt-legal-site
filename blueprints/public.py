@@ -65,6 +65,17 @@ def favicon():
                                mimetype="image/vnd.microsoft.icon", max_age=86400)
 
 
+# Google Search Console ownership check: it fetches this exact file from the root.
+GOOGLE_SITE_VERIFICATION = "google60e1ea6c610b5ed3.html"
+
+
+@public_bp.route(f"/{GOOGLE_SITE_VERIFICATION}")
+@public
+def google_site_verification():
+    return Response(f"google-site-verification: {GOOGLE_SITE_VERIFICATION}",
+                    mimetype="text/html")
+
+
 # AI search, assistant and training crawlers, named so the welcome is explicit.
 # They share the "*" group's rules: the public site yes, portals and tools no.
 _AI_CRAWLERS = (

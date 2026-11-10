@@ -3,6 +3,35 @@
 {% block meta_description %}{{ partner.display }}, founder and managing attorney of {{ firm_name }}: a Nashville trial attorney involved in the crypto space since 2017, offering client-centered representation with dedicated support for DeFi and digital assets. Belmont Law graduate and Fisk University adjunct professor of Business Law, also handling criminal defense, civil rights, estate and family planning, and personal injury.{% endblock %}
 
 {% block styles %}
+{# Tells Google this page is Madison's profile and which photo is him. #}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ProfilePage",
+  "url": {{ request.base_url | tojson }},
+  "mainEntity": {
+    "@type": "Person",
+    "@id": {{ (request.base_url ~ '#person') | tojson }},
+    "name": {{ partner.name | tojson }},
+    "alternateName": {{ partner.display | tojson }},
+    "jobTitle": {{ partner.title | tojson }},
+    "description": {{ self.meta_description() | tojson }},
+    {% if partner_photo.endswith('.jpg') %}
+    "image": {
+      "@type": "ImageObject",
+      "url": {{ url_for('static', filename='images/' + partner_photo, v=None, _external=True) | tojson }},
+      "width": 760, "height": 1141,
+      "caption": {{ (partner.display ~ ', ' ~ partner.title ~ ' of ' ~ firm_name) | tojson }}
+    },
+    {% endif %}
+    "worksFor": {"@type": "LegalService", "name": {{ firm_name | tojson }}, "url": {{ request.url_root | tojson }}},
+    "workLocation": {"@type": "Place", "address": {"@type": "PostalAddress", "addressLocality": "Nashville", "addressRegion": "TN", "addressCountry": "US"}},
+    "alumniOf": {"@type": "CollegeOrUniversity", "name": "Belmont University College of Law"},
+    "knowsAbout": ["Blockchain", "Digital assets", "Criminal defense", "Civil rights litigation", "Estate planning"]{% if partner.profiles %},
+    "sameAs": {{ partner.profiles | tojson }}{% endif %}
+  }
+}
+</script>
 <style>
   /* Sections run edge to edge on this page. */
   .main-content { max-width: 100%; padding: 0; }

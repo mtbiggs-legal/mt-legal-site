@@ -31,6 +31,7 @@
           <option value="Demand Letter">Demand Letter</option>
           <option value="LLC Operating Agreement">LLC Operating Agreement</option>
           <option value="Engagement Letter">Engagement Letter</option>
+          <option value="Flat-Fee Engagement Letter (Criminal)">Flat-Fee Engagement Letter (Criminal)</option>
         </optgroup>
         <optgroup label="── Civil Litigation ─────────">
           <option value="Answer to Complaint">Answer to Complaint</option>
@@ -555,6 +556,20 @@
       <div class="form-group full"><label>Matter</label><textarea name="matter_description" rows="2" placeholder="e.g. Defense of breach of contract suit, Davidson County Circuit Court"></textarea></div>
       <div class="form-group full"><label>Scope of Representation</label><textarea name="scope_of_representation" rows="2" placeholder="What is included, and what is not (e.g. appeals excluded)"></textarea></div>
       <div class="form-group full"><label>Fee Terms</label><input type="text" name="fee_terms" placeholder="e.g. $350/hour billed in 0.1 increments; flat fee $1,500" /></div>
+    </div>
+
+    <!-- ── Flat-Fee Engagement Letter (Criminal) ───────────────────────────── -->
+    <div id="fields-flat-fee-engagement-letter-criminal" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Flat-Fee Engagement Letter Details</div>
+      <div class="form-group"><label>Client Name</label><input type="text" name="client_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Charge(s)</label><input type="text" name="charges" placeholder="e.g. DUI, first offense (T.C.A. § 55-10-401)" /></div>
+      <div class="form-group"><label>Court</label><input type="text" name="court_name" placeholder="e.g. Davidson County General Sessions Court" /></div>
+      <div class="form-group"><label>County</label><input type="text" name="county" placeholder="e.g. Davidson" /></div>
+      <div class="form-group"><label>Case / Warrant No.</label><input type="text" name="case_no" placeholder="e.g. GS123456" /></div>
+      <div class="form-group"><label>Option A: Paid in Full</label><input type="text" name="flat_fee_full" placeholder="e.g. $3,000" /></div>
+      <div class="form-group"><label>Option B: Two Payments</label><input type="text" name="flat_fee_split" placeholder="e.g. $3,500 total: $1,750 now, $1,750 later" /></div>
+      <div class="form-group"><label>Second Payment Due</label><input type="text" name="second_payment_due" placeholder="e.g. 30 days after signing, or before the first court date" /></div>
+      <div class="form-group full"><label>Also Included in the Fee (optional)</label><input type="text" name="included_services" placeholder="e.g. Restricted license petition; expungement if dismissed" /></div>
     </div>
 
     <!-- ── Answer to Complaint ─────────────────────────────────────────────── -->
@@ -1173,8 +1188,17 @@ document.addEventListener("DOMContentLoaded", function() {
         openAsGoogleDoc(templateType, _generatedDraft, "", gdocStatus);
       });
 
+      var wordBtn = document.createElement("button");
+      wordBtn.className = "btn btn-secondary";
+      wordBtn.style.whiteSpace = "nowrap";
+      wordBtn.textContent = "\u2B07 Word (.docx)";
+      wordBtn.addEventListener("click", function() {
+        downloadWord(templateType, _generatedDraft, gdocStatus);
+      });
+
       var actions = document.createElement("div");
       actions.style.cssText = "display:flex;gap:.5rem;flex-wrap:wrap";
+      actions.appendChild(wordBtn);
       actions.appendChild(gdocBtn);
       actions.appendChild(claimBtn);
 

@@ -35,7 +35,8 @@ function intakeCard(it) {
   const decline = _el("button", {type: "button", className: "btn btn-secondary"}, "Decline");
   approve.addEventListener("click", () => decideIntake(it, "approve", approve, decline, status));
   decline.addEventListener("click", () => {
-    if (confirm("Decline this intake? No account is opened and nothing is sent.")) {
+    if (confirm("Decline this intake? No account is opened and nothing is sent. " +
+                "You can download a non-engagement letter afterwards.")) {
       decideIntake(it, "decline", approve, decline, status);
     }
   });
@@ -75,7 +76,9 @@ function decideIntake(it, action, approveBtn, declineBtn, status) {
         (d.invite_sent ? "Invitation emailed." : "Invitation not emailed: resend it from Client Info.") +
         (d.conflict_hits ? " Conflict check found " + d.conflict_hits + " match(es): review before proceeding." : "");
     } else {
-      status.textContent = "Declined.";
+      const letter = _el("a", {href: "/portal/attorney/intakes/" + encodeURIComponent(it.id) +
+        "/non-engagement-letter", className: "btn btn-secondary"}, "Download non-engagement letter");
+      status.replaceChildren("Declined. ", letter);
     }
   }).catch(() => {
     status.textContent = "Request failed.";

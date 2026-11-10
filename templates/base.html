@@ -87,7 +87,7 @@
     "url": {{ request.url_root | tojson }},
     "logo": {{ url_for('static', filename='icons/icon-512.png', _external=True) | tojson }},
     "image": [{{ site_image | tojson }}, {{ url_for('static', filename='images/quote-justice.jpg', v=None, _external=True) | tojson }}],
-    "founder": {"@type": "Person", "name": {{ partner.display | tojson }}, "jobTitle": {{ partner.title | tojson }}},
+    "founder": {"@type": "Person", "@id": {{ (site_link('public.meet_the_firm', _external=True) ~ '#person') | tojson }}, "name": {{ partner.display | tojson }}, "jobTitle": {{ partner.title | tojson }}},
     "address": {"@type": "PostalAddress", "addressLocality": "Nashville", "addressRegion": "TN", "addressCountry": "US"},
     "areaServed": [{% for c in service_counties %}{"@type": "AdministrativeArea", "name": {{ (c ~ " County, Tennessee") | tojson }}}{% if not loop.last %}, {% endif %}{% endfor %}],
     "knowsAbout": ["Decentralized finance (DeFi)", "Digital asset structuring", "Stablecoins and agentic commerce", "Real-world asset tokenization", "Crypto tax", "Criminal defense", "Civil rights litigation", "Estate and family planning", "Personal injury"]

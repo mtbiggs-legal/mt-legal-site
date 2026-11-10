@@ -196,6 +196,7 @@ def get_client_details(attorney: str, client: str) -> str:
         "felony_checklist": [{"item": i["key"], "label": i["label"], "done": i["done"], "date": i["at"][:10]}
                              for i in felony.checklist_view(c)],
         "discovery_draft": c.get("discovery_draft"),
+        "engagement_letter": c.get("engagement_letter"),
     })
 
 
@@ -572,6 +573,38 @@ def _run_flat_fee(attorney, inp):
             "tracked privately and not billed.")
 
 
+def _prep_letter(attorney, inp):
+    from services import engagement
+    c = resolve_client(attorney, inp.get("client"))
+    kind = (inp.get("kind") or engagement.default_kind(c)).strip()
+    if kind not in engagement.KINDS:
+        raise ToolError("kind must be one of: " + ", ".join(engagement.KINDS))
+    given = {k: inp[k] for k in engagement.AMOUNT_TERMS + engagement.TEXT_TERMS if inp.get(k) not in (None, "")}
+    # Start from what the current letter of this type says, so changing one
+    # amount keeps the others.
+    current = c.get("engagement_letter") if isinstance(c.get("engagement_letter"), dict) else {}
+    base = dict(current.get("terms") or {}) if current.get("kind") == kind else engagement.default_terms(c, kind)
+    try:
+        terms = engagement.clean_terms({**base, **{k: str(v) for k, v in given.items()}})
+    except engagement.LetterError as exc:
+        raise ToolError(str(exc))
+    shown = [f"{k.replace('_', ' ')} {engagement.money(v) if k in engagement.AMOUNT_TERMS else v}"
+             for k, v in terms.items()]
+    summary = (f"{'Redraft' if current else 'Draft'} the {engagement.KINDS[kind]} for {_name(c)}"
+               + (" (" + "; ".join(shown) + ")" if shown else "") + ", saved to Drafts")
+    return c, kind, terms, summary
+
+
+def _run_letter(attorney, inp):
+    from services import engagement
+    c, kind, terms, _ = _prep_letter(attorney, inp)
+    try:
+        rec = engagement.draft(c["username"], kind, terms, attorney)
+    except engagement.LetterError as exc:
+        return f"Not drafted: {exc}"
+    return f"{rec['title']} drafted for {_name(c)}: {rec['category']}/{rec['filename']}."
+
+
 def _prep_checklist(attorney, inp):
     c = resolve_client(attorney, inp.get("client"))
     if not felony.is_felony(c):
@@ -732,6 +765,27 @@ ACTION_TOOLS = {
                                           "note": {"type": "string"},
                                           "completed_on": {"type": "string", "description": "YYYY-MM-DD"}},
                                          ["item"])),
+    "draft_engagement_letter": (_prep_letter, _run_letter, "Draft engagement letter",
+                                "Draft or redraft a client's engagement letter (or a non-engagement letter "
+                                "declining the matter) from the firm's standard wording, filled in from the "
+                                "client file, as a Word document on the letterhead in the attorney-only Drafts "
+                                "folder. kind: flat_fee (criminal flat fee, DUI and misdemeanors), hourly, "
+                                "evergreen (advisory, evergreen retainer), limited (limited scope), or "
+                                "non_engagement. Defaults to the client's current letter type. Amounts are "
+                                "dollars; unspecified terms keep their current values. Redrafting replaces the "
+                                "previous draft.",
+                                _schema({"client": _CLIENT,
+                                         "kind": {"type": "string", "enum": ["flat_fee", "hourly", "evergreen",
+                                                                             "limited", "non_engagement"]},
+                                         "flat_full": {"type": "number", "description": "Flat fee paid in full"},
+                                         "flat_split_total": {"type": "number", "description": "Two-payment total"},
+                                         "flat_first": {"type": "number"}, "flat_second": {"type": "number"},
+                                         "second_due": {"type": "string", "description": "When the second payment is due"},
+                                         "included": {"type": "string", "description": "Extra work the flat fee covers"},
+                                         "hourly_rate": {"type": "number"}, "retainer": {"type": "number"},
+                                         "matter": {"type": "string", "description": "The matter as the letter names it"},
+                                         "scope": {"type": "string", "description": "Tasks (limited) or topics (evergreen)"}},
+                                        ["client"])),
     "set_flat_fee": (_prep_flat_fee, _run_flat_fee, "Set flat fee",
                      "Bill a client a flat fee instead of hourly (earned on receipt), or switch "
                      "back to hourly with remove=true. plan: 'full' (paid up front) or 'half' "

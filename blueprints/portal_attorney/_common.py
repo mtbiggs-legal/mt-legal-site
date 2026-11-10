@@ -13,7 +13,7 @@ from flask import (
 )
 
 import shared
-from services import billing, felony, firm_admin, storage
+from services import billing, engagement, felony, firm_admin, storage
 from shared import (
     require_attorney, ATTORNEYS, CASE_ATTORNEY_MAP, CLIENT_FILES_DIR,
     LEADS_DIR, TOKEN_FILE, MAMMOTH_AVAILABLE, DOCS_CATEGORIES,

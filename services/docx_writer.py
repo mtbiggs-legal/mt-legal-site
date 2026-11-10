@@ -13,6 +13,10 @@ way the firm files them, with no extra dependencies:
   is a centered heading; its text is justified and single-spaced.
 - Anything without a caption (letters, agreements, memos): justified,
   single-spaced, with space between paragraphs; all-caps headings centered.
+- Letters (a "Dear ..." salutation near the top, no caption) open with the
+  firm letterhead: the MT Legal logo, the office address, and the phone,
+  email and website line over a thin gold rule. Filings, wills and other
+  documents never get it.
 
 Blank lines in the text are dropped: spacing comes from the layout, so a
 draft looks the same however many blank lines the model put between sections.
@@ -21,7 +25,14 @@ draft looks the same however many blank lines the model put between sections.
 import io
 import re
 import zipfile
+from pathlib import Path
 from xml.sax.saxutils import escape
+
+import shared
+
+LOGO_PATH = Path(__file__).resolve().parent.parent / "static" / "images" / "letterhead-logo.png"
+LOGO_EMU = 777240                          # 0.85 inch square
+GOLD, GRAY = "A89A78", "4A4F5A"
 
 # Twentieths of a point ("twips"): 720 = 0.5 inch, 240 = single line.
 SINGLE, DOUBLE = 240, 480
@@ -101,6 +112,9 @@ def _ppr(kind: str) -> str:
         "cert":      p("both", SINGLE, after=240, first=INDENT_FIRST),
         "signature": p("left", SINGLE, left=SIGNATURE_LEFT, keep=True),
         "letter":    p("both", SINGLE, after=200),
+        "letter-keep": p("both", SINGLE, after=200, keep=True),
+        "accept":    p("both", SINGLE, before=360, after=200, keep=True),
+        "address":   p("left", SINGLE, after=200),
     }[kind]
 
 
@@ -115,8 +129,78 @@ def _paragraph(text: str, kind: str, first_signature: bool, last_court: bool = F
     return f'<w:p>{ppr}<w:r>{rpr}<w:t xml:space="preserve">{t}</w:t></w:r></w:p>'
 
 
+def is_letter(rows: list) -> bool:
+    """A letter: no court caption, and a "Dear ..." salutation near the top."""
+    if any(k in ("caption", "title") for _, k in rows):
+        return False
+    return any(l.lower().startswith("dear ") for l, _ in rows[:15])
+
+
+_CLOSINGS = {"sincerely", "very truly yours", "respectfully", "best regards", "regards"}
+
+
+def _letter_rows(rows: list) -> list:
+    """Letter fixes: everything above the salutation ("VIA E-MAIL", the
+    address, "Re:") sits flush left rather than being read as a heading, and
+    the client's acceptance paragraph stays on the page with its signature line."""
+    salutation = next(i for i, (l, _) in enumerate(rows) if l.lower().startswith("dear "))
+    out = []
+    for i, (line, kind) in enumerate(rows):
+        if i < salutation:
+            kind = "address"
+        elif kind in ("letter", "signature") and line.upper().startswith("ACCEPTED"):
+            kind = "accept"
+        elif kind == "letter" and line.rstrip(",").lower() in _CLOSINGS:
+            kind = "letter-keep"
+        out.append((line, kind))
+    return out
+
+
+def letterhead_lines() -> list:
+    """The address and contact lines under the logo, read from config at call time."""
+    lines = []
+    address = [p.strip() for p in (shared.FIRM_ADDRESS or "").split(";") if p.strip()]
+    if address:
+        lines.append(" · ".join(address))
+    else:
+        lines.append(shared.FIRM_CITY)
+    contact = [shared.FIRM_PHONE_DISPLAY, shared.FIRM_EMAIL_DISPLAY, shared.FIRM_WEBSITE]
+    lines.append(" · ".join(c for c in contact if c))
+    return lines
+
+
+def _letterhead_xml(with_logo: bool) -> str:
+    parts = []
+    if with_logo:
+        e = LOGO_EMU
+        parts.append(
+            '<w:p><w:pPr><w:spacing w:after="80"/><w:jc w:val="center"/></w:pPr><w:r><w:drawing>'
+            f'<wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="{e}" cy="{e}"/>'
+            '<wp:docPr id="1" name="MT Legal logo" descr="MT Legal"/>'
+            '<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">'
+            '<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">'
+            '<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">'
+            '<pic:nvPicPr><pic:cNvPr id="1" name="letterhead-logo.png"/><pic:cNvPicPr/></pic:nvPicPr>'
+            '<pic:blipFill><a:blip r:embed="rId3"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>'
+            f'<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="{e}" cy="{e}"/></a:xfrm>'
+            '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic>'
+            '</a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>')
+    lines = letterhead_lines()
+    for i, line in enumerate(lines):
+        last = i == len(lines) - 1
+        border = (f'<w:pBdr><w:bottom w:val="single" w:sz="8" w:space="6" w:color="{GOLD}"/></w:pBdr>'
+                  if last else "")
+        parts.append(
+            f'<w:p><w:pPr>{border}<w:spacing w:after="{480 if last else 0}"/><w:jc w:val="center"/></w:pPr>'
+            f'<w:r><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/><w:color w:val="{GRAY}"/>'
+            f'<w:sz w:val="18"/><w:szCs w:val="18"/></w:rPr>'
+            f'<w:t xml:space="preserve">{escape(line)}</w:t></w:r></w:p>')
+    return "".join(parts)
+
+
 _CONTENT_TYPES = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+<Default Extension="png" ContentType="image/png"/>
 <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
 <Default Extension="xml" ContentType="application/xml"/>
 <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
@@ -135,7 +219,9 @@ _DOC_RELS = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
 <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
 <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/>
-</Relationships>"""
+{logo}</Relationships>"""
+_LOGO_REL = ('<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/'
+             'relationships/image" Target="media/letterhead-logo.png"/>')
 
 _STYLES = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
@@ -160,12 +246,22 @@ _CORE = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 
 _W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 _R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+_WP = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
 
 
-def text_to_docx(title: str, text: str, creator: str = "") -> bytes:
-    """A court-formatted .docx of `text` (one paragraph per line)."""
+def text_to_docx(title: str, text: str, creator: str = "", letterhead: bool | None = None) -> bytes:
+    """A court-formatted .docx of `text` (one paragraph per line). Letters get
+    the firm letterhead unless `letterhead` says otherwise."""
     parts, prev = [], None
     rows = layout(text)
+    letter = is_letter(rows)
+    if letter:
+        rows = _letter_rows(rows)
+    if letterhead is None:
+        letterhead = letter
+    logo = LOGO_PATH.read_bytes() if letterhead and LOGO_PATH.exists() else b""
+    if letterhead:
+        parts.append(_letterhead_xml(bool(logo)))
     # Space after the court's name: the last caption line naming the court.
     court_rows = [i for i, (l, k) in enumerate(rows) if k == "caption" and "COURT" in l.upper()]
     last_court = court_rows[-1] if court_rows else -1
@@ -174,7 +270,7 @@ def text_to_docx(title: str, text: str, creator: str = "") -> bytes:
         prev = kind
     body = "".join(parts) or "<w:p/>"
     document = (f'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-                f'<w:document xmlns:w="{_W}" xmlns:r="{_R}"><w:body>{body}'
+                f'<w:document xmlns:w="{_W}" xmlns:r="{_R}" xmlns:wp="{_WP}"><w:body>{body}'
                 f'<w:sectPr><w:footerReference w:type="default" r:id="rId2"/>'
                 f'<w:pgSz w:w="12240" w:h="15840"/>'
                 f'<w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" '
@@ -183,7 +279,9 @@ def text_to_docx(title: str, text: str, creator: str = "") -> bytes:
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
         z.writestr("[Content_Types].xml", _CONTENT_TYPES)
         z.writestr("_rels/.rels", _RELS)
-        z.writestr("word/_rels/document.xml.rels", _DOC_RELS)
+        z.writestr("word/_rels/document.xml.rels", _DOC_RELS.format(logo=_LOGO_REL if logo else ""))
+        if logo:
+            z.writestr("word/media/letterhead-logo.png", logo)
         z.writestr("word/document.xml", document)
         z.writestr("word/styles.xml", _STYLES)
         z.writestr("word/footer1.xml", _FOOTER)

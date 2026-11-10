@@ -587,6 +587,7 @@ function selectClientAndTab(username, tabName) {
       populateSecurity(c);
       if (window.populateBilling) populateBilling(c);
       if (window.populateFelony) populateFelony(c);
+      if (window.populateEngagement) populateEngagement(c);
       if (window.populateCaseDates) populateCaseDates(c);
       goToTab(tabName);
     });

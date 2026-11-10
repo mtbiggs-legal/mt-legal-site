@@ -5,7 +5,7 @@ one here opens the client account and emails the client an invitation;
 declining keeps the encrypted entry for the record but takes no action.
 """
 
-from flask import Blueprint, jsonify, request, session
+from flask import Blueprint, Response, jsonify, request, session
 
 from shared import require_attorney
 from services import audit, intake_queue
@@ -49,6 +49,22 @@ def intakes_decline():
         return jsonify({"error": "Intake not found."}), 404
     audit.record("intake_declined", detail=intake_id)
     return jsonify({"success": True})
+
+
+@intake_review_bp.route("/portal/attorney/intakes/<intake_id>/non-engagement-letter")
+@require_attorney
+def intakes_non_engagement_letter(intake_id):
+    """A non-engagement letter for a declined intake, as a Word document."""
+    from services import engagement
+    e = intake_queue.declined_entry(intake_id, session["username"])
+    if not e:
+        return jsonify({"error": "Declined intake not found."}), 404
+    client = engagement.intake_client(e.get("fields"))
+    data = engagement.letter_docx("non_engagement", client)
+    safe = "".join(ch if ch.isalnum() else "_" for ch in client["client_name"]).strip("_") or "Prospective_Client"
+    audit.record("non_engagement_letter", detail=intake_id)
+    return Response(data, mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    headers={"Content-Disposition": f'attachment; filename="Non_Engagement_Letter_{safe}.docx"'})
 
 
 _SIGN_IN_ACTIONS = ("login", "login_failed", "login_locked", "login_code_failed",

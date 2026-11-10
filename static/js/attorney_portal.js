@@ -345,6 +345,7 @@ function selectClient(username) {
       populateSecurity(c);
       if (window.populateBilling) populateBilling(c);
       if (window.populateFelony) populateFelony(c);
+      if (window.populateEngagement) populateEngagement(c);
       if (window.populateCaseDates) populateCaseDates(c);
       showAttyTab("overview", document.querySelector("#atty-tabs .portal-tab-btn"));
     });

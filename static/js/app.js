@@ -578,6 +578,36 @@ function openAsGoogleDoc(title, content, username, statusEl) {
     });
 }
 
+// Download a draft as a Word document (letters come out on the firm letterhead).
+function downloadWord(title, content, statusEl) {
+  if (!content) return;
+  fetch("/drafting/docx", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title: title, content: content }),
+  })
+    .then(function (r) {
+      if (!r.ok) return r.json().then(function (d) { throw new Error(d.error || "Download failed."); });
+      var cd = r.headers.get("Content-Disposition") || "";
+      var m = cd.match(/filename="([^"]+)"/);
+      return r.blob().then(function (b) { return { blob: b, name: m ? m[1] : "Draft.docx" }; });
+    })
+    .then(function (f) {
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(f.blob);
+      a.download = f.name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+    })
+    .catch(function (e) {
+      if (!statusEl) return;
+      statusEl.style.color = "var(--red, #c0392b)";
+      statusEl.textContent = e.message;
+    });
+}
+
 // NOTE: the drafting form's submit handler lives in templates/drafting.html —
 // it generates the document, then offers the "Save & Download" claim flow.
 // Nothing here should also bind to that form.

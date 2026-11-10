@@ -108,6 +108,14 @@ def _finish(intake_id: str, status: str, attorney: str, **extra) -> None:
     storage.write_encrypted_json(_path(intake_id), e)
 
 
+def declined_entry(intake_id: str, attorney: str):
+    """A declined intake of this attorney's (for its non-engagement letter), or None."""
+    e = load(intake_id)
+    if not e or e.get("status") != "declined" or e.get("assigned_attorney") != attorney:
+        return None
+    return e
+
+
 def decline(intake_id: str, attorney: str) -> bool:
     with _lock:
         e = load(intake_id)
@@ -213,6 +221,8 @@ def approve(intake_id: str, attorney: str) -> dict:
     storage.save_client(record)
     storage._log_activity(username, "intake",
                           f"Intake approved by {attorney} — {f['case_type']}.")
+    from services import engagement
+    engagement.auto_draft(username)
 
     if f.get("court_date_1"):
         gcal_id = _push_court_date_to_gcal(f["full_name"], f["court_date_1"])

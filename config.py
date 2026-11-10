@@ -69,6 +69,9 @@ class Settings:
             "title":    "Founder & Managing Attorney",
             "role":     "AI · Blockchain · Estate · Litigation",
             "photo":    "managing-partner.jpg",
+            # Public profiles that use the same headshot (LinkedIn, Avvo, bar
+            # directory...). Google uses them to tie the photo to the name.
+            "profiles": [],
         }
         # Counties the marketing site names as the firm's service area.
         self.SERVICE_COUNTIES = [
@@ -196,9 +199,14 @@ class Settings:
         self.DROPBOX_SIGN_API_KEY   = get("DROPBOX_SIGN_API_KEY")
         self.DROPBOX_SIGN_TEST_MODE = flag("DROPBOX_SIGN_TEST_MODE", default=True)
         # Signature block on filing packages (the managing partner's Tennessee
-        # BPR number).
-        self.ATTORNEY_BPR = get("ATTORNEY_BPR")
+        # BPR number). Some .env files name it ATTORNEY_BPR_NUMBER.
+        self.ATTORNEY_BPR = get("ATTORNEY_BPR") or get("ATTORNEY_BPR_NUMBER")
         self.FIRM_ADDRESS = get("FIRM_ADDRESS")
+        # Letterhead contact line on firm letters (the public numbers on the
+        # business card).
+        self.FIRM_PHONE_DISPLAY = get("FIRM_PHONE") or "615-606-2603"
+        self.FIRM_EMAIL_DISPLAY = get("FIRM_EMAIL") or "mtbiggs@midtennlegal.com"
+        self.FIRM_WEBSITE       = "midtennlegal.com"
 
         # ── Google Calendar ──────────────────────────────────────────────────
         self.CALENDAR_SCOPES = [

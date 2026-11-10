@@ -992,3 +992,11 @@
 .review-actions { display: flex; gap: .35rem; margin-top: .35rem; }
 .matter-row { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; padding: .35rem 0;
               border-bottom: 1px solid var(--gray-1); }
+
+/* Engagement letter card (Case Overview) */
+.engagement-card { border-top: 3px solid var(--gold); }
+.eng-status { display: flex; align-items: center; flex-wrap: wrap; gap: .6rem; margin: .3rem 0 .9rem; }
+.eng-status-label { font-family: var(--font-sans); font-size: .86rem; font-weight: 600; color: var(--navy); }
+.eng-grid { margin-top: .4rem; }
+.eng-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; margin-top: .6rem; }
+.eng-btn { font-size: .82rem; padding: .4rem .9rem; }

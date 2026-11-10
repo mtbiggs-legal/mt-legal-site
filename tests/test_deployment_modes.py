@@ -76,6 +76,12 @@ def test_link_preview_tags_and_icons(client):
     assert client.get("/favicon.ico").status_code == 200
 
 
+def test_google_search_console_verification_file(client):
+    resp = client.get("/google60e1ea6c610b5ed3.html")
+    assert resp.status_code == 200
+    assert resp.get_data(as_text=True) == "google-site-verification: google60e1ea6c610b5ed3.html"
+
+
 def test_robots_and_sitemap(client):
     robots = client.get("/robots.txt").get_data(as_text=True)
     assert "Disallow: /attorney-login" in robots and "Sitemap: http://localhost/sitemap.xml" in robots

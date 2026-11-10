@@ -23,7 +23,28 @@ def portal_client_get(username):
     view["conflict_checks"] = redact_checks(client.get("conflict_checks"), session["username"])
     view["billing_summary"] = billing.billing_summary(client, billing.load_ledger(client["username"]))
     view["felony_checklist"] = felony.checklist_view(client)
+    view["engagement"] = engagement.view(client)
     return jsonify(view)
+
+
+@portal_attorney_bp.route("/portal/attorney/engagement-letter", methods=["POST"])
+@require_attorney
+def portal_engagement_letter():
+    """Draft or redraft the client's engagement (or non-engagement) letter
+    with the letter type and fee amounts the attorney chose."""
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        data = {}
+    client = load_client_for_attorney(str(data.get("username") or ""))
+    if not client:
+        return jsonify({"error": "Client not found."}), 404
+    try:
+        engagement.draft(client["username"], str(data.get("kind") or ""), data.get("terms") or {},
+                         session["username"])
+    except engagement.LetterError as exc:
+        return jsonify({"error": str(exc)}), 400
+    _log_access(client, "edit_record", "Engagement letter drafted.")
+    return jsonify({"success": True, "engagement": engagement.view(load_client(client["username"]) or {})})
 
 
 def _admin_items() -> list:
@@ -217,6 +238,7 @@ def portal_create_client():
     visible_hits = redact_hits(check["hits"], session["username"])
     save_client(record)
     _log_activity(username, "intake", f"Client profile created — {case_type}.")
+    engagement.auto_draft(username)
 
     court_date_val = data.get("next_court_date", "").strip()
     if court_date_val:
