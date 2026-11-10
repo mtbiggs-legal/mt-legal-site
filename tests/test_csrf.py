@@ -52,7 +52,7 @@ def test_login_form_field_accepted(client):
 # /api/track-visit is also exempt but is left out here: posting to it writes
 # the real page-visits.json, which conftest does not redirect.
 @pytest.mark.parametrize("path", ["/webhooks/stripe", "/webhooks/coinbase", "/intake/submit",
-                                  "/client-register", "/chat/message", "/capture/lead",
+                                  "/webhooks/dropbox-sign", "/chat/message", "/capture/lead",
                                   "/follow-up/schedule"])
 def test_exempt_paths(client, path):
     assert any(rule.rule == path for rule in flask_app.url_map.iter_rules()), path

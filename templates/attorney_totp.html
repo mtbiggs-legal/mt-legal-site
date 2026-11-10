@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Verification Code — {{ firm_name }}{% endblock %}
+{% block styles %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="card auth-card">
+    <h2 class="auth-title">Enter Your Code</h2>
+    <p class="auth-lead">Open your authenticator app and enter the 6-digit code for {{ firm_name }}.
+      Lost your phone? Enter one of your recovery codes instead.</p>
+
+    {% if error %}
+    <div class="alert alert-urgent auth-alert"><span class="alert-icon">⚠</span><div>{{ error }}</div></div>
+    {% endif %}
+
+    <form method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <div class="form-group auth-field">
+        <label for="code">Code</label>
+        <input type="text" id="code" name="code" inputmode="numeric" autocomplete="one-time-code"
+               maxlength="12" required autofocus />
+      </div>
+      <button type="submit" class="btn btn-primary auth-submit">Verify &amp; Sign In →</button>
+    </form>
+    <p class="auth-note"><a href="{{ url_for('auth.attorney_login') }}">Start over</a></p>
+  </div>
+</div>
+{% endblock %}

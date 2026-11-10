@@ -7,15 +7,18 @@
 
   <!-- Category tabs -->
   <div class="doc-cat-tabs">
-    <button class="doc-cat-tab active"  onclick="setDocCategory('Intake',this)">Intake</button>
-    <button class="doc-cat-tab"         onclick="setDocCategory('Generated Documents',this)">Generated Documents</button>
-    <button class="doc-cat-tab"         onclick="setDocCategory('Motions',this)">Motions</button>
-    <button class="doc-cat-tab"         onclick="setDocCategory('Litigation Drafts',this)">Litigation Drafts</button>
-    <button class="doc-cat-tab"         onclick="setDocCategory('Court Orders',this)">Court Orders</button>
-    <button class="doc-cat-tab"         onclick="setDocCategory('Scheduling Orders',this)">Scheduling Orders</button>
-    <button class="doc-cat-tab"         onclick="setDocCategory('Warrants &amp; Discovery',this)">Warrants &amp; Discovery</button>
-    <button class="doc-cat-tab"         onclick="setDocCategory('Research',this)">Research</button>
-    <button class="doc-cat-tab"         onclick="setDocCategory('Other',this)">Other</button>
+    <button class="doc-cat-tab active"  data-on-click='[["setDocCategory",["Intake","$this"]]]'>Intake</button>
+    <button class="doc-cat-tab"         data-on-click='[["setDocCategory",["Generated Documents","$this"]]]'>Generated Documents</button>
+    <button class="doc-cat-tab"         data-on-click='[["setDocCategory",["Motions","$this"]]]'>Motions</button>
+    <button class="doc-cat-tab"         data-on-click='[["setDocCategory",["Litigation Drafts","$this"]]]'>Litigation Drafts</button>
+    <button class="doc-cat-tab"         data-on-click='[["setDocCategory",["Court Orders","$this"]]]'>Court Orders</button>
+    <button class="doc-cat-tab"         data-on-click='[["setDocCategory",["Scheduling Orders","$this"]]]'>Scheduling Orders</button>
+    <button class="doc-cat-tab"         data-on-click='[["setDocCategory",["Warrants &amp; Discovery","$this"]]]'>Warrants &amp; Discovery</button>
+    <button class="doc-cat-tab"         data-on-click='[["setDocCategory",["Research","$this"]]]'>Research</button>
+    <button class="doc-cat-tab"         data-on-click='[["setDocCategory",["Signed Documents","$this"]]]'>Signed Documents</button>
+    <button class="doc-cat-tab"         data-on-click='[["setDocCategory",["Filing Packages","$this"]]]'>Filing Packages</button>
+    <button class="doc-cat-tab"         data-on-click='[["setDocCategory",["Drafts","$this"]]]' title="Only you can see this folder">🔒 Drafts</button>
+    <button class="doc-cat-tab"         data-on-click='[["setDocCategory",["Other","$this"]]]'>Other</button>
   </div>
 
   <!-- Drop zone -->
@@ -25,7 +28,7 @@
     <div class="doc-drop-sub">PDF, DOCX, JPG, PNG, XLS and more — or click to browse</div>
     <input type="file" id="doc-file-input" style="display:none" multiple
            accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.bmp,.txt,.rtf"
-           onchange="uploadFiles(this.files)" />
+           data-on-change='[["uploadFiles",["$files"]]]' />
     <div class="doc-upload-progress" id="doc-upload-progress"></div>
   </div>
 
@@ -37,6 +40,113 @@
     </div>
     <div id="doc-file-list">
       <p class="doc-empty">Select a client from the sidebar to view documents.</p>
+    </div>
+  </div>
+
+  <!-- E-signatures (static/js/attorney_esign.js) -->
+  <div class="card" id="esign-card" style="margin-top:1rem">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem;gap:.5rem;flex-wrap:wrap">
+      <div class="portal-section-title" style="margin-bottom:0">Signatures</div>
+      <div style="display:flex;gap:.5rem;align-items:center">
+        <span id="esign-mode" class="esign-mode" style="display:none"></span>
+        <button type="button" class="doc-btn" data-on-click='[["loadSignatures",[false,true]]]'>↻ Check status</button>
+      </div>
+    </div>
+    <div id="esign-list"><p class="doc-empty">No documents sent for signature yet.</p></div>
+  </div>
+
+  <!-- Filings (static/js/attorney_filings.js) -->
+  <div class="card" id="filings-card" style="margin-top:1rem">
+    <div class="portal-section-title" style="margin-bottom:.6rem">Filings</div>
+    <div id="filings-list"><p class="doc-empty">No filing packages yet. Use "Prepare filing" on a document.</p></div>
+  </div>
+
+  <!-- Prepare filing form -->
+  <div id="filing-modal" class="modal-overlay" style="display:none" data-on-click='[["$ifSelf",[]],["closeFiling",[]]]'>
+    <div class="modal-box" style="max-width:680px">
+      <div class="modal-header">
+        <h2>⚖ Prepare filing package</h2>
+        <button class="modal-close" data-on-click='[["closeFiling",[]]]' title="Close">✕</button>
+      </div>
+      <div class="modal-body" style="padding:1.25rem 1.5rem 1.5rem">
+        <p class="sec-note" id="filing-doc"></p>
+        <p class="sec-note" id="filing-summary"></p>
+        <div class="filing-grid">
+          <div class="form-group full"><label>Court <span data-for="court"></span></label><input type="text" id="filing-court" maxlength="300"></div>
+          <div class="form-group"><label>County <span data-for="county"></span></label><input type="text" id="filing-county" maxlength="100"></div>
+          <div class="form-group"><label>Case No. <span data-for="case_no"></span></label><input type="text" id="filing-case-no" maxlength="100"></div>
+          <div class="form-group"><label>Our client's side <span data-for="client_role"></span></label>
+            <input type="text" id="filing-role" list="filing-roles" maxlength="100">
+            <datalist id="filing-roles"><option>Plaintiff</option><option>Defendant</option><option>Petitioner</option><option>Respondent</option><option>Appellant</option><option>Appellee</option></datalist>
+          </div>
+          <div class="form-group"><label>Document title</label><input type="text" id="filing-title" maxlength="200"></div>
+        </div>
+        <div class="portal-section-title" style="margin:.6rem 0 .4rem">Serve on <span data-for="service"></span></div>
+        <div id="filing-service"></div>
+        <button type="button" class="doc-btn" data-on-click='[["addFilingParty",[]]]'>+ Add party</button>
+        <label class="filing-approve">
+          <input type="checkbox" id="filing-approve" style="margin-top:.2rem">
+          <span>Sign the certificate of service as "/s/ {{ partner.name }}". I have reviewed the document and approve filing it under my signature.</span>
+        </label>
+        <div id="filing-error" class="esign-error"></div>
+        <div class="btn-group">
+          <button type="button" class="btn btn-primary" id="filing-build-btn" data-on-click='[["buildFiling",[]]]'>Build package</button>
+          <button type="button" class="btn btn-secondary" data-on-click='[["closeFiling",[]]]'>Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mark filed form -->
+  <div id="filed-modal" class="modal-overlay" style="display:none" data-on-click='[["$ifSelf",[]],["closeFiled",[]]]'>
+    <div class="modal-box" style="max-width:480px">
+      <div class="modal-header">
+        <h2>Mark as filed</h2>
+        <button class="modal-close" data-on-click='[["closeFiled",[]]]' title="Close">✕</button>
+      </div>
+      <div class="modal-body" style="padding:1.25rem 1.5rem 1.5rem">
+        <p class="sec-note" id="filed-title"></p>
+        <div class="form-group"><label>File-stamped copy (optional)</label><input type="file" id="filed-file"></div>
+        <div class="form-group"><label>Save it in</label>
+          <select id="filed-category"><option>Court Orders</option><option>Motions</option><option>Litigation Drafts</option><option>Other</option></select>
+        </div>
+        <div class="form-group"><label>Hearing date (optional)</label><input type="date" id="filed-hearing"></div>
+        <div class="form-group"><label>Hearing description</label><input type="text" id="filed-label" maxlength="80" placeholder="e.g. Motion to Suppress hearing"></div>
+        <div id="filed-error" class="esign-error"></div>
+        <div class="btn-group">
+          <button type="button" class="btn btn-primary" id="filed-save-btn" data-on-click='[["saveFiled",[]]]'>Save</button>
+          <button type="button" class="btn btn-secondary" data-on-click='[["closeFiled",[]]]'>Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Send for signature form -->
+  <div id="esign-modal" class="modal-overlay" style="display:none" data-on-click='[["$ifSelf",[]],["closeEsign",[]]]'>
+    <div class="modal-box" style="max-width:520px">
+      <div class="modal-header">
+        <h2>✍ Send for signature</h2>
+        <button class="modal-close" data-on-click='[["closeEsign",[]]]' title="Close">✕</button>
+      </div>
+      <div class="modal-body" style="padding:1.25rem 1.5rem 1.5rem">
+        <p class="sec-note" id="esign-doc"></p>
+        <div id="esign-signers"></div>
+        <button type="button" class="doc-btn" data-on-click='[["addEsignSigner",[]]]'>+ Add signer</button>
+        <div class="form-group" style="margin-top:.9rem">
+          <label for="esign-subject">Email subject</label>
+          <input type="text" id="esign-subject" maxlength="200">
+        </div>
+        <div class="form-group">
+          <label for="esign-message">Message (optional)</label>
+          <textarea id="esign-message" rows="3" maxlength="2000"></textarea>
+        </div>
+        <p class="sec-note" id="esign-test-note"></p>
+        <div id="esign-error" class="esign-error"></div>
+        <div class="btn-group">
+          <button type="button" class="btn btn-primary" id="esign-send-btn" data-on-click='[["sendEsign",[]]]'>Send for signature</button>
+          <button type="button" class="btn btn-secondary" data-on-click='[["closeEsign",[]]]'>Cancel</button>
+        </div>
+      </div>
     </div>
   </div>
 

@@ -2,6 +2,7 @@
 
 import inspect
 import re
+from conftest import access_log
 
 import pytest
 
@@ -59,7 +60,7 @@ def _call(c, method, url, payload):
 def test_unassigned_attorney_gets_404(other_attorney_session, method, url, payload, expected):
     resp = _call(other_attorney_session, method, url, payload)
     assert resp.status_code == 404
-    assert storage.load_client("victim")["access_log"] == []
+    assert access_log("victim") == []
 
 
 @pytest.mark.parametrize("method,url,payload,expected", ROUTES + ASSIGNED_ONLY)
@@ -98,7 +99,7 @@ def test_denied_delete_keeps_file(other_attorney_session, tmp_path):
 def test_repeated_previews_logged_once(attorney_session):
     for _ in range(2):
         attorney_session.get("/portal/attorney/preview/victim/Motions/a.txt")
-    log = storage.load_client("victim")["access_log"]
+    log = access_log("victim")
     assert [e["action"] for e in log] == ["view_document_preview"]
 
 
@@ -132,6 +133,7 @@ NO_CLIENT_ROUTES = {
     "attorney_portal", "portal_attorney_dashboard", "portal_create_client",
     "portal_leads_list", "attorney_token_usage", "insights_export_tax",
     "portal_conflict_check",
+    "intakes_approve",          # reads the account it just opened, not a posted one
 }
 
 

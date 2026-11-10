@@ -43,10 +43,10 @@
   <div class="card" id="query-panel" style="position:sticky;top:80px">
     <div class="query-panel-header">
       <h2 style="margin:0">New Query</h2>
-      <button class="query-toggle-btn" id="query-toggle-btn" type="button" onclick="toggleQueryPanel()">▼ Collapse</button>
+      <button class="query-toggle-btn" id="query-toggle-btn" type="button" data-on-click='[["toggleQueryPanel",[]]]'>▼ Collapse</button>
     </div>
     <div class="research-form-body">
-      <form id="research-form" onsubmit="submitResearch(event)">
+      <form id="research-form" data-on-submit='[["submitResearch",["$event"]]]'>
         <div class="form-group" style="margin-bottom:.85rem">
           <label for="research-case-type">Case Type</label>
           <select id="research-case-type" name="case_type">
@@ -85,7 +85,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
+<script nonce="{{ csp_nonce() }}">
 
   document.getElementById("research-result").addEventListener("DOMNodeInserted", function () {
     const ph = document.getElementById("research-placeholder");

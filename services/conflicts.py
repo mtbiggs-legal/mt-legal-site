@@ -104,8 +104,10 @@ def _candidates(exclude_username=None, skipped=None):
                            relationship=rel.get("relationship", ""))
     for path in sorted(shared.LEADS_DIR.glob("*.json")):
         try:
-            lead = json.loads(path.read_text(encoding="utf-8"))
+            lead = storage.read_encrypted_json(path)
         except Exception:
+            continue
+        if not isinstance(lead, dict):
             continue
         if lead.get("archived") or not lead.get("name"):
             continue

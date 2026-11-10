@@ -3,16 +3,17 @@
 from datetime import datetime, timedelta
 
 import shared
+from flask import session
 from services import storage
 from services import accounts
-from conftest import flask_app
+from conftest import access_log, flask_app
 
 
 def _ctx(username="Endocide"):
     ctx = flask_app.test_request_context("/", environ_base={"REMOTE_ADDR": "10.0.0.9"})
     ctx.push()
-    shared.session["role"] = "attorney"
-    shared.session["username"] = username
+    session["role"] = "attorney"
+    session["username"] = username
     return ctx
 
 
@@ -49,25 +50,23 @@ def test_public_client_view_strips_private_fields():
 def test_log_access_appends_with_ip():
     ctx = _ctx()
     try:
-        c = {}
-        assert accounts._log_access(c, "billing_entry", "1.0 hrs")
-        e = c["access_log"][0]
-        assert (e["attorney"], e["action"], e["detail"], e["ip"]) == \
-               ("Endocide", "billing_entry", "1.0 hrs", "10.0.0.9")
+        assert accounts._log_access({"username": "victim"}, "billing_entry", "1.0 hrs")
+        (e,) = access_log("victim")
+        assert (e["attorney"], e["action"], e["detail"], e["ip"]) ==                ("Endocide", "billing_entry", "1.0 hrs", "10.0.0.9")
     finally:
         ctx.pop()
 
 
-def test_view_actions_deduplicated_within_10_minutes():
+def test_view_actions_deduplicated_within_10_minutes(monkeypatch):
+    from services import audit
     ctx = _ctx()
     try:
-        c = {}
+        c = {"username": "victim"}
         assert accounts._log_access(c, "view_record")
         assert not accounts._log_access(c, "view_record")
-        c["access_log"][0]["timestamp"] = (
-            datetime.now() - timedelta(minutes=11)).strftime("%Y-%m-%dT%H:%M:%S")
+        later = datetime.now() + timedelta(minutes=11)
+        monkeypatch.setattr(audit, "datetime", type("D", (), {"now": staticmethod(lambda: later)}))
         assert accounts._log_access(c, "view_record")
-        assert len(c["access_log"]) == 2
     finally:
         ctx.pop()
 
@@ -76,24 +75,29 @@ def test_log_access_atomic_keeps_concurrent_changes(make_client):
     make_client("victim")
     ctx = _ctx()
     try:
-        storage.load_client("victim")                      # stale copy, never saved
-        other = storage.load_client("victim")              # concurrent writer
+        other = storage.load_client("victim")
         other["messages"].append({"from": "client", "text": "new"})
         storage.save_client(other)
         accounts.log_access_atomic("victim", "view_record")
-        rec = storage.load_client("victim")
-        assert rec["messages"] and rec["access_log"][-1]["action"] == "view_record"
+        assert storage.load_client("victim")["messages"]
+        assert access_log("victim")[-1]["action"] == "view_record"
     finally:
         ctx.pop()
 
 
-def test_access_log_capped():
-    ctx = _ctx()
-    try:
-        c = {"access_log": [{"timestamp": "2020-01-01T00:00:00", "attorney": "x",
-                             "action": "edit_record", "detail": "", "ip": ""}] * 1000}
-        accounts._log_access(c, "edit_record")
-        assert len(c["access_log"]) == 1000
-        assert c["access_log"][-1]["attorney"] == "Endocide"
-    finally:
-        ctx.pop()
+def test_audit_log_is_append_only():
+    import sqlite3
+    import pytest
+    from services import audit, db
+    audit.record("x", client="victim", actor="a", role="attorney", ip="")
+    with pytest.raises(sqlite3.DatabaseError):
+        db.conn().execute("UPDATE audit_log SET action = 'y'")
+    with pytest.raises(sqlite3.DatabaseError):
+        db.conn().execute("DELETE FROM audit_log")
+
+
+def test_audit_detail_is_encrypted():
+    from services import audit, db
+    audit.record("note", client="victim", detail="privileged detail", actor="a", role="attorney")
+    raw = db.conn().execute("SELECT detail FROM audit_log").fetchone()[0]
+    assert b"privileged" not in bytes(raw)

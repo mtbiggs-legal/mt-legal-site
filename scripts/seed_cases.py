@@ -92,7 +92,7 @@ HOLLISTER_PAYMENTS = [
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# CASE 2: Linda M. Chen — Employment Law — SophiaH
+# CASE 2: Linda M. Chen — Employment Law — Endocide
 # Davidson Co. Circuit Court Case No. 26C1140
 # Outcome: Mediation ordered; strong settlement position ($75k+ target)
 # ─────────────────────────────────────────────────────────────────────────────
@@ -174,7 +174,7 @@ BOBBYT_EXTRA_PAYMENTS = [
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# DerekW Enrichment — Personal Injury (SophiaH)
+# DerekW Enrichment — Personal Injury (Endocide)
 # Rear-end collision, L4-L5 herniation; State Farm settles $61,500
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -309,7 +309,7 @@ if __name__ == "__main__":
         "client_name":         "Linda M. Chen",
         "full_name":           "Linda M. Chen",
         "case_type":           "Employment Law",
-        "assigned_attorney":   "SophiaH",
+        "assigned_attorney":   "Endocide",
         "legal_issue":         "Wrongful termination and hostile work environment based on age (54) and gender at NovaTech Solutions, LLC. Replaced by 29-yr-old male after 11 years of exemplary service. Davidson Co. Circuit Court Case No. 26C1140, assigned to Hon. Marianne Okafor. Mediation ordered. Strong settlement position \u2014 target $75,000+.",
         "legal_issue_summary": "Age and gender discrimination claim against NovaTech Solutions. Mediation ordered by court after strong deposition of HR Director.",
         "next_court_date":     "",

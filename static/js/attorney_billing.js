@@ -26,6 +26,7 @@ function billResult(text, isError) {
 }
 
 function billRender(username, summary) {
+  feeRender(summary);
   const sumBox = document.getElementById("bill-status-summary");
   const listBox = document.getElementById("bill-statements");
   if (!sumBox || !listBox) return;
@@ -106,6 +107,7 @@ function populateBilling(c) {
   billResult("");
   _busy(document.getElementById("bill-issue-btn"), false);
   billRender(c.username, c.billing_summary);
+  feeFillForm(c.billing_summary);
 }
 
 function issueStatementNow() {
@@ -200,4 +202,150 @@ document.addEventListener("DOMContentLoaded", () => {
   if (issueBtn) issueBtn.addEventListener("click", issueStatementNow);
   const saveBtn = document.getElementById("bill-threshold-save");
   if (saveBtn) saveBtn.addEventListener("click", saveBillingSettings);
+});
+
+// ── Fee arrangement: flat fee status, flat fee form, manual payments ─────────
+
+const FEE_STATUS_TEXT = {
+  paid: "Paid in full", half_paid: "First half paid", partial: "Partly paid", unpaid: "Not paid yet",
+};
+
+function feeResult(text, isError) {
+  const box = document.getElementById("fee-result");
+  if (box) _show(box, text ? _note(text, isError) : null);
+}
+
+function feeTile(label, value, sub, tone) {
+  return _el("div", {className: "fee-tile" + (tone ? " fee-" + tone : "")},
+    _el("div", {className: "fee-tile-label"}, label),
+    _el("div", {className: "fee-tile-value"}, value),
+    sub ? _el("div", {className: "fee-tile-sub"}, sub) : null);
+}
+
+// Read-only status. Called on load and by live refreshes, so it never
+// touches the form fields.
+function feeRender(summary) {
+  const box = document.getElementById("fee-status");
+  if (!box || !summary) return;
+  const f = summary.flat_fee;
+  const label = document.getElementById("ov-hours-label");
+  const sub = document.getElementById("ov-fee-sub");
+  const editSummary = document.getElementById("fee-edit-summary");
+  const removeBtn = document.getElementById("fee-remove-btn");
+  if (!f) {
+    _show(box, _el("p", {className: "fee-mode"}, "Billed hourly. ",
+      _el("span", {className: "sec-note"}, "Amount due: " + billMoney(summary.amount_due))));
+    if (label) label.textContent = "Hours Billed";
+    if (sub) sub.textContent = "";
+    if (editSummary) editSummary.textContent = "Set a flat fee";
+    if (removeBtn) removeBtn.style.display = "none";
+    return;
+  }
+  let remainingSub = FEE_STATUS_TEXT[f.status] || "";
+  if (f.remaining > 0 && f.due_date) {
+    remainingSub = (f.overdue ? "Overdue since " : (f.plan === "half" ? "Second half due " : "Due ")) + f.due_date;
+  }
+  let trackedSub = "Private, not billed";
+  if (f.effective_rate) {
+    trackedSub = "Works out to " + billMoney(f.effective_rate) + "/hr (hourly rate " + billMoney(f.hourly_rate) + ")";
+  }
+  _show(box,
+    _el("p", {className: "fee-mode"}, "Flat fee" + (f.description ? " — " + f.description : ""),
+      " ", _el("span", {className: "sec-note"}, f.plan_label + (f.set_at ? " · since " + f.set_at.slice(0, 10) : ""))),
+    _el("div", {className: "fee-tiles"},
+      feeTile("Flat fee", billMoney(f.amount), f.plan === "half" ? "First half " + billMoney(f.first_payment) : ""),
+      feeTile("Paid", billMoney(f.paid), "", f.remaining <= 0 ? "good" : ""),
+      feeTile("Remaining", billMoney(f.remaining), remainingSub,
+              f.overdue ? "bad" : (f.remaining > 0 ? "warn" : "good")),
+      feeTile("Time tracked", f.tracked_hours + " hrs", trackedSub)));
+  if (label) label.textContent = "Flat Fee";
+  const hours = document.getElementById("ov-hours");
+  if (hours) hours.textContent = billMoney(f.amount);
+  if (sub) sub.textContent = f.remaining > 0
+    ? billMoney(f.remaining) + " remaining" + (f.overdue ? " (overdue)" : "") : "Paid in full";
+  if (editSummary) editSummary.textContent = "Change flat fee";
+  if (removeBtn) removeBtn.style.display = "";
+}
+
+function feeDueLabel() {
+  const plan = document.getElementById("fee-plan");
+  const label = document.getElementById("fee-due-label");
+  if (plan && label) label.textContent = plan.value === "half" ? "Second half due by" : "Due by";
+}
+
+// Form fields: filled when a client is opened, not on live refreshes.
+function feeFillForm(summary) {
+  const f = (summary || {}).flat_fee;
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+  set("fee-amount", f ? f.amount : "");
+  set("fee-plan", f ? f.plan : "full");
+  set("fee-due", f ? f.due_date : "");
+  set("fee-desc", f ? f.description : "");
+  set("pay-amount", "");
+  set("pay-method", "check");
+  set("pay-ref", "");
+  ["fee-edit", "pay-edit"].forEach(id => { const d = document.getElementById(id); if (d) d.open = false; });
+  feeDueLabel();
+  feeResult("");
+}
+
+function feeApply(username, d, message) {
+  if (_stale(username)) return;
+  if (d.error) return feeResult(d.error, true);
+  _currentClient.billing_summary = d.billing_summary;
+  billRender(username, d.billing_summary);
+  feeFillForm(d.billing_summary);
+  feeResult(message, false);
+}
+
+function feeSave() {
+  if (!_currentClient) return;
+  const username = _currentClient.username;
+  const btn = document.getElementById("fee-save-btn");
+  const amount = document.getElementById("fee-amount").value;
+  if (!(Number(amount) > 0)) return feeResult("Enter the flat fee amount.", true);
+  _busy(btn, true);
+  _postJSON("/portal/attorney/flat-fee", {
+    username: username, amount: Number(amount),
+    plan: document.getElementById("fee-plan").value,
+    due_date: document.getElementById("fee-due").value,
+    description: document.getElementById("fee-desc").value,
+  }).then(d => { _busy(btn, false); feeApply(username, d, "Flat fee saved."); })
+    .catch(() => { _busy(btn, false); feeResult("Couldn't save — try again.", true); });
+}
+
+function feeRemove() {
+  if (!_currentClient) return;
+  if (!confirm("Switch this client back to hourly billing? The flat fee comes off the amount due; " +
+               "time already logged under it stays private.")) return;
+  const username = _currentClient.username;
+  const btn = document.getElementById("fee-remove-btn");
+  _busy(btn, true);
+  _postJSON("/portal/attorney/flat-fee", {username: username, action: "remove"})
+    .then(d => { _busy(btn, false); feeApply(username, d, "Back to hourly billing."); })
+    .catch(() => { _busy(btn, false); feeResult("Couldn't save — try again.", true); });
+}
+
+function paySave() {
+  if (!_currentClient) return;
+  const username = _currentClient.username;
+  const btn = document.getElementById("pay-save-btn");
+  const amount = Number(document.getElementById("pay-amount").value);
+  if (!(amount > 0)) return feeResult("Enter the payment amount.", true);
+  const method = document.getElementById("pay-method").value;
+  if (!confirm("Record a " + billMoney(amount) + " " + method + " payment?")) return;
+  _busy(btn, true);
+  _postJSON("/portal/attorney/record-payment", {
+    username: username, amount: amount, method: method,
+    reference: document.getElementById("pay-ref").value,
+  }).then(d => { _busy(btn, false); feeApply(username, d, billMoney(amount) + " payment recorded."); })
+    .catch(() => { _busy(btn, false); feeResult("Couldn't record — try again.", true); });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const on = (id, ev, fn) => { const el = document.getElementById(id); if (el) el.addEventListener(ev, fn); };
+  on("fee-save-btn", "click", feeSave);
+  on("fee-remove-btn", "click", feeRemove);
+  on("pay-save-btn", "click", paySave);
+  on("fee-plan", "change", feeDueLabel);
 });

@@ -1,16 +1,17 @@
 """services/accounts.py — passwords, account names, and attorney access control."""
 
+import hashlib
+import hmac
 import re
 import secrets
 from datetime import datetime, timedelta
 
 import bcrypt
-from flask import request, session
+from flask import session
 
 import shared
 from services.storage import (
-    RecordDecryptError, _get_client_lock, _read_record, _write_record,
-    load_client, safe_username, save_client,
+    RecordDecryptError, all_usernames, client_exists, load_client, safe_username,
 )
 
 
@@ -42,24 +43,15 @@ def hash_password(plaintext: str) -> str:
 
 
 def check_password(plaintext: str, stored: str) -> bool:
-    """Verify plaintext against a bcrypt hash OR a legacy plaintext password."""
-    if not plaintext or not stored:
+    """Verify plaintext against a bcrypt hash. A stored value that isn't a
+    bcrypt hash (a legacy plaintext password) never matches: those are hashed
+    at startup by upgrade_all_plaintext_passwords, which also forces a change."""
+    if not plaintext or not stored or not stored.startswith("$2"):
         return False
-    if stored.startswith("$2"):
-        try:
-            return bcrypt.checkpw(plaintext.encode(), stored.encode())
-        except Exception:
-            return False
-    return plaintext == stored
-
-
-def upgrade_password_if_needed(client: dict, plaintext: str) -> bool:
-    stored = client.get("password", "")
-    if stored and not stored.startswith("$2"):
-        client["password"] = hash_password(plaintext)
-        save_client(client)
-        return True
-    return False
+    try:
+        return bcrypt.checkpw(plaintext.encode(), stored.encode())
+    except Exception:
+        return False
 
 
 def upgrade_all_plaintext_passwords(apply: bool = True, skipped: list = None) -> list:
@@ -67,29 +59,26 @@ def upgrade_all_plaintext_passwords(apply: bool = True, skipped: list = None) ->
     on next login. Returns the usernames upgraded (or, with apply=False, the
     ones that would be). If `skipped` is a list, names of records that could
     not be decrypted are appended to it."""
+    from services.storage import update_client_atomic
     upgraded = []
-    for path in sorted(shared.CLIENT_ACCOUNTS_DIR.glob("*.json")):
-        stem = path.stem
-        if safe_username(stem) != stem:
+    for username in all_usernames():
+        try:
+            client = load_client(username)
+        except RecordDecryptError:
+            if skipped is not None:
+                skipped.append(username)
             continue
-        # Hold the per-client lock across read-modify-write so a concurrent
-        # save cannot be overwritten. The lock is not re-entrant, hence the
-        # direct _read_record/_write_record calls.
-        with _get_client_lock(stem):
-            try:
-                client = _read_record(path)
-            except (RecordDecryptError, ValueError):
-                if skipped is not None:
-                    skipped.append(stem)
-                continue
-            pw = client.get("password", "")
-            if not pw or pw.startswith("$2"):
-                continue
-            upgraded.append(stem)
-            if apply:
-                client["password"]             = hash_password(pw)
-                client["must_change_password"] = True
-                _write_record(path, client)
+        pw = (client or {}).get("password", "")
+        if not pw or pw.startswith("$2"):
+            continue
+        upgraded.append(username)
+        if apply:
+            def _upgrade(c):
+                stored = c.get("password", "")
+                if stored and not stored.startswith("$2"):
+                    c["password"] = hash_password(stored)
+                    c["must_change_password"] = True
+            update_client_atomic(username, _upgrade)
     return upgraded
 
 
@@ -109,27 +98,117 @@ def base_username(full_name: str) -> str:
     return re.sub(r"[^a-z0-9]", "", base)[:20] or "client"
 
 
-def _make_username(full_name: str) -> str:
-    """Return an account name for full_name that is not already taken."""
-    base     = base_username(full_name)
-    existing = {p.stem for p in shared.CLIENT_ACCOUNTS_DIR.glob("*.json")}
-    if base not in existing:
-        return base
-    for i in range(2, 100):
-        candidate = f"{base}{i}"
-        if candidate not in existing:
+_ID_ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789"     # no 0/o, 1/l/i look-alikes
+
+
+def new_client_username() -> str:
+    """A random account name ("c" + 8 characters) that is not taken.
+
+    Account names are deliberately not derived from the person's name: a
+    name-based one tells anyone who sees it (or probes for it) who the firm's
+    clients are, and colliding names used to overwrite each other."""
+    for _ in range(50):
+        candidate = "c" + "".join(secrets.choice(_ID_ALPHABET) for _ in range(8))
+        if not client_exists(candidate):
             return candidate
-    return base
+    raise RuntimeError("Could not allocate a client account name.")
+
+
+def _make_username(full_name: str = "") -> str:
+    """Kept for older callers; account names no longer use the person's name."""
+    return new_client_username()
+
+
+# ── Invitations ───────────────────────────────────────────────────────────────
+# A new client account has no password. The client gets a single-use link,
+# valid for INVITE_TTL, and chooses a password there. Only a SHA-256 of the
+# secret part is stored, so a copy of the record can't be used to sign in.
+
+INVITE_TTL = timedelta(days=7)
+
+
+def _invite_digest(secret: str) -> str:
+    return hashlib.sha256(secret.encode()).hexdigest()
+
+
+def issue_invite(username: str):
+    """Create a fresh invitation for `username` (replacing any earlier one) and
+    return the token for the link, or None if the account doesn't exist."""
+    from services.storage import update_client_atomic
+    secret  = secrets.token_urlsafe(32)
+    expires = (datetime.now() + INVITE_TTL).strftime("%Y-%m-%dT%H:%M:%S")
+
+    def _set(c):
+        c["invite"] = {"digest": _invite_digest(secret), "expires": expires}
+    if not update_client_atomic(username, _set):
+        return None
+    return f"{username}.{secret}"
+
+
+def _split_invite(token: str):
+    username, _, secret = (token or "").partition(".")
+    if not username or not secret or safe_username(username) != username:
+        return None, None
+    return username, secret
+
+
+def check_invite(token: str):
+    """The client record a valid, unexpired invitation token belongs to, else None."""
+    username, secret = _split_invite(token)
+    if not username:
+        return None
+    client = load_client(username)
+    inv    = (client or {}).get("invite") or {}
+    if not inv.get("digest") or not hmac.compare_digest(inv["digest"], _invite_digest(secret)):
+        return None
+    try:
+        if datetime.strptime(inv.get("expires", ""), "%Y-%m-%dT%H:%M:%S") < datetime.now():
+            return None
+    except ValueError:
+        return None
+    return client
+
+
+def redeem_invite(token: str, new_password: str):
+    """Set the password for the invited account and use up the invitation.
+    Returns the username, or None if the token isn't valid (anymore)."""
+    from services.storage import update_client_atomic
+    client = check_invite(token)
+    if not client:
+        return None
+    username, secret = _split_invite(token)
+    hashed = hash_password(new_password)
+    used   = {}
+
+    def _apply(c):
+        inv = c.get("invite") or {}
+        # Re-check under the lock so two submissions can't both redeem it.
+        if not inv.get("digest") or not hmac.compare_digest(inv["digest"], _invite_digest(secret)):
+            return
+        c["password"]             = hashed
+        c["must_change_password"] = False
+        c["invite"]               = None
+        used["ok"] = True
+    update_client_atomic(username, _apply)
+    if not used.get("ok"):
+        return None
+    from services.security import bump_session_version
+    bump_session_version("client", username)      # any older session ends
+    return username
+
+
+def invite_url(token: str) -> str:
+    base = shared.portal_base()
+    return f"{base}/client-portal/invite/{token}"
 
 
 # ── Attorney access control & access log ──────────────────────────────────────
 
-_PRIVATE_CLIENT_FIELDS = frozenset({"password", "must_change_password",
+_PRIVATE_CLIENT_FIELDS = frozenset({"password", "must_change_password", "invite",
+                                    "session_version", "client_folder",
                                     "access_log", "conflict_checks"})
 
 
-_ACCESS_LOG_MAX = 1000
-_VIEW_DEDUP     = timedelta(minutes=10)
 
 
 def can_access_client(attorney_username: str, client: dict, assigned_only: bool = False) -> bool:
@@ -158,42 +237,21 @@ def public_client_view(client: dict) -> dict:
 
 
 def _log_access(client: dict, action: str, detail: str = "") -> bool:
-    """Append an attorney access entry to client['access_log'] (in memory —
-    the caller saves). view_* actions repeated by the same attorney within 10
-    minutes are skipped. Returns True if an entry was appended."""
+    """Record attorney access to `client` in the audit log (services/audit.py).
+    Written straight away, whether or not the caller saves the record.
+    view_* actions repeated by the same attorney within 10 minutes are
+    skipped. Returns True if an entry was written."""
+    from services import audit
+    username = (client or {}).get("username", "")
     attorney = session.get("username", "")
-    now      = datetime.now()
-    log      = client.setdefault("access_log", [])
-    if action.startswith("view_"):
-        for entry in reversed(log):
-            try:
-                ts = datetime.strptime(entry["timestamp"], "%Y-%m-%dT%H:%M:%S")
-            except (KeyError, ValueError):
-                continue
-            if now - ts > _VIEW_DEDUP:
-                break
-            if entry.get("attorney") == attorney and entry.get("action") == action:
-                return False
-    log.append({
-        "timestamp": now.strftime("%Y-%m-%dT%H:%M:%S"),
-        "attorney":  attorney,
-        "action":    action,
-        "detail":    (detail or "")[:200],
-        "ip":        request.remote_addr or "",
-    })
-    del log[:-_ACCESS_LOG_MAX]
+    if action.startswith("view_") and audit.recently_viewed(attorney, username, action):
+        return False
+    audit.record(action, client=username, detail=detail)
     return True
 
 
 def log_access_atomic(username: str, action: str, detail: str = "") -> None:
-    """Record an access entry for a read-only route without clobbering
-    concurrent writes: re-read the record under the lock, append, write."""
+    """Record access for a read-only route (kept for existing callers)."""
     if not username or safe_username(username) != username:
         return
-    path = shared.CLIENT_ACCOUNTS_DIR / f"{username}.json"
-    with _get_client_lock(username):
-        if not path.exists():
-            return
-        record = _read_record(path)
-        if _log_access(record, action, detail):
-            _write_record(path, record)
+    _log_access({"username": username}, action, detail)

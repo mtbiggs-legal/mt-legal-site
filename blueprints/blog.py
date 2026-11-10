@@ -8,7 +8,7 @@ from flask import Blueprint, Response, abort, make_response, render_template, re
 
 from services import blog
 from blueprints.practice_areas import PRACTICE_AREAS
-from shared import FIRM_NAME, require_auth
+from shared import FIRM_NAME, require_auth, public
 
 blog_bp = Blueprint("blog", __name__)
 
@@ -16,6 +16,7 @@ FORMAT_LABELS = {"article": "Article", "qa": "Q&A", "tips": "Tips"}
 
 
 @blog_bp.route("/blog")
+@public
 @require_auth
 def index():
     all_posts = blog.published_posts()
@@ -39,6 +40,7 @@ def _rfc822(iso):
 
 
 @blog_bp.route("/blog/feed.xml")
+@public
 @require_auth
 def feed():
     items = []
@@ -63,6 +65,7 @@ def feed():
 
 
 @blog_bp.route("/blog/<slug>")
+@public
 @require_auth
 def post(slug):
     p = blog.load_post(slug)
@@ -102,6 +105,7 @@ def _invalid():
 
 
 @blog_bp.route("/blog/review/<token>/<any(publish,pull):action>", methods=["GET", "POST"])
+@public
 @require_auth
 def review_confirm(token, action):
     p = blog.read_review_token(token)
@@ -122,6 +126,7 @@ def review_confirm(token, action):
 
 
 @blog_bp.route("/blog/review/<token>", methods=["GET", "POST"])
+@public
 @require_auth
 def review_edit(token):
     p = blog.read_review_token(token)

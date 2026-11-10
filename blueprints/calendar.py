@@ -1,19 +1,24 @@
 """blueprints/calendar.py — Google Calendar integration routes."""
 
+import logging
+
 import os
 from datetime import datetime, timedelta
 from flask import Blueprint, request, jsonify, session
 
-from shared import require_auth, CALENDAR_SCOPES, CREDENTIALS_FILE, TOKEN_FILE
+from shared import require_auth, require_attorney, CALENDAR_SCOPES, CREDENTIALS_FILE, TOKEN_FILE
 from services.gcal import GOOGLE_LIBS, get_calendar_service
 from services.storage import all_clients, _log_activity
 from services.accounts import can_access_client
+
+log = logging.getLogger(__name__)
 
 calendar_bp = Blueprint("calendar", __name__)
 
 
 @calendar_bp.route("/calendar/status")
 @require_auth
+@require_attorney
 def calendar_status():
     if not GOOGLE_LIBS:
         return jsonify({"authorized": False, "reason": "libraries_missing"})
@@ -27,12 +32,13 @@ def calendar_status():
         if creds.valid or (creds.expired and creds.refresh_token):
             return jsonify({"authorized": True})
     except Exception:
-        pass
+        log.warning("Ignored error in calendar", exc_info=True)
     return jsonify({"authorized": False, "reason": "token_invalid"})
 
 
 @calendar_bp.route("/calendar/authorize")
 @require_auth
+@require_attorney
 def calendar_authorize():
     if request.remote_addr not in ("127.0.0.1", "::1"):
         return (
@@ -64,6 +70,7 @@ def calendar_authorize():
 
 @calendar_bp.route("/calendar/schedule", methods=["POST"])
 @require_auth
+@require_attorney
 def calendar_schedule():
     data = request.get_json()
     if not data:

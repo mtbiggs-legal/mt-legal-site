@@ -7,26 +7,26 @@
     </div>
     <input type="search" id="all-clients-search" class="client-search"
            placeholder="&#128269; Filter…"
-           oninput="filterAllClientsTable(this.value)"
+           data-on-input='[["filterAllClientsTable",["$value"]]]'
            style="width:200px;background:#fff;color:var(--navy);border:1px solid var(--gray-2)">
   </div>
   <div style="overflow-x:auto">
     <table class="all-clients-table" id="all-clients-table">
       <thead>
         <tr>
-          <th onclick="sortAllClients('name',this)" style="min-width:160px">Client <span class="sort-arrow">↕</span></th>
-          <th onclick="sortAllClients('case',this)">Case Number <span class="sort-arrow">↕</span></th>
-          <th onclick="sortAllClients('court',this)">Court Date <span class="sort-arrow">↕</span></th>
-          <th onclick="sortAllClients('hours',this)" style="text-align:right;width:70px">Billed <span class="sort-arrow">↕</span></th>
-          <th onclick="sortAllClients('balance',this)" style="text-align:right">Amount Due ($) <span class="sort-arrow">↕</span></th>
-          <th onclick="sortAllClients('contact',this)">Last Contact <span class="sort-arrow">↕</span></th>
+          <th data-on-click='[["sortAllClients",["name","$this"]]]' style="min-width:160px">Client <span class="sort-arrow">↕</span></th>
+          <th data-on-click='[["sortAllClients",["case","$this"]]]'>Case Number <span class="sort-arrow">↕</span></th>
+          <th data-on-click='[["sortAllClients",["court","$this"]]]'>Court Date <span class="sort-arrow">↕</span></th>
+          <th data-on-click='[["sortAllClients",["hours","$this"]]]' style="text-align:right;width:70px">Billed <span class="sort-arrow">↕</span></th>
+          <th data-on-click='[["sortAllClients",["balance","$this"]]]' style="text-align:right">Amount Due ($) <span class="sort-arrow">↕</span></th>
+          <th data-on-click='[["sortAllClients",["contact","$this"]]]'>Last Contact <span class="sort-arrow">↕</span></th>
           <th>Phone</th>
           <th>Email</th>
         </tr>
       </thead>
       <tbody id="all-clients-tbody">
         {% for c in clients %}
-        <tr class="all-clients-row" onclick="selectClientAndTab('{{ c.username }}','overview')"
+        <tr class="all-clients-row" data-on-click='[["selectClientAndTab",[{{ (c.username)|tojson }},"overview"]]]'
             data-name="{{ (c.client_name or c.username)|lower }}"
             data-username="{{ c.username }}">
           <td data-col="name">{% set _nm = (c.client_name or c.username).split() %}{% if _nm|length >= 2 %}{{ _nm[-1] }}, {{ _nm[0] }}{% else %}{{ _nm[0] if _nm else c.username }}{% endif %}</td>

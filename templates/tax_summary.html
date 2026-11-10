@@ -35,7 +35,7 @@
 <body>
 
 <div class="no-print" style="margin-bottom:16px">
-  <button onclick="window.print()"
+  <button data-on-click='[["print",[]]]'
     style="padding:8px 18px;background:#1a3254;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:13px">
     Print / Save as PDF
   </button>
@@ -115,5 +115,6 @@
 </div>
 {% endfor %}
 
+  <script src="{{ url_for('static', filename='js/events.js') }}"></script>
 </body>
 </html>

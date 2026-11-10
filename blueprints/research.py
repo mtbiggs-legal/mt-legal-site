@@ -3,13 +3,15 @@ attorney portal's research tools (analyze, authority, issue-spot, draft,
 save-draft, save-report), and client portal research.
 """
 
-import html
+import logging
+
 from datetime import datetime
 from pathlib import Path
-from flask import Blueprint, render_template, request, jsonify, session
+from flask import Blueprint, render_template, request, jsonify, session, current_app
 from werkzeug.utils import secure_filename
 import anthropic
-from services import billing
+from services import billing, client_files
+from services.html_sanitize import html_document
 
 from shared import (
     require_auth, require_attorney, require_client, RESEARCH_HISTORY_DIR, MODEL,
@@ -26,6 +28,8 @@ from services.prompts import (
     CIVIL_SYSTEM_PROMPT, RESEARCH_ANALYZE_PROMPT, RESEARCH_AUTHORITY_PROMPT, SYSTEM_PROMPTS,
     draft_prompt, issuespot_prompt,
 )
+
+log = logging.getLogger(__name__)
 
 research_bp = Blueprint("research", __name__)
 
@@ -76,7 +80,7 @@ def research_query():
                        {"timestamp": ts, "case_type": case_type,
                         "question": question, "memo": memo_html})
         except Exception:
-            pass
+            log.warning("Ignored error in research", exc_info=True)
         return jsonify({"success": True, "memo": memo_html})
     except anthropic.AuthenticationError:
         return jsonify({"error": "Invalid API key. Please check your .env file."}), 401
@@ -108,7 +112,8 @@ def client_research_query():
         _log_token_usage(username, "client_research", msg.usage)
         return jsonify({"success": True, "memo": msg.content[0].text})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        current_app.logger.exception("research request failed")
+        return jsonify({"error": "The research service is unavailable right now."}), 500
 
 
 @research_bp.route("/portal/client/research-save", methods=["POST"])
@@ -123,24 +128,19 @@ def client_research_save():
 
     now_ts   = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"{now_ts}_research.html"
-    doc_dir  = _client_docs_dir(username, "Research")
-    (doc_dir / filename).write_text(
-        f"<!DOCTYPE html><html><head><meta charset='UTF-8'>"
-        f"<title>Research — {now_ts}</title></head><body>"
-        f"<p><strong>Question:</strong> {html.escape(question)}</p>{memo}</body></html>",
-        encoding="utf-8",
-    )
+    # The memo comes back from the browser, so it is untrusted: keep only safe
+    # markup, and store it encrypted like every other client document.
+    page = html_document(f"Research — {now_ts}", memo,
+                         meta=f"Question: {question[:500]}")
+    client_files.write(username, "Research", filename, page.encode("utf-8"))
 
     # The portal tells the client this costs 0.2 hrs before they confirm — bill it.
     client_rec = load_client(username)
     if client_rec:
-        client_rec.setdefault("billing_log", []).append({
-            "date":     datetime.now().strftime("%Y-%m-%d"),
-            "hours":    0.2,
-            "note":     f"Client research saved — {question[:60]}",
-            "type":     "research_client",
-            "category": "Research",
-        })
+        client_rec.setdefault("billing_log", []).append(billing.auto_entry(
+            date=datetime.now().strftime("%Y-%m-%d"), hours=0.2,
+            note=f"Client research saved — {question[:60]}",
+            type="research_client", category="Research"))
         recalc_hours(client_rec)
         save_client(client_rec)
 
@@ -171,7 +171,8 @@ def research_analyze():
         _log_token_usage(session.get("username", "unknown"), "Legal Issue Analysis", msg.usage)
         return jsonify({"success": True, "issues": msg.content[0].text})
     except Exception as exc:
-        return jsonify({"error": str(exc)}), 500
+        current_app.logger.exception("research request failed")
+        return jsonify({"error": "The research service is unavailable right now."}), 500
 
 
 @research_bp.route("/portal/attorney/research/authority", methods=["POST"])
@@ -195,7 +196,8 @@ def research_authority():
         _log_token_usage(session.get("username", "unknown"), "Legal Authority Research", msg.usage)
         return jsonify({"success": True, "memo": msg.content[0].text})
     except Exception as exc:
-        return jsonify({"error": str(exc)}), 500
+        current_app.logger.exception("research request failed")
+        return jsonify({"error": "The research service is unavailable right now."}), 500
 
 
 @research_bp.route("/portal/attorney/research/issue-spot", methods=["POST"])
@@ -229,7 +231,8 @@ def research_issue_spot():
         _log_token_usage(session.get("username", "unknown"), "Document Issue Spotting", msg.usage)
         return jsonify({"success": True, "issues": msg.content[0].text, "filename": filename})
     except Exception as exc:
-        return jsonify({"error": str(exc)}), 500
+        current_app.logger.exception("research request failed")
+        return jsonify({"error": "The research service is unavailable right now."}), 500
 
 
 @research_bp.route("/portal/attorney/research/draft", methods=["POST"])
@@ -267,7 +270,8 @@ def research_draft():
         _log_token_usage(session.get("username", "unknown"), "Motion Draft Generation", msg.usage)
         return jsonify({"success": True, "draft": msg.content[0].text, "motion_type": motion_type})
     except Exception as exc:
-        return jsonify({"error": str(exc)}), 500
+        current_app.logger.exception("research request failed")
+        return jsonify({"error": "The research service is unavailable right now."}), 500
 
 
 @research_bp.route("/portal/attorney/research/save-draft", methods=["POST"])
@@ -295,15 +299,15 @@ def research_save_draft():
     while dest.exists():
         dest = dest_dir / f"{stem}_{n}.txt"
         n += 1
-    dest.write_text(draft_text, encoding="utf-8")
+    client_files.write_path(dest, draft_text.encode("utf-8"))
 
     today     = datetime.now().strftime("%Y-%m-%d")
-    entry_ai  = {"date": today, "hours": 0.2,
-                 "note": f"AI Research — {motion_type} ({dest.name})", "type": "research_ai",
-                 "category": "Research"}
-    entry_rev = {"date": today, "hours": 0.2,
-                 "note": f"Attorney Review — {motion_type} ({dest.name})", "type": "research_review",
-                 "category": "Drafting"}
+    entry_ai  = billing.auto_entry(date=today, hours=0.2,
+                                   note=f"AI Research — {motion_type} ({dest.name})", type="research_ai",
+                                   category="Research")
+    entry_rev = billing.auto_entry(date=today, hours=0.2,
+                                   note=f"Attorney Review — {motion_type} ({dest.name})", type="research_review",
+                                   category="Drafting")
     client.setdefault("billing_log", []).extend([entry_ai, entry_rev])
     recalc_hours(client)
     save_client(client)
@@ -348,14 +352,14 @@ def research_save_report():
     while dest.exists():
         dest = dest_dir / f"{stem}_{n}.txt"
         n += 1
-    dest.write_text(text, encoding="utf-8")
+    client_files.write_path(dest, text.encode("utf-8"))
     today     = datetime.now().strftime("%Y-%m-%d")
-    entry_ai  = {"date": today, "hours": 0.2,
-                 "note": f"AI Research — {label} ({dest.name})", "type": "research_ai",
-                 "category": "Research"}
-    entry_rev = {"date": today, "hours": 0.2,
-                 "note": f"Attorney Review — {label} ({dest.name})", "type": "research_review",
-                 "category": "Drafting"}
+    entry_ai  = billing.auto_entry(date=today, hours=0.2,
+                                   note=f"AI Research — {label} ({dest.name})", type="research_ai",
+                                   category="Research")
+    entry_rev = billing.auto_entry(date=today, hours=0.2,
+                                   note=f"Attorney Review — {label} ({dest.name})", type="research_review",
+                                   category="Drafting")
     client.setdefault("billing_log", []).extend([entry_ai, entry_rev])
     recalc_hours(client)
     client.setdefault("activity_log", []).append({

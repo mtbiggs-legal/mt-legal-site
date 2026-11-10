@@ -19,13 +19,13 @@ used instead.
 import re
 from pathlib import Path
 
-PORTAL_JS = Path(__file__).parent.parent / "static" / "js" / "attorney_portal.js"
+PORTAL_JS = Path(__file__).parent.parent / "static" / "js" / "attorney_client_panels.js"
 
 
 def _populate_messages_body() -> str:
     text = PORTAL_JS.read_text(encoding="utf-8")
     m = re.search(r"function populateMessages\(c\) \{(.*?)\n\}", text, re.S)
-    assert m, "populateMessages() not found in static/js/attorney_portal.js"
+    assert m, "populateMessages() not found in static/js/attorney_client_panels.js"
     return m.group(1)
 
 

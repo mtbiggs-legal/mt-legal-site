@@ -17,8 +17,6 @@ import logging
 from datetime import datetime
 from html import escape
 
-import shared
-
 log = logging.getLogger(__name__)
 
 # ── Config helpers (read at call time so .env changes take effect on restart) ──
@@ -35,10 +33,14 @@ def _firm_website():  return _cfg("FIRM_WEBSITE", "https://mt-legal.com")
 def _firm_email():    return _cfg("FIRM_EMAIL", _from_email())  # defaults to FROM_EMAIL
 
 # Attorney display names for personalisation
-ATTORNEY_DISPLAY = {
-    "Endocide": "Madison T. Biggs, Esq.",
-    "SophiaH":  "Sophia L. Hargrove, Esq.",
-}
+class _AttorneyDisplay:
+    """Display names from the attorney registry in shared.py (read at call time)."""
+    def get(self, username, default=""):
+        import shared
+        return (shared.ATTORNEYS.get(username) or {}).get("display", default)
+
+
+ATTORNEY_DISPLAY = _AttorneyDisplay()
 
 # Practice area → short phrase used inside the email body
 PRACTICE_BLURB = {
@@ -201,7 +203,7 @@ def send_lead_email(name: str, email: str, case_type: str, assigned_attorney: st
     phone        = _firm_phone()
 
     content_html = f"""
-      <p class="greeting">Hi {first_name},</p>
+      <p class="greeting">Hi {escape(first_name)},</p>
       <p>
         Thank you for reaching out to MT Legal. We've received your inquiry regarding
         <strong>{practice}</strong> and will be in touch shortly.
@@ -250,9 +252,9 @@ def send_lead_email(name: str, email: str, case_type: str, assigned_attorney: st
     firm_html = _html_wrapper(f"""
       <p class="greeting">&#128276; New Lead Received</p>
       <div class="detail-box">
-        <p><span class="label">Name:</span> {name}</p>
-        <p><span class="label">Email:</span> {email}</p>
-        <p><span class="label">Case Type:</span> {case_type}</p>
+        <p><span class="label">Name:</span> {escape(name)}</p>
+        <p><span class="label">Email:</span> {escape(email)}</p>
+        <p><span class="label">Case Type:</span> {escape(case_type)}</p>
         <p><span class="label">Assigned To:</span> {atty_display}</p>
       </div>
       <p>Log in to the attorney portal to view and follow up on this lead.</p>
@@ -266,152 +268,113 @@ def send_lead_email(name: str, email: str, case_type: str, assigned_attorney: st
     return ok
 
 
-# ── Full intake confirmation email ─────────────────────────────────────────────
+# ── Intake acknowledgement email ───────────────────────────────────────────────
 
-def send_intake_email(
-    name: str,
-    email: str,
-    case_type: str,
-    assigned_attorney: str,
-    portal_username: str,
-    portal_password: str,
-    urgent_dates: list,
-) -> bool:
-    """Fires after a full intake form is submitted."""
-    if not email:
-        return False
-
-    first_name   = name.strip().split()[0] if name.strip() else "there"
-    atty_display = ATTORNEY_DISPLAY.get(assigned_attorney, "our team")
-    practice     = PRACTICE_BLURB.get(case_type, "your legal matter")
-    cal_url      = _cal_url()
-    phone        = _firm_phone()
-    website      = _firm_website()
-
-    # Urgent deadline alert block
-    urgent_html = ""
-    urgent_text = ""
-    if urgent_dates:
-        items_html = "".join(
-            f"<p><span style='color:#c62828;font-weight:bold;'>&#9888;</span> "
-            f"<strong>{d['label']}:</strong> {d['date']} "
-            f"&mdash; <em>{d['days_away']} day(s) away</em></p>"
-            for d in urgent_dates
-        )
-        urgent_html = f"""
+def _urgent_blocks(urgent_dates: list):
+    if not urgent_dates:
+        return "", ""
+    items = "".join(
+        f"<p><span style='color:#c62828;font-weight:bold;'>&#9888;</span> "
+        f"<strong>{escape(str(d['label']))}:</strong> {escape(str(d['date']))} "
+        f"&mdash; <em>{int(d['days_away'])} day(s) away</em></p>"
+        for d in urgent_dates)
+    html = f"""
           <div style="background:#fff5f5;border:1px solid #e53935;border-radius:4px;
                       padding:14px 18px;margin:16px 0;">
-            <p style="color:#c62828;font-weight:bold;margin:0 0 8px;">
-              &#9888; Urgent Deadlines Detected
-            </p>
-            {items_html}
+            <p style="color:#c62828;font-weight:bold;margin:0 0 8px;">&#9888; Urgent Deadlines</p>
+            {items}
             <p style="margin:8px 0 0;font-size:13px;color:#b71c1c;">
-              Please contact us immediately so we can act before these dates.
+              Please call us right away so we can review these dates.
             </p>
-          </div>
-        """
-        urgent_text = "\n⚠ URGENT DEADLINES:\n" + "\n".join(
-            f"  {d['label']}: {d['date']} ({d['days_away']} day(s) away)"
-            for d in urgent_dates
-        ) + "\nPlease contact us immediately.\n"
+          </div>"""
+    lines = [f"  {d['label']}: {d['date']} ({d['days_away']} day(s) away)" for d in urgent_dates]
+    text = "\nURGENT DEADLINES:\n" + "\n".join(lines) + "\nPlease call us right away.\n"
+    return html, text
 
-    # While the portal is switched off (PUBLIC_SITE_ONLY), don't send logins to it.
-    if shared.PUBLIC_SITE_ONLY:
-        portal_html, portal_text = "", ""
-    else:
-        portal_html = f"""      <p><strong>Your Client Portal</strong></p>
-      <p>
-        We've created a secure portal account where you can view your case,
-        message your attorney, and access documents.
-      </p>
-      <div class="detail-box">
-        <p><span class="label">Portal Login:</span>
-           <a href="{website}/client-login">{website}/client-login</a></p>
-        <p><span class="label">Username:</span> {portal_username}</p>
-        <p><span class="label">Temp Password:</span> {portal_password}</p>
-        <p style="font-size:13px;color:#888;margin-top:8px;">
-          You'll be prompted to change your password on first login.
-        </p>
-      </div>
-"""
-        portal_text = (
-            f"CLIENT PORTAL\n"
-            f"  URL:      {website}/client-login\n"
-            f"  Username: {portal_username}\n"
-            f"  Password: {portal_password}  (change on first login)\n\n"
-        )
+
+def send_intake_email(name: str, email: str, case_type: str, assigned_attorney: str,
+                      urgent_dates: list, **_ignored) -> bool:
+    """Acknowledge a submitted intake form. It contains no account details:
+    the attorney reviews the intake first and, if the firm takes the matter,
+    the client gets a separate invitation to the portal."""
+    if not email:
+        return False
+    first        = name.strip().split()[0] if name.strip() else "there"
+    atty_plain   = ATTORNEY_DISPLAY.get(assigned_attorney, "our team")
+    atty_display = escape(atty_plain)
+    practice     = escape(PRACTICE_BLURB.get(case_type, "your legal matter"))
+    phone        = escape(_firm_phone())
+    urgent_html, urgent_text = _urgent_blocks(urgent_dates)
 
     content_html = f"""
-      <p class="greeting">Hi {first_name},</p>
+      <p class="greeting">Hi {escape(first)},</p>
       <p>
-        Your intake form has been received and your client file is now open at
-        MT Legal. <strong>{atty_display}</strong> will be reviewing your
-        <strong>{practice}</strong> matter and will reach out shortly.
+        We received your intake form. <strong>{atty_display}</strong> will review your
+        <strong>{practice}</strong> matter and contact you. Sending this form does not by
+        itself make us your lawyers; we will confirm in writing if we take your matter.
       </p>
       {urgent_html}
       <div class="cta">
-        <a href="{cal_url}">Schedule Your Consultation &rarr;</a>
+        <a href="{escape(_cal_url())}">Schedule Your Consultation &rarr;</a>
       </div>
       <hr class="divider">
-{portal_html}      <hr class="divider">
-      <p>
-        Urgent? Call us at <strong>{phone}</strong> rather than waiting for a callback.
-      </p>
-      <p class="atty-sig">
-        Warm regards,<br>
-        <strong>{atty_display}</strong><br>
-        MT Legal
-      </p>
+      <p>Urgent? Call us at <strong>{phone}</strong> rather than waiting for a callback.</p>
+      <p class="atty-sig">&mdash; {atty_display}<br>MT Legal</p>
     """
-
     text_body = (
-        f"Hi {first_name},\n\n"
-        f"Your intake has been received. {atty_display} will review your {practice} matter.\n"
-        f"{urgent_text}\n"
-        f"Book a consultation: {cal_url}\n\n"
-        f"{portal_text}"
-        f"Urgent? Call: {phone}\n\n"
-        f"Warm regards,\n{atty_display}\nMT Legal"
+        f"Hi {first},\n\n"
+        f"We received your intake form. {atty_plain} will review it and contact you. "
+        "Sending this form does not by itself make us your lawyers.\n"
+        + urgent_text
+        + f"\nSchedule a consultation: {_cal_url()}\nUrgent? Call {_firm_phone()}.\n"
     )
-
     ok = _send(
         to_email  = email,
         to_name   = name,
-        subject   = "Your intake is confirmed — MT Legal",
+        subject   = "We received your intake — MT Legal",
         html_body = _html_wrapper(content_html),
         text_body = text_body,
-        cc_firm   = True,   # BCC the firm on the client confirmation
     )
 
-    # Firm-side alert with full details
-    urgent_firm = ""
-    if urgent_dates:
-        urgent_firm = "<p style='color:#c62828;font-weight:bold;'>⚠ URGENT DEADLINES — review immediately</p>" + \
-            "".join(f"<p>{d['label']}: {d['date']} ({d['days_away']} days away)</p>" for d in urgent_dates)
-
-    firm_html = _html_wrapper(f"""
-      <p class="greeting">&#128276; New Intake Submitted</p>
-      {urgent_firm}
-      <div class="detail-box">
-        <p><span class="label">Client:</span> {name}</p>
-        <p><span class="label">Email:</span> {email}</p>
-        <p><span class="label">Case Type:</span> {case_type}</p>
-        <p><span class="label">Assigned To:</span> {atty_display}</p>
-        <p><span class="label">Portal User:</span> {portal_username}</p>
-      </div>
-      <p>Log in to the attorney portal to review the full intake and begin the matter.</p>
-    """)
+    # Firm-side alert: only enough to know to open the portal. The details
+    # stay in the encrypted queue rather than in a mailbox.
+    urgent_firm = ("<p style='color:#c62828;font-weight:bold;'>&#9888; Urgent dates: review today</p>"
+                   if urgent_dates else "")
     _send_firm_alert(
-        subject   = f"[NEW INTAKE] {name} — {case_type}",
-        html_body = firm_html,
-        text_body = (
-            f"New intake: {name} | {email} | {case_type}\n"
-            f"Assigned: {atty_display} | Portal user: {portal_username}\n"
-            + (f"URGENT: {urgent_text}" if urgent_text else "")
-        ),
+        subject   = f"[NEW INTAKE] {case_type}" + (" (URGENT)" if urgent_dates else ""),
+        html_body = _html_wrapper(
+            f"<p class='greeting'>&#128276; New intake waiting for review</p>{urgent_firm}"
+            f"<p>Case type: {escape(case_type)}</p>"
+            "<p>Open Incoming Leads in the attorney portal to review and approve it.</p>"),
+        text_body = f"New intake waiting for review ({case_type}). Open Incoming Leads in the portal.",
     )
-
     return ok
+
+
+# ── Portal invitation email ────────────────────────────────────────────────────
+
+def send_invite_email(name: str, email: str, username: str, link: str) -> bool:
+    """Invite a client to set their portal password through a single-use link."""
+    if not email:
+        return False
+    first = name.strip().split()[0] if name.strip() else "there"
+    content_html = f"""
+      <p class="greeting">Hi {escape(first)},</p>
+      <p>Your secure client portal at MT Legal is ready. There you can follow your case,
+         message your attorney, and see your documents and statements.</p>
+      <p>Use the button below to choose your password. The link works once and expires
+         in 7 days.</p>
+      <div class="cta"><a href="{escape(link)}">Set Up Your Portal &rarr;</a></div>
+      <div class="detail-box">
+        <p><span class="label">Your username:</span> {escape(username)}</p>
+      </div>
+      <p style="font-size:13px;color:#888;">If you weren't expecting this, call us at
+         {escape(_firm_phone())} and don't use the link.</p>
+    """
+    text = (f"Hi {first},\n\nYour MT Legal client portal is ready. Choose your password "
+            f"here (works once, expires in 7 days):\n{link}\n\nYour username: {username}\n\n"
+            f"Not expecting this? Call {_firm_phone()}.\n")
+    return _send(email, name, "Your MT Legal client portal", _html_wrapper(content_html), text)
 
 
 def send_statement_email(name: str, email: str, statement_number: int,
@@ -420,7 +383,8 @@ def send_statement_email(name: str, email: str, statement_number: int,
     Returns "not_configured", "sent", or "failed". No itemisation is included."""
     if not _api_key():
         return "not_configured"
-    portal = _firm_website().rstrip("/") + "/client-login"
+    import shared
+    portal = (shared.PORTAL_URL or _firm_website()).rstrip("/") + "/client-login"
     subject = f"Statement #{statement_number} from {_from_name()}"
     text = (f"Hello {name},\n\nStatement #{statement_number} for services through "
             f"{billed_through} has been issued. Amount due: ${amount:,.2f}.\n\n"

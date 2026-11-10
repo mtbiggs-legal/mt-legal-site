@@ -238,16 +238,18 @@ def extract_document_text(username, category, filename):
         return None, "File not found."
     ext = path.suffix.lower()
     try:
+        from services import client_files
         if ext in (".txt", ".rtf", ".html"):
-            return path.read_text(encoding="utf-8", errors="replace"), None
+            return client_files.read_text(path), None
         elif ext == ".docx" and MAMMOTH_AVAILABLE:
+            import io
             import mammoth
-            with open(path, "rb") as f:
-                result = mammoth.extract_raw_text(f)
+            result = mammoth.extract_raw_text(io.BytesIO(client_files.read_bytes(path)))
             return result.value, None
         elif ext == ".pdf" and PYPDF_AVAILABLE:
+            import io
             import pypdf
-            reader = pypdf.PdfReader(str(path))
+            reader = pypdf.PdfReader(io.BytesIO(client_files.read_bytes(path)))
             text = "\n".join(page.extract_text() or "" for page in reader.pages)
             if text.strip():
                 return text, None

@@ -94,26 +94,28 @@ _INSTRUCTION = "Report the five case dates from this scheduling order."
 
 
 def _content_for(path: Path) -> list:
+    from services import client_files
     ext = path.suffix.lower()
+    raw = client_files.read_bytes(path)
     if ext == ".pdf":
-        data = base64.standard_b64encode(path.read_bytes()).decode("ascii")
+        data = base64.standard_b64encode(raw).decode("ascii")
         return [{"type": "document",
                  "source": {"type": "base64", "media_type": "application/pdf", "data": data}}]
     if ext in (".png", ".jpg", ".jpeg"):
-        if path.stat().st_size > MAX_IMAGE_BYTES:
+        if len(raw) > MAX_IMAGE_BYTES:
             raise ExtractionError(_TOO_LARGE)
         media = "image/png" if ext == ".png" else "image/jpeg"
-        data = base64.standard_b64encode(path.read_bytes()).decode("ascii")
+        data = base64.standard_b64encode(raw).decode("ascii")
         return [{"type": "image", "source": {"type": "base64", "media_type": media, "data": data}}]
     if ext == ".docx":
         try:
+            import io
             import mammoth
-            with open(path, "rb") as f:
-                text = mammoth.extract_raw_text(f).value
+            text = mammoth.extract_raw_text(io.BytesIO(raw)).value
         except Exception:
             raise ExtractionError("Couldn't read this Word file; enter the dates manually.")
     else:
-        text = path.read_text(encoding="utf-8", errors="replace")
+        text = raw.decode("utf-8", errors="replace")
     if len(text or "") > MAX_TEXT_CHARS:
         raise ExtractionError(_TOO_LARGE)
     if not (text or "").strip():

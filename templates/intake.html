@@ -14,7 +14,7 @@
 {% block content %}
 
 <div class="card">
-  <form id="intake-form" onsubmit="submitIntake(event)">
+  <form id="intake-form" data-on-submit='[["submitIntake",["$event"]]]'>
 
     <div class="form-grid">
       <!-- Client Information -->
@@ -27,7 +27,7 @@
 
       <div class="form-group">
         <label for="case_type">Case Type <span class="field-optional">(optional)</span></label>
-        <select id="case_type" name="case_type" onchange="updateDynamicFields()">
+        <select id="case_type" name="case_type" data-on-change='[["updateDynamicFields",[]]]'>
           <option value="">— Select —</option>
           <option value="Criminal Defense">Criminal Defense</option>
           <option value="Civil Rights">Civil Rights</option>
@@ -521,11 +521,11 @@
     <!-- ── E-Signature / Engagement Consent ─────────────────────────────── -->
     <div class="card" style="margin-top:1.5rem;border:1px solid #d1d5db;background:#f9fafb;padding:1.25rem 1.5rem">
       <div style="font-family:Arial,sans-serif;font-size:.88rem;color:#374151;line-height:1.65;margin-bottom:1rem">
-        <strong style="display:block;margin-bottom:.4rem;font-size:.92rem;color:#1B2A4A">Engagement Consent &amp; Electronic Signature</strong>
+        <strong style="display:block;margin-bottom:.4rem;font-size:.92rem;color:#1B2A4A">Intake Acknowledgment &amp; Electronic Signature</strong>
         By checking the box below and submitting this form, I confirm that:
         <ul style="margin:.5rem 0 0 1.2rem;padding:0">
           <li>The information I have provided is accurate and complete to the best of my knowledge.</li>
-          <li>I understand this intake form initiates a conflict-of-interest review and does <em>not</em> create an attorney-client relationship until a signed engagement letter is issued by {{ firm_name }}.</li>
+          <li>I understand that submitting this form asks {{ firm_name }} to review my information and check for conflicts of interest. It does <em>not</em> open a client file or create an attorney-client relationship. That happens only if {{ firm_name }} agrees to take my matter and confirms it in a signed engagement letter.</li>
           <li>I consent to the firm contacting me via the phone number and/or email address provided.</li>
         </ul>
       </div>
@@ -533,7 +533,7 @@
         <input type="checkbox" id="esig-consent" name="esig_consent" required
                style="margin-top:.2rem;width:16px;height:16px;flex-shrink:0;accent-color:#1B2A4A" />
         <label for="esig-consent" style="font-family:Arial,sans-serif;font-size:.875rem;color:#1B2A4A;cursor:pointer">
-          I, <strong id="esig-name-display" style="color:#C9A84C">[ your name ]</strong>, agree to the above terms and authorize {{ firm_name }} to open a client file on my behalf.
+          I, <strong id="esig-name-display" style="color:#C9A84C">[ your name ]</strong>, agree to the above and authorize {{ firm_name }} to review this information and contact me about my matter.
           <span id="esig-timestamp" style="display:block;font-size:.75rem;color:#9ca3af;margin-top:.2rem"></span>
         </label>
       </div>
@@ -541,7 +541,7 @@
 
     <div class="btn-group" style="margin-top:1.25rem">
       <button type="submit" class="btn btn-primary">Share Your Story →</button>
-      <button type="reset" class="btn btn-secondary" onclick="setTimeout(updateDynamicFields,0)">Clear Form</button>
+      <button type="reset" class="btn btn-secondary" data-on-click='[["updateDynamicFieldsSoon",[]]]'>Clear Form</button>
     </div>
   </form>
 </div>
@@ -554,7 +554,7 @@
   <div class="modal-box consult-modal" style="max-width:500px">
     <div class="modal-header">
       <h2>⚖ Attorney-Client Privilege</h2>
-      <button class="modal-close" onclick="leavePrivilegeModal()" title="Close and return home" aria-label="Close and return to the home page">✕</button>
+      <button class="modal-close" data-on-click='[["leavePrivilegeModal",[]]]' title="Close and return home" aria-label="Close and return to the home page">✕</button>
     </div>
     <div class="modal-body" style="text-align:center;padding:2rem 2rem 1.5rem">
       <div class="consult-icon">🔒</div>
@@ -573,7 +573,7 @@
           formal engagement letter is signed.
         </p>
       </div>
-      <button class="btn btn-primary btn-lg" onclick="closePrivilegeModal()" style="width:100%">
+      <button class="btn btn-primary btn-lg" data-on-click='[["closePrivilegeModal",[]]]' style="width:100%">
         I Understand, Continue
       </button>
     </div>
@@ -582,7 +582,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
+<script nonce="{{ csp_nonce() }}">
   // Map case type values to their dynamic field block IDs
   var FIELD_MAP = {
     "Criminal Defense":           "fields-criminal",
@@ -602,6 +602,9 @@
   var ALL_FIELD_IDS = ["fields-criminal","fields-family","fields-pi",
                        "fields-employment","fields-realestate","fields-contract","fields-defi",
                        "fields-crypto-llc","fields-tokenization","fields-estate"];
+
+  // After a form reset, once the browser has cleared the fields.
+  function updateDynamicFieldsSoon() { setTimeout(updateDynamicFields, 0); }
 
   function updateDynamicFields() {
     var ct = document.getElementById("case_type");
@@ -631,7 +634,7 @@
     document.getElementById("privilege-modal").style.display = "none";
   }
   function leavePrivilegeModal() {
-    window.location.href = "{{ url_for('public.index') }}";
+    window.location.href = "{{ site_link('public.index') }}";
   }
   document.addEventListener("keydown", function (e) {
     var modal = document.getElementById("privilege-modal");

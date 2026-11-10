@@ -1,5 +1,6 @@
 """Saving AI research output into a client's document folder + billing."""
 
+from services import client_files
 from datetime import datetime
 
 import pytest
@@ -30,7 +31,7 @@ def test_save_report_analysis_creates_file_and_bills(attorney_session, make_clie
     saved = (tmp_path / "files" / "testclient" / "documents" /
              "Litigation Drafts" / data["filename"])
     assert saved.exists()
-    assert "Fourth Amendment" in saved.read_text(encoding="utf-8")
+    assert "Fourth Amendment" in client_files.read_text(saved)
 
 
 def test_save_report_authority_creates_file_and_bills(attorney_session, make_client):

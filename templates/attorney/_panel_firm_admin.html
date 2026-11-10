@@ -1,0 +1,78 @@
+<!-- Firm Admin: compliance deadlines, reminders and records -->
+<div id="tab-firm-admin" class="portal-panel">
+  <div class="page-header" style="margin-bottom:1.25rem">
+    <h1 style="font-size:1.5rem">Firm Admin</h1>
+    <p style="font-size:.9rem">Bar, tax and business filings. Reminders start 60 days out (60, 45, 30, 15, 10, 5 days)
+      and stop once you mark the item done; every completion is kept below.</p>
+  </div>
+
+  <div class="card fa-card" style="margin-bottom:1.25rem">
+    <div class="fa-head">
+      <div class="portal-section-title">Deadlines</div>
+      <button type="button" class="btn btn-secondary fa-small" id="fa-add-btn">+ Add item</button>
+    </div>
+    <div id="fa-list"></div>
+    <div id="fa-result"></div>
+  </div>
+
+  <!-- Add / edit an item -->
+  <div class="card fa-card" id="fa-edit-card" style="display:none;margin-bottom:1.25rem">
+    <div class="portal-section-title" id="fa-edit-title">Add item</div>
+    <input type="hidden" id="fa-edit-id" />
+    <div class="form-grid">
+      <div class="form-group full">
+        <label for="fa-edit-name">Name</label>
+        <input type="text" id="fa-edit-name" maxlength="120" placeholder="e.g. Davidson County business license" />
+      </div>
+      <div class="form-group">
+        <label for="fa-edit-category">Category</label>
+        <input type="text" id="fa-edit-category" maxlength="60" list="fa-categories" />
+        <datalist id="fa-categories">
+          <option value="Bar &amp; licensing"></option><option value="Taxes"></option>
+          <option value="Business entity"></option><option value="Insurance"></option><option value="Other"></option>
+        </datalist>
+      </div>
+      <div class="form-group">
+        <label for="fa-edit-repeat">Repeats</label>
+        <select id="fa-edit-repeat">
+          <option value="yearly">Every year</option>
+          <option value="once">One time</option>
+        </select>
+      </div>
+      <div class="form-group" id="fa-edit-dates-wrap">
+        <label for="fa-edit-dates">Due dates each year (MM-DD, comma separated)</label>
+        <input type="text" id="fa-edit-dates" placeholder="e.g. 06-01 or 01-15, 04-15, 06-15, 09-15" />
+      </div>
+      <div class="form-group" id="fa-edit-date-wrap" style="display:none">
+        <label for="fa-edit-date">Due date</label>
+        <input type="date" id="fa-edit-date" />
+      </div>
+      <div class="form-group">
+        <label for="fa-edit-amount">Usual amount (optional)</label>
+        <input type="text" id="fa-edit-amount" maxlength="40" placeholder="e.g. $400" />
+      </div>
+      <div class="form-group">
+        <label for="fa-edit-link">Link (optional)</label>
+        <input type="url" id="fa-edit-link" maxlength="300" placeholder="https://" />
+      </div>
+      <div class="form-group full">
+        <label for="fa-edit-notes">Notes</label>
+        <textarea id="fa-edit-notes" rows="2" maxlength="500"></textarea>
+      </div>
+      <div class="form-group full">
+        <label class="fa-check"><input type="checkbox" id="fa-edit-active" checked /> Track this item (reminders on)</label>
+      </div>
+    </div>
+    <div class="fa-actions">
+      <button type="button" class="btn btn-primary" id="fa-edit-save">Save</button>
+      <button type="button" class="btn btn-secondary" id="fa-edit-cancel">Cancel</button>
+      <button type="button" class="btn-archive" id="fa-edit-delete" style="display:none;margin-left:auto">Remove item</button>
+    </div>
+    <div id="fa-edit-result"></div>
+  </div>
+
+  <div class="card fa-card">
+    <div class="portal-section-title">Records</div>
+    <div id="fa-records"></div>
+  </div>
+</div>

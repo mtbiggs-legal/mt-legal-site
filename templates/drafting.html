@@ -25,18 +25,58 @@
 
     <div class="form-group" style="margin-bottom:1.25rem">
       <label for="template-type">Document Template</label>
-      <select id="template-type" name="template_type" onchange="onTemplateChange()" required>
+      <select id="template-type" name="template_type" data-on-change='[["onTemplateChange",[]]]' required>
         <option value="">— Select a template —</option>
         <optgroup label="── General ──────────────────">
           <option value="Demand Letter">Demand Letter</option>
           <option value="LLC Operating Agreement">LLC Operating Agreement</option>
-          <option value="Last Will and Testament">Last Will and Testament</option>
+          <option value="Engagement Letter">Engagement Letter</option>
+        </optgroup>
+        <optgroup label="── Civil Litigation ─────────">
+          <option value="Answer to Complaint">Answer to Complaint</option>
+          <option value="Civil Complaint">Civil Complaint</option>
+          <option value="General Sessions Civil Warrant">General Sessions Civil Warrant</option>
+          <option value="Motion to Dismiss (Rule 12)">Motion to Dismiss (Rule 12)</option>
+          <option value="Discovery Requests">Discovery Requests</option>
+          <option value="Response to Demand Letter">Response to Demand Letter</option>
+          <option value="Settlement Agreement and Release">Settlement Agreement and Release</option>
         </optgroup>
         <optgroup label="── Family Law ───────────────">
           <option value="Divorce Petition">Divorce Petition</option>
+          <option value="Answer and Counter-Complaint for Divorce">Answer and Counter-Complaint for Divorce</option>
           <option value="Parenting Plan">Parenting Plan</option>
+          <option value="Petition to Modify Parenting Plan">Petition to Modify Parenting Plan</option>
+          <option value="Motion for Temporary Parenting Plan and Support">Motion for Temporary Parenting Plan and Support</option>
+          <option value="Notice of Intent to Relocate">Notice of Intent to Relocate</option>
+          <option value="Petition for Civil Contempt">Petition for Civil Contempt</option>
           <option value="Child Support Worksheet">Child Support Worksheet</option>
           <option value="Property Settlement Agreement">Property Settlement Agreement</option>
+          <option value="Marital Dissolution Agreement">Marital Dissolution Agreement</option>
+          <option value="Final Decree of Divorce">Final Decree of Divorce</option>
+          <option value="Petition to Establish Parentage">Petition to Establish Parentage</option>
+          <option value="Petition to Modify Child Support">Petition to Modify Child Support</option>
+          <option value="Motion for Pendente Lite Support">Motion for Pendente Lite Support</option>
+          <option value="Petition for Grandparent Visitation">Petition for Grandparent Visitation</option>
+          <option value="Petition for Name Change">Petition for Name Change</option>
+        </optgroup>
+        <optgroup label="── Estate Planning ──────────">
+          <option value="Last Will and Testament">Last Will and Testament</option>
+          <option value="Durable Power of Attorney (Financial)">Durable Power of Attorney (Financial)</option>
+          <option value="Health Care Power of Attorney">Health Care Power of Attorney</option>
+          <option value="Living Will (Advance Directive)">Living Will (Advance Directive)</option>
+          <option value="HIPAA Authorization">HIPAA Authorization</option>
+          <option value="Petition to Probate Will">Petition to Probate Will</option>
+          <option value="Small Estate Affidavit">Small Estate Affidavit</option>
+        </optgroup>
+        <optgroup label="── Basic Pleadings ──────────">
+          <option value="Notice of Appearance">Notice of Appearance</option>
+          <option value="Motion to Continue">Motion to Continue</option>
+          <option value="Motion for Extension of Time">Motion for Extension of Time</option>
+          <option value="Motion to Compel Discovery">Motion to Compel Discovery</option>
+          <option value="Motion for Default Judgment">Motion for Default Judgment</option>
+          <option value="Motion to Withdraw as Counsel">Motion to Withdraw as Counsel</option>
+          <option value="Agreed Order">Agreed Order</option>
+          <option value="Notice of Hearing">Notice of Hearing</option>
         </optgroup>
         <optgroup label="── Personal Injury ──────────">
           <option value="Personal Injury Demand Letter">Personal Injury Demand Letter</option>
@@ -507,9 +547,476 @@
       <div class="form-group"><label>Response Deadline</label><input type="text" name="response_deadline" placeholder="e.g. 14 days from date of this letter" /></div>
     </div>
 
+    <!-- ── Engagement Letter ───────────────────────────────────────────────── -->
+    <div id="fields-engagement-letter" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Engagement Letter Details</div>
+      <div class="form-group"><label>Client Name</label><input type="text" name="client_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Retainer / Advance Fee</label><input type="text" name="retainer_amount" placeholder="e.g. $2,500 held in trust" /></div>
+      <div class="form-group full"><label>Matter</label><textarea name="matter_description" rows="2" placeholder="e.g. Defense of breach of contract suit, Davidson County Circuit Court"></textarea></div>
+      <div class="form-group full"><label>Scope of Representation</label><textarea name="scope_of_representation" rows="2" placeholder="What is included, and what is not (e.g. appeals excluded)"></textarea></div>
+      <div class="form-group full"><label>Fee Terms</label><input type="text" name="fee_terms" placeholder="e.g. $350/hour billed in 0.1 increments; flat fee $1,500" /></div>
+    </div>
+
+    <!-- ── Answer to Complaint ─────────────────────────────────────────────── -->
+    <div id="fields-answer-to-complaint" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Answer to Complaint Details</div>
+      <div class="form-group"><label>Court</label><input type="text" name="court_name" placeholder="e.g. Circuit Court for Davidson County" /></div>
+      <div class="form-group"><label>County</label><input type="text" name="county" placeholder="Davidson" /></div>
+      <div class="form-group"><label>Case No.</label><input type="text" name="case_no" placeholder="e.g. 26C1234" /></div>
+      <div class="form-group"><label>Plaintiff</label><input type="text" name="plaintiff_name" placeholder="ACME Corp." /></div>
+      <div class="form-group"><label>Defendant (Our Client)</label><input type="text" name="defendant_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group full"><label>Summary of the Complaint</label><textarea name="complaint_summary" rows="3" placeholder="What the plaintiff alleges, paragraph by paragraph if you have it…"></textarea></div>
+      <div class="form-group full"><label>Admissions, Denials &amp; Disputed Facts</label><textarea name="admissions_denials" rows="3" placeholder="e.g. Admit ¶¶ 1–3; deny ¶¶ 4–12; client never signed the 2025 addendum"></textarea></div>
+      <div class="form-group full"><label>Affirmative Defenses</label><textarea name="affirmative_defenses" rows="2" placeholder="e.g. Statute of limitations, payment, failure to mitigate, comparative fault"></textarea></div>
+      <div class="form-group full"><label>Counterclaim (optional)</label><textarea name="counterclaim" rows="2" placeholder="Any claim our client has against the plaintiff"></textarea></div>
+      <div class="form-group"><label>Jury Demand</label><select name="jury_demand"><option value="Demand a jury of twelve">Demand a jury</option><option value="No jury demand">No jury demand</option></select></div>
+    </div>
+
+    <!-- ── Civil Complaint ─────────────────────────────────────────────────── -->
+    <div id="fields-civil-complaint" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Civil Complaint Details</div>
+      <div class="form-group"><label>Court</label><input type="text" name="court_name" placeholder="e.g. Chancery Court for Davidson County" /></div>
+      <div class="form-group"><label>County</label><input type="text" name="county" placeholder="Davidson" /></div>
+      <div class="form-group"><label>Plaintiff (Our Client)</label><input type="text" name="plaintiff_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Defendant</label><input type="text" name="defendant_name" placeholder="ACME Corp." /></div>
+      <div class="form-group full"><label>Facts</label><textarea name="matter_description" rows="4" placeholder="What happened, with dates…"></textarea></div>
+      <div class="form-group full"><label>Causes of Action</label><input type="text" name="causes_of_action" placeholder="e.g. Breach of contract; unjust enrichment; TCPA" /></div>
+      <div class="form-group full"><label>Damages / Relief Requested</label><input type="text" name="relief_requested" placeholder="e.g. $48,000 compensatory, prejudgment interest, attorney's fees" /></div>
+      <div class="form-group"><label>Jury Demand</label><select name="jury_demand"><option value="Demand a jury of twelve">Demand a jury</option><option value="No jury demand">No jury demand</option></select></div>
+    </div>
+
+    <!-- ── General Sessions Civil Warrant ──────────────────────────────────── -->
+    <div id="fields-general-sessions-civil-warrant" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">General Sessions Civil Warrant Details</div>
+      <div class="form-group"><label>County</label><input type="text" name="county" placeholder="Davidson" /></div>
+      <div class="form-group"><label>Amount Claimed</label><input type="text" name="demand_amount" placeholder="e.g. $7,850 plus costs" /></div>
+      <div class="form-group"><label>Plaintiff (Our Client)</label><input type="text" name="plaintiff_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Defendant</label><input type="text" name="defendant_name" placeholder="John Doe" /></div>
+      <div class="form-group full"><label>Defendant's Address for Service</label><input type="text" name="property_address" placeholder="123 Main St, Nashville, TN 37201" /></div>
+      <div class="form-group full"><label>Basis of the Claim</label><textarea name="matter_description" rows="3" placeholder="e.g. Unpaid invoices for services rendered Jan–Apr 2026"></textarea></div>
+    </div>
+
+    <!-- ── Motion to Dismiss ───────────────────────────────────────────────── -->
+    <div id="fields-motion-to-dismiss-rule-12" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Motion to Dismiss Details</div>
+      <div class="form-group"><label>Court</label><input type="text" name="court_name" placeholder="e.g. Circuit Court for Davidson County" /></div>
+      <div class="form-group"><label>County</label><input type="text" name="county" placeholder="Davidson" /></div>
+      <div class="form-group"><label>Case No.</label><input type="text" name="case_no" placeholder="e.g. 26C1234" /></div>
+      <div class="form-group"><label>Hearing Date (if set)</label><input type="date" name="hearing_date" /></div>
+      <div class="form-group"><label>Plaintiff</label><input type="text" name="plaintiff_name" placeholder="ACME Corp." /></div>
+      <div class="form-group"><label>Defendant (Movant)</label><input type="text" name="defendant_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group full"><label>Summary of the Complaint</label><textarea name="complaint_summary" rows="3" placeholder="What the plaintiff alleges…"></textarea></div>
+      <div class="form-group full"><label>Grounds for Dismissal</label><textarea name="motion_grounds" rows="2" placeholder="e.g. 12.02(6) failure to state a claim; 12.02(2) no personal jurisdiction; statute of limitations"></textarea></div>
+    </div>
+
+    <!-- ── Discovery Requests ──────────────────────────────────────────────── -->
+    <div id="fields-discovery-requests" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Discovery Request Details</div>
+      <div class="form-group"><label>Court</label><input type="text" name="court_name" placeholder="e.g. Circuit Court for Davidson County" /></div>
+      <div class="form-group"><label>County</label><input type="text" name="county" placeholder="Davidson" /></div>
+      <div class="form-group"><label>Case No.</label><input type="text" name="case_no" placeholder="e.g. 26C1234" /></div>
+      <div class="form-group"><label>Sets to Include</label><select name="discovery_sets"><option value="Interrogatories, Requests for Production, and Requests for Admission">All three</option><option value="Interrogatories and Requests for Production">Interrogatories + Production</option><option value="Interrogatories only">Interrogatories only</option><option value="Requests for Production only">Requests for Production only</option><option value="Requests for Admission only">Requests for Admission only</option></select></div>
+      <div class="form-group"><label>Requesting Party (Our Client)</label><input type="text" name="plaintiff_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Responding Party</label><input type="text" name="defendant_name" placeholder="ACME Corp." /></div>
+      <div class="form-group full"><label>Topics &amp; Documents to Target</label><textarea name="discovery_topics" rows="4" placeholder="e.g. Contract negotiations, emails with the project manager, payment records, insurance policies, witnesses"></textarea></div>
+    </div>
+
+    <!-- ── Response to Demand Letter ───────────────────────────────────────── -->
+    <div id="fields-response-to-demand-letter" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Response to Demand Letter Details</div>
+      <div class="form-group"><label>Our Client</label><input type="text" name="client_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Party Who Sent the Demand</label><input type="text" name="opposing_party" placeholder="ACME Corp. / its counsel" /></div>
+      <div class="form-group full"><label>What the Demand Claims</label><textarea name="complaint_summary" rows="3" placeholder="Amount demanded and the basis given…"></textarea></div>
+      <div class="form-group full"><label>Our Client's Position &amp; Key Facts</label><textarea name="matter_description" rows="3" placeholder="Why the claim fails or is overstated…"></textarea></div>
+      <div class="form-group full"><label>Counteroffer (optional)</label><input type="text" name="settlement_amount" placeholder="e.g. $3,500 in full settlement / none" /></div>
+    </div>
+
+    <!-- ── Settlement Agreement and Release ────────────────────────────────── -->
+    <div id="fields-settlement-agreement-and-release" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Settlement Agreement Details</div>
+      <div class="form-group"><label>Our Client</label><input type="text" name="client_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Other Party</label><input type="text" name="opposing_party" placeholder="ACME Corp." /></div>
+      <div class="form-group"><label>Case No. (if filed)</label><input type="text" name="case_no" placeholder="e.g. 26C1234" /></div>
+      <div class="form-group"><label>Governing State</label><input type="text" name="jurisdiction" placeholder="Tennessee" /></div>
+      <div class="form-group full"><label>Dispute Being Settled</label><textarea name="matter_description" rows="2" placeholder="The claims being resolved…"></textarea></div>
+      <div class="form-group"><label>Settlement Amount</label><input type="text" name="settlement_amount" placeholder="e.g. $15,000" /></div>
+      <div class="form-group"><label>Payment Terms</label><input type="text" name="payment_terms" placeholder="e.g. Lump sum within 30 days / 6 monthly payments" /></div>
+      <div class="form-group full"><label>Scope of Release</label><input type="text" name="release_scope" placeholder="e.g. Mutual general release of all claims through the signing date" /></div>
+    </div>
+
+    <!-- ── Answer and Counter-Complaint for Divorce ────────────────────────── -->
+    <div id="fields-answer-and-counter-complaint-for-divorce" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Answer &amp; Counter-Complaint Details</div>
+      <div class="form-group"><label>Court</label><input type="text" name="court_name" placeholder="e.g. Fourth Circuit Court for Davidson County" /></div>
+      <div class="form-group"><label>County</label><input type="text" name="county" placeholder="Davidson" /></div>
+      <div class="form-group"><label>Case No.</label><input type="text" name="case_no" placeholder="e.g. 26D-1234" /></div>
+      <div class="form-group"><label>Date of Marriage</label><input type="date" name="date_of_marriage" /></div>
+      <div class="form-group"><label>Plaintiff / Petitioner</label><input type="text" name="petitioner_name" placeholder="John B. Smith" /></div>
+      <div class="form-group"><label>Defendant / Respondent (Our Client)</label><input type="text" name="respondent_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group full"><label>Minor Children (names &amp; ages, or "None")</label><input type="text" name="minor_children" placeholder="e.g. Emma, age 8; Noah, age 5" /></div>
+      <div class="form-group full"><label>Allegations Our Client Disputes</label><textarea name="admissions_denials" rows="3" placeholder="e.g. Admit ¶¶ 1–4; deny the grounds alleged in ¶ 6"></textarea></div>
+      <div class="form-group"><label>Grounds for Counter-Complaint</label>
+        <select name="grounds_for_divorce">
+          <option value="Irreconcilable differences (T.C.A. § 36-4-101(a)(14))">Irreconcilable Differences</option>
+          <option value="Inappropriate marital conduct">Inappropriate Marital Conduct</option>
+          <option value="Adultery">Adultery</option>
+          <option value="Willful desertion for one whole year">Desertion (1 year)</option>
+          <option value="Separation for two years with no minor children">Two-Year Separation (no minor children)</option>
+        </select>
+      </div>
+      <div class="form-group full"><label>Relief Sought</label><textarea name="relief_requested" rows="2" placeholder="e.g. Primary residential parent, marital home, child support, alimony in futuro"></textarea></div>
+    </div>
+
+    <!-- ── Petition to Modify Parenting Plan ───────────────────────────────── -->
+    <div id="fields-petition-to-modify-parenting-plan" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Petition to Modify Details</div>
+      <div class="form-group"><label>Court</label><input type="text" name="court_name" placeholder="e.g. Fourth Circuit Court for Davidson County" /></div>
+      <div class="form-group"><label>County</label><input type="text" name="county" placeholder="Davidson" /></div>
+      <div class="form-group"><label>Case No.</label><input type="text" name="case_no" placeholder="e.g. 26D-1234" /></div>
+      <div class="form-group"><label>Date of Current Order</label><input type="date" name="existing_order_date" /></div>
+      <div class="form-group"><label>Petitioner (Our Client)</label><input type="text" name="petitioner_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Respondent</label><input type="text" name="respondent_name" placeholder="John B. Smith" /></div>
+      <div class="form-group full"><label>Minor Children (names &amp; ages)</label><input type="text" name="minor_children" placeholder="e.g. Emma, age 8; Noah, age 5" /></div>
+      <div class="form-group full"><label>Material Change in Circumstances</label><textarea name="changed_circumstances" rows="3" placeholder="What has changed since the last order…"></textarea></div>
+      <div class="form-group full"><label>Requested Changes</label><textarea name="requested_changes" rows="2" placeholder="e.g. Designate Petitioner primary residential parent; alternate weekends to Respondent"></textarea></div>
+      <div class="form-group full"><label>Child Support Change</label><input type="text" name="child_support" placeholder="e.g. Recalculate under the Guidelines / no change" /></div>
+    </div>
+
+    <!-- ── Motion for Temporary Parenting Plan and Support ─────────────────── -->
+    <div id="fields-motion-for-temporary-parenting-plan-and-support" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Temporary Relief Details</div>
+      <div class="form-group"><label>Court</label><input type="text" name="court_name" placeholder="e.g. Fourth Circuit Court for Davidson County" /></div>
+      <div class="form-group"><label>County</label><input type="text" name="county" placeholder="Davidson" /></div>
+      <div class="form-group"><label>Case No.</label><input type="text" name="case_no" placeholder="e.g. 26D-1234" /></div>
+      <div class="form-group"><label>Movant (Our Client)</label><input type="text" name="petitioner_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Other Party</label><input type="text" name="respondent_name" placeholder="John B. Smith" /></div>
+      <div class="form-group full"><label>Minor Children (names &amp; ages)</label><input type="text" name="minor_children" placeholder="e.g. Emma, age 8; Noah, age 5" /></div>
+      <div class="form-group full"><label>Proposed Temporary Schedule</label><textarea name="proposed_schedule" rows="2" placeholder="e.g. Children with Movant during the school week; Respondent alternate weekends"></textarea></div>
+      <div class="form-group full"><label>Temporary Support Requested</label><input type="text" name="child_support" placeholder="e.g. Guideline child support; $800/month temporary alimony" /></div>
+      <div class="form-group full"><label>Other Temporary Relief</label><input type="text" name="temporary_relief" placeholder="e.g. Exclusive use of the marital home, payment of mortgage, attorney's fees" /></div>
+    </div>
+
+    <!-- ── Notice of Intent to Relocate ────────────────────────────────────── -->
+    <div id="fields-notice-of-intent-to-relocate" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Relocation Notice Details</div>
+      <div class="form-group"><label>Relocating Parent (Our Client)</label><input type="text" name="petitioner_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Other Parent</label><input type="text" name="respondent_name" placeholder="John B. Smith" /></div>
+      <div class="form-group full"><label>Minor Children (names &amp; ages)</label><input type="text" name="minor_children" placeholder="e.g. Emma, age 8; Noah, age 5" /></div>
+      <div class="form-group full"><label>New Address / Location</label><input type="text" name="relocation_destination" placeholder="e.g. 88 Oak Lane, Knoxville, TN 37919" /></div>
+      <div class="form-group"><label>Proposed Move Date</label><input type="date" name="relocation_date" /></div>
+      <div class="form-group full"><label>Reasons for the Move</label><textarea name="relocation_reason" rows="2" placeholder="e.g. New job offer with higher pay; family support nearby"></textarea></div>
+      <div class="form-group full"><label>Proposed Revised Parenting Schedule</label><textarea name="proposed_schedule" rows="2" placeholder="e.g. Other parent has every other weekend plus six weeks in summer"></textarea></div>
+    </div>
+
+    <!-- ── Petition for Civil Contempt ─────────────────────────────────────── -->
+    <div id="fields-petition-for-civil-contempt" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Contempt Petition Details</div>
+      <div class="form-group"><label>Court</label><input type="text" name="court_name" placeholder="e.g. Fourth Circuit Court for Davidson County" /></div>
+      <div class="form-group"><label>County</label><input type="text" name="county" placeholder="Davidson" /></div>
+      <div class="form-group"><label>Case No.</label><input type="text" name="case_no" placeholder="e.g. 26D-1234" /></div>
+      <div class="form-group"><label>Date of Order Violated</label><input type="date" name="existing_order_date" /></div>
+      <div class="form-group"><label>Petitioner (Our Client)</label><input type="text" name="petitioner_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Respondent</label><input type="text" name="respondent_name" placeholder="John B. Smith" /></div>
+      <div class="form-group full"><label>Specific Violations</label><textarea name="violations" rows="3" placeholder="e.g. No child support paid since June 2026; missed four exchanges"></textarea></div>
+      <div class="form-group"><label>Arrearage (if any)</label><input type="text" name="arrears_amount" placeholder="e.g. $3,240" /></div>
+      <div class="form-group full"><label>Relief Requested</label><input type="text" name="relief_requested" placeholder="e.g. Judgment for arrears, purge amount, attorney's fees" /></div>
+    </div>
+
+
+    <!-- ── Marital Dissolution Agreement ── -->
+    <div id="fields-marital-dissolution-agreement" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Marital Dissolution Agreement Details</div>
+      <div class="form-group"><label>Court</label><input type="text" name="court_name" placeholder="e.g. Fourth Circuit Court for Davidson County" /></div>
+      <div class="form-group"><label>County</label><input type="text" name="county" placeholder="Davidson" /></div>
+      <div class="form-group"><label>Case No.</label><input type="text" name="case_no" placeholder="e.g. 26D-1234" /></div>
+      <div class="form-group"><label>Petitioner (Our Client)</label><input type="text" name="petitioner_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Respondent</label><input type="text" name="respondent_name" placeholder="John B. Smith" /></div>
+      <div class="form-group"><label>Date of Marriage</label><input type="date" name="date_of_marriage" /></div>
+      <div class="form-group"><label>Date of Separation</label><input type="date" name="date_of_separation" /></div>
+      <div class="form-group full"><label>Minor Children (names &amp; ages)</label><input type="text" name="minor_children" placeholder="e.g. Emma, age 8; Noah, age 5" /></div>
+      <div class="form-group full"><label>Parenting Plan (summary)</label><input type="text" name="parenting_plan_summary" placeholder="e.g. Agreed permanent parenting plan, Wife primary residential parent" /></div>
+      <div class="form-group full"><label>Marital Residence / Real Property</label><textarea name="property_division" rows="2" placeholder="e.g. Husband keeps the house at 12 Elm St. and refinances within 90 days"></textarea></div>
+      <div class="form-group full"><label>Marital Assets &amp; Division</label><textarea name="marital_assets" rows="2" placeholder="e.g. 2022 Honda to Wife; Fidelity 401(k) split 50/50 by QDRO"></textarea></div>
+      <div class="form-group full"><label>Marital Debts &amp; Who Pays</label><textarea name="marital_debts" rows="2" placeholder="e.g. Chase Visa ($4,200) to Husband"></textarea></div>
+      <div class="form-group full"><label>Separate Property</label><input type="text" name="separate_property" placeholder="e.g. Wife's inherited jewelry" /></div>
+      <div class="form-group full"><label>Alimony</label><input type="text" name="spousal_support" placeholder="e.g. None; mutual waiver" /></div>
+    </div>
+
+    <!-- ── Final Decree of Divorce ── -->
+    <div id="fields-final-decree-of-divorce" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Final Decree of Divorce Details</div>
+      <div class="form-group"><label>Court</label><input type="text" name="court_name" placeholder="e.g. Fourth Circuit Court for Davidson County" /></div>
+      <div class="form-group"><label>County</label><input type="text" name="county" placeholder="Davidson" /></div>
+      <div class="form-group"><label>Case No.</label><input type="text" name="case_no" placeholder="e.g. 26D-1234" /></div>
+      <div class="form-group"><label>Petitioner (Our Client)</label><input type="text" name="petitioner_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Respondent</label><input type="text" name="respondent_name" placeholder="John B. Smith" /></div>
+      <div class="form-group"><label>Grounds</label><input type="text" name="grounds_for_divorce" placeholder="e.g. Irreconcilable differences" /></div>
+      <div class="form-group"><label>Hearing Date</label><input type="date" name="hearing_date" /></div>
+      <div class="form-group"><label>MDA Date</label><input type="date" name="mda_date" /></div>
+      <div class="form-group"><label>Parenting Plan Date</label><input type="date" name="existing_order_date" /></div>
+      <div class="form-group full"><label>Minor Children (names &amp; ages)</label><input type="text" name="minor_children" placeholder="e.g. Emma, age 8; Noah, age 5" /></div>
+      <div class="form-group full"><label>Additional Terms</label><textarea name="relief_requested" rows="2" placeholder="e.g. Wife's former name Jane Doe restored; costs taxed to Husband"></textarea></div>
+    </div>
+
+    <!-- ── Petition to Establish Parentage ── -->
+    <div id="fields-petition-to-establish-parentage" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Petition to Establish Parentage Details</div>
+      <div class="form-group"><label>Court</label><input type="text" name="court_name" placeholder="e.g. Fourth Circuit Court for Davidson County" /></div>
+      <div class="form-group"><label>County</label><input type="text" name="county" placeholder="Davidson" /></div>
+      <div class="form-group"><label>Case No.</label><input type="text" name="case_no" placeholder="e.g. 26D-1234" /></div>
+      <div class="form-group"><label>Petitioner (Our Client)</label><input type="text" name="petitioner_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Respondent</label><input type="text" name="respondent_name" placeholder="John B. Smith" /></div>
+      <div class="form-group full"><label>Minor Children (names &amp; ages)</label><input type="text" name="minor_children" placeholder="e.g. Emma, age 8; Noah, age 5" /></div>
+      <div class="form-group"><label>Alleged Father</label><input type="text" name="alleged_father" placeholder="e.g. Respondent, John B. Smith" /></div>
+      <div class="form-group full"><label>Facts</label><textarea name="matter_description" rows="2" placeholder="Relationship history, birth, whether a VAP was signed…"></textarea></div>
+      <div class="form-group full"><label>Relief Requested</label><input type="text" name="relief_requested" placeholder="e.g. Genetic testing, parenting plan, retroactive support" /></div>
+    </div>
+
+    <!-- ── Petition to Modify Child Support ── -->
+    <div id="fields-petition-to-modify-child-support" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Petition to Modify Child Support Details</div>
+      <div class="form-group"><label>Court</label><input type="text" name="court_name" placeholder="e.g. Fourth Circuit Court for Davidson County" /></div>
+      <div class="form-group"><label>County</label><input type="text" name="county" placeholder="Davidson" /></div>
+      <div class="form-group"><label>Case No.</label><input type="text" name="case_no" placeholder="e.g. 26D-1234" /></div>
+      <div class="form-group"><label>Petitioner (Our Client)</label><input type="text" name="petitioner_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Respondent</label><input type="text" name="respondent_name" placeholder="John B. Smith" /></div>
+      <div class="form-group full"><label>Minor Children (names &amp; ages)</label><input type="text" name="minor_children" placeholder="e.g. Emma, age 8; Noah, age 5" /></div>
+      <div class="form-group"><label>Date of Current Order</label><input type="date" name="existing_order_date" /></div>
+      <div class="form-group"><label>Current Support</label><input type="text" name="child_support" placeholder="e.g. $650/month paid by Respondent" /></div>
+      <div class="form-group full"><label>Change in Circumstances</label><textarea name="changed_circumstances" rows="2" placeholder="e.g. Respondent's income rose from $48k to $85k"></textarea></div>
+      <div class="form-group full"><label>Requested Support</label><input type="text" name="requested_changes" placeholder="e.g. Recalculate under the Guidelines (est. $1,020/month)" /></div>
+    </div>
+
+    <!-- ── Motion for Pendente Lite Support ── -->
+    <div id="fields-motion-for-pendente-lite-support" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Motion for Pendente Lite Support Details</div>
+      <div class="form-group"><label>Court</label><input type="text" name="court_name" placeholder="e.g. Fourth Circuit Court for Davidson County" /></div>
+      <div class="form-group"><label>County</label><input type="text" name="county" placeholder="Davidson" /></div>
+      <div class="form-group"><label>Case No.</label><input type="text" name="case_no" placeholder="e.g. 26D-1234" /></div>
+      <div class="form-group"><label>Petitioner (Our Client)</label><input type="text" name="petitioner_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Respondent</label><input type="text" name="respondent_name" placeholder="John B. Smith" /></div>
+      <div class="form-group full"><label>Minor Children (names &amp; ages)</label><input type="text" name="minor_children" placeholder="e.g. Emma, age 8; Noah, age 5" /></div>
+      <div class="form-group"><label>Petitioner's Income</label><input type="text" name="petitioner_income" placeholder="e.g. $3,100/month gross" /></div>
+      <div class="form-group"><label>Respondent's Income</label><input type="text" name="respondent_income" placeholder="e.g. $7,800/month gross" /></div>
+      <div class="form-group"><label>Temporary Child Support</label><input type="text" name="child_support" placeholder="e.g. Guideline amount" /></div>
+      <div class="form-group"><label>Temporary Alimony</label><input type="text" name="spousal_support" placeholder="e.g. $900/month" /></div>
+      <div class="form-group full"><label>Other Temporary Relief</label><input type="text" name="temporary_relief" placeholder="e.g. Exclusive use of the home; Respondent pays the mortgage" /></div>
+    </div>
+
+    <!-- ── Petition for Grandparent Visitation ── -->
+    <div id="fields-petition-for-grandparent-visitation" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Petition for Grandparent Visitation Details</div>
+      <div class="form-group"><label>Court</label><input type="text" name="court_name" placeholder="e.g. Fourth Circuit Court for Davidson County" /></div>
+      <div class="form-group"><label>County</label><input type="text" name="county" placeholder="Davidson" /></div>
+      <div class="form-group"><label>Case No.</label><input type="text" name="case_no" placeholder="e.g. 26D-1234" /></div>
+      <div class="form-group"><label>Petitioner (Our Client)</label><input type="text" name="petitioner_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Respondent</label><input type="text" name="respondent_name" placeholder="John B. Smith" /></div>
+      <div class="form-group full"><label>Minor Children (names &amp; ages)</label><input type="text" name="minor_children" placeholder="e.g. Emma, age 8; Noah, age 5" /></div>
+      <div class="form-group"><label>Petitioner's Relationship</label><input type="text" name="relationship" placeholder="e.g. Maternal grandmother" /></div>
+      <div class="form-group full"><label>Qualifying Circumstance</label><input type="text" name="qualifying_basis" placeholder="e.g. Parents divorced; child lived with petitioner 14 months" /></div>
+      <div class="form-group full"><label>Facts</label><textarea name="matter_description" rows="2" placeholder="Relationship with the child and how visits were cut off…"></textarea></div>
+      <div class="form-group full"><label>Requested Visitation</label><input type="text" name="proposed_schedule" placeholder="e.g. One weekend a month and one week each summer" /></div>
+    </div>
+
+    <!-- ── Petition for Name Change ── -->
+    <div id="fields-petition-for-name-change" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Petition for Name Change Details</div>
+      <div class="form-group"><label>Court</label><input type="text" name="court_name" placeholder="e.g. Fourth Circuit Court for Davidson County" /></div>
+      <div class="form-group"><label>County</label><input type="text" name="county" placeholder="Davidson" /></div>
+      <div class="form-group"><label>Petitioner</label><input type="text" name="petitioner_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Current Legal Name</label><input type="text" name="current_name" /></div>
+      <div class="form-group"><label>Requested Name</label><input type="text" name="new_name" /></div>
+      <div class="form-group"><label>Date &amp; Place of Birth</label><input type="text" name="birth_info" placeholder="e.g. March 4, 1990, Nashville, TN" /></div>
+      <div class="form-group full"><label>Residence</label><input type="text" name="property_address" placeholder="Street, city, county" /></div>
+      <div class="form-group full"><label>Reason for the Change</label><textarea name="matter_description" rows="2"></textarea></div>
+      <div class="form-group full"><label>If for a Minor: Child &amp; Parents</label><input type="text" name="minor_children" placeholder="Leave blank for an adult" /></div>
+    </div>
+
+    <!-- ── Durable Power of Attorney (Financial) ── -->
+    <div id="fields-durable-power-of-attorney-financial" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Durable Power of Attorney (Financial) Details</div>
+      <div class="form-group"><label>Principal</label><input type="text" name="principal_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Principal's Address</label><input type="text" name="property_address" /></div>
+      <div class="form-group"><label>Agent</label><input type="text" name="agent_name" placeholder="e.g. Mary Smith (daughter)" /></div>
+      <div class="form-group"><label>Successor Agent</label><input type="text" name="successor_agent" /></div>
+      <div class="form-group full"><label>Effective</label><input type="text" name="effective_when" placeholder="e.g. Immediately / upon incapacity (springing)" /></div>
+      <div class="form-group full"><label>Powers Granted or Excluded</label><textarea name="powers" rows="2" placeholder="e.g. All powers; gifts limited to annual exclusion"></textarea></div>
+      <div class="form-group full"><label>Special Instructions</label><textarea name="special_instructions" rows="2"></textarea></div>
+    </div>
+
+    <!-- ── Health Care Power of Attorney ── -->
+    <div id="fields-health-care-power-of-attorney" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Health Care Power of Attorney Details</div>
+      <div class="form-group"><label>Principal</label><input type="text" name="principal_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Health Care Agent</label><input type="text" name="agent_name" /></div>
+      <div class="form-group"><label>Alternate Agent</label><input type="text" name="successor_agent" /></div>
+      <div class="form-group full"><label>Wishes &amp; Instructions</label><textarea name="special_instructions" rows="2" placeholder="Life support, comfort care, organ donation…"></textarea></div>
+    </div>
+
+    <!-- ── Living Will (Advance Directive) ── -->
+    <div id="fields-living-will-advance-directive" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Living Will (Advance Directive) Details</div>
+      <div class="form-group"><label>Declarant</label><input type="text" name="principal_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>County of Residence</label><input type="text" name="county" placeholder="Davidson" /></div>
+      <div class="form-group full"><label>Treatment Preferences</label><textarea name="special_instructions" rows="2"></textarea></div>
+      <div class="form-group full"><label>Organ Donation</label><input type="text" name="organ_donation" placeholder="e.g. Any needed organs / none" /></div>
+    </div>
+
+    <!-- ── HIPAA Authorization ── -->
+    <div id="fields-hipaa-authorization" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">HIPAA Authorization Details</div>
+      <div class="form-group"><label>Individual</label><input type="text" name="principal_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Date of Birth</label><input type="text" name="birth_info" /></div>
+      <div class="form-group full"><label>Authorized Recipients</label><input type="text" name="agent_name" placeholder="e.g. Mary Smith; MT Legal" /></div>
+      <div class="form-group full"><label>Scope / Purpose</label><input type="text" name="powers" placeholder="e.g. All records, for estate planning and health care decisions" /></div>
+      <div class="form-group full"><label>Expiration</label><input type="text" name="effective_when" placeholder="e.g. Two years from signing / upon death" /></div>
+    </div>
+
+    <!-- ── Petition to Probate Will ── -->
+    <div id="fields-petition-to-probate-will" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Petition to Probate Will Details</div>
+      <div class="form-group"><label>Court</label><input type="text" name="court_name" placeholder="e.g. Fourth Circuit Court for Davidson County" /></div>
+      <div class="form-group"><label>County</label><input type="text" name="county" placeholder="Davidson" /></div>
+      <div class="form-group"><label>Decedent</label><input type="text" name="decedent_name" /></div>
+      <div class="form-group"><label>Date of Death</label><input type="date" name="date_of_death" /></div>
+      <div class="form-group full"><label>Decedent's Last Address</label><input type="text" name="property_address" /></div>
+      <div class="form-group"><label>Date of Will</label><input type="date" name="will_date" /></div>
+      <div class="form-group"><label>Will Witnesses</label><input type="text" name="will_witnesses" /></div>
+      <div class="form-group"><label>Petitioner / Executor</label><input type="text" name="executor_name" /></div>
+      <div class="form-group"><label>Estimated Estate Value</label><input type="text" name="estate_value" /></div>
+      <div class="form-group full"><label>Heirs &amp; Beneficiaries</label><textarea name="beneficiaries" rows="2" placeholder="Name, address, relationship…"></textarea></div>
+      <div class="form-group full"><label>Bond / Inventory Waived in Will?</label><input type="text" name="bond_waiver" placeholder="e.g. Yes, both waived" /></div>
+    </div>
+
+    <!-- ── Small Estate Affidavit ── -->
+    <div id="fields-small-estate-affidavit" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Small Estate Affidavit Details</div>
+      <div class="form-group"><label>Court</label><input type="text" name="court_name" placeholder="e.g. Fourth Circuit Court for Davidson County" /></div>
+      <div class="form-group"><label>County</label><input type="text" name="county" placeholder="Davidson" /></div>
+      <div class="form-group"><label>Decedent</label><input type="text" name="decedent_name" /></div>
+      <div class="form-group"><label>Date of Death</label><input type="date" name="date_of_death" /></div>
+      <div class="form-group"><label>Affiant</label><input type="text" name="executor_name" /></div>
+      <div class="form-group"><label>Affiant's Relationship</label><input type="text" name="relationship" placeholder="e.g. Surviving spouse" /></div>
+      <div class="form-group full"><label>Personal Property &amp; Values</label><textarea name="estate_assets" rows="2" placeholder="e.g. Regions checking $8,400; 2015 Ford F-150 $9,000"></textarea></div>
+      <div class="form-group full"><label>Debts &amp; Funeral Expenses</label><textarea name="marital_debts" rows="2"></textarea></div>
+      <div class="form-group full"><label>Distributees</label><input type="text" name="beneficiaries" /></div>
+      <div class="form-group full"><label>Will?</label><input type="text" name="will_date" placeholder="e.g. No will / Will dated 2019-05-02" /></div>
+    </div>
+
+    <!-- ── Notice of Appearance ── -->
+    <div id="fields-notice-of-appearance" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Notice of Appearance Details</div>
+      <div class="form-group"><label>Court</label><input type="text" name="court_name" placeholder="e.g. Fourth Circuit Court for Davidson County" /></div>
+      <div class="form-group"><label>County</label><input type="text" name="county" placeholder="Davidson" /></div>
+      <div class="form-group"><label>Case No.</label><input type="text" name="case_no" placeholder="e.g. 26D-1234" /></div>
+      <div class="form-group"><label>Plaintiff / Petitioner</label><input type="text" name="plaintiff_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Defendant / Respondent</label><input type="text" name="defendant_name" placeholder="John B. Smith" /></div>
+      <div class="form-group"><label>We Represent</label><input type="text" name="client_role" placeholder="e.g. Defendant" /></div>
+      <div class="form-group full"><label>Notes (optional)</label><input type="text" name="matter_description" placeholder="e.g. Substituting for prior counsel" /></div>
+    </div>
+
+    <!-- ── Motion to Continue ── -->
+    <div id="fields-motion-to-continue" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Motion to Continue Details</div>
+      <div class="form-group"><label>Court</label><input type="text" name="court_name" placeholder="e.g. Fourth Circuit Court for Davidson County" /></div>
+      <div class="form-group"><label>County</label><input type="text" name="county" placeholder="Davidson" /></div>
+      <div class="form-group"><label>Case No.</label><input type="text" name="case_no" placeholder="e.g. 26D-1234" /></div>
+      <div class="form-group"><label>Plaintiff / Petitioner</label><input type="text" name="plaintiff_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Defendant / Respondent</label><input type="text" name="defendant_name" placeholder="John B. Smith" /></div>
+      <div class="form-group"><label>We Represent</label><input type="text" name="client_role" placeholder="e.g. Defendant" /></div>
+      <div class="form-group"><label>Current Setting</label><input type="date" name="hearing_date" /></div>
+      <div class="form-group"><label>Opposing Party's Position</label><input type="text" name="opposing_position" placeholder="e.g. Does not oppose" /></div>
+      <div class="form-group full"><label>Reason</label><textarea name="motion_grounds" rows="2" placeholder="e.g. Counsel in trial in Williamson County that day"></textarea></div>
+    </div>
+
+    <!-- ── Motion for Extension of Time ── -->
+    <div id="fields-motion-for-extension-of-time" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Motion for Extension of Time Details</div>
+      <div class="form-group"><label>Court</label><input type="text" name="court_name" placeholder="e.g. Fourth Circuit Court for Davidson County" /></div>
+      <div class="form-group"><label>County</label><input type="text" name="county" placeholder="Davidson" /></div>
+      <div class="form-group"><label>Case No.</label><input type="text" name="case_no" placeholder="e.g. 26D-1234" /></div>
+      <div class="form-group"><label>Plaintiff / Petitioner</label><input type="text" name="plaintiff_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Defendant / Respondent</label><input type="text" name="defendant_name" placeholder="John B. Smith" /></div>
+      <div class="form-group"><label>We Represent</label><input type="text" name="client_role" placeholder="e.g. Defendant" /></div>
+      <div class="form-group full"><label>Deadline &amp; What Is Due</label><input type="text" name="deadline_info" placeholder="e.g. Answer due Nov. 20, 2026" /></div>
+      <div class="form-group"><label>Extension Requested</label><input type="text" name="extension_requested" placeholder="e.g. 30 days, to Dec. 21, 2026" /></div>
+      <div class="form-group"><label>Opposing Party's Position</label><input type="text" name="opposing_position" /></div>
+      <div class="form-group full"><label>Reason</label><textarea name="motion_grounds" rows="2"></textarea></div>
+    </div>
+
+    <!-- ── Motion to Compel Discovery ── -->
+    <div id="fields-motion-to-compel-discovery" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Motion to Compel Discovery Details</div>
+      <div class="form-group"><label>Court</label><input type="text" name="court_name" placeholder="e.g. Fourth Circuit Court for Davidson County" /></div>
+      <div class="form-group"><label>County</label><input type="text" name="county" placeholder="Davidson" /></div>
+      <div class="form-group"><label>Case No.</label><input type="text" name="case_no" placeholder="e.g. 26D-1234" /></div>
+      <div class="form-group"><label>Plaintiff / Petitioner</label><input type="text" name="plaintiff_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Defendant / Respondent</label><input type="text" name="defendant_name" placeholder="John B. Smith" /></div>
+      <div class="form-group"><label>We Represent</label><input type="text" name="client_role" placeholder="e.g. Defendant" /></div>
+      <div class="form-group full"><label>Discovery Served &amp; Date</label><input type="text" name="discovery_sets" placeholder="e.g. First Interrogatories and RFPs served Aug. 1, 2026" /></div>
+      <div class="form-group full"><label>Deficiencies</label><textarea name="discovery_topics" rows="2" placeholder="e.g. No responses at all; or Interrogatories 4–9 unanswered"></textarea></div>
+      <div class="form-group full"><label>Good-Faith Efforts</label><input type="text" name="meet_confer" placeholder="e.g. Letters Sept. 5 and Sept. 20; call Oct. 2" /></div>
+    </div>
+
+    <!-- ── Motion for Default Judgment ── -->
+    <div id="fields-motion-for-default-judgment" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Motion for Default Judgment Details</div>
+      <div class="form-group"><label>Court</label><input type="text" name="court_name" placeholder="e.g. Fourth Circuit Court for Davidson County" /></div>
+      <div class="form-group"><label>County</label><input type="text" name="county" placeholder="Davidson" /></div>
+      <div class="form-group"><label>Case No.</label><input type="text" name="case_no" placeholder="e.g. 26D-1234" /></div>
+      <div class="form-group"><label>Plaintiff / Petitioner</label><input type="text" name="plaintiff_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Defendant / Respondent</label><input type="text" name="defendant_name" placeholder="John B. Smith" /></div>
+      <div class="form-group"><label>We Represent</label><input type="text" name="client_role" placeholder="e.g. Defendant" /></div>
+      <div class="form-group full"><label>Service (date &amp; method)</label><input type="text" name="service_info" placeholder="e.g. Personal service Sept. 2, 2026" /></div>
+      <div class="form-group"><label>Answer Deadline</label><input type="text" name="deadline_info" placeholder="e.g. Oct. 2, 2026" /></div>
+      <div class="form-group full"><label>Relief Sought</label><textarea name="relief_requested" rows="2" placeholder="e.g. $12,450 plus pre-judgment interest and costs"></textarea></div>
+    </div>
+
+    <!-- ── Motion to Withdraw as Counsel ── -->
+    <div id="fields-motion-to-withdraw-as-counsel" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Motion to Withdraw as Counsel Details</div>
+      <div class="form-group"><label>Court</label><input type="text" name="court_name" placeholder="e.g. Fourth Circuit Court for Davidson County" /></div>
+      <div class="form-group"><label>County</label><input type="text" name="county" placeholder="Davidson" /></div>
+      <div class="form-group"><label>Case No.</label><input type="text" name="case_no" placeholder="e.g. 26D-1234" /></div>
+      <div class="form-group"><label>Plaintiff / Petitioner</label><input type="text" name="plaintiff_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Defendant / Respondent</label><input type="text" name="defendant_name" placeholder="John B. Smith" /></div>
+      <div class="form-group"><label>We Represent</label><input type="text" name="client_role" placeholder="e.g. Defendant" /></div>
+      <div class="form-group"><label>Upcoming Settings</label><input type="text" name="hearing_date" placeholder="e.g. Trial Jan. 12, 2027" /></div>
+      <div class="form-group full"><label>Client's Last Known Address</label><input type="text" name="property_address" /></div>
+      <div class="form-group full"><label>Reason (general)</label><input type="text" name="motion_grounds" placeholder="e.g. Professional considerations require withdrawal" /></div>
+    </div>
+
+    <!-- ── Agreed Order ── -->
+    <div id="fields-agreed-order" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Agreed Order Details</div>
+      <div class="form-group"><label>Court</label><input type="text" name="court_name" placeholder="e.g. Fourth Circuit Court for Davidson County" /></div>
+      <div class="form-group"><label>County</label><input type="text" name="county" placeholder="Davidson" /></div>
+      <div class="form-group"><label>Case No.</label><input type="text" name="case_no" placeholder="e.g. 26D-1234" /></div>
+      <div class="form-group"><label>Plaintiff / Petitioner</label><input type="text" name="plaintiff_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Defendant / Respondent</label><input type="text" name="defendant_name" placeholder="John B. Smith" /></div>
+      <div class="form-group"><label>We Represent</label><input type="text" name="client_role" placeholder="e.g. Defendant" /></div>
+      <div class="form-group"><label>Hearing Date (if any)</label><input type="date" name="hearing_date" /></div>
+      <div class="form-group full"><label>Terms Agreed / Ordered</label><textarea name="matter_description" rows="2"></textarea></div>
+    </div>
+
+    <!-- ── Notice of Hearing ── -->
+    <div id="fields-notice-of-hearing" class="template-fields form-grid" style="display:none">
+      <div class="form-section-title">Notice of Hearing Details</div>
+      <div class="form-group"><label>Court</label><input type="text" name="court_name" placeholder="e.g. Fourth Circuit Court for Davidson County" /></div>
+      <div class="form-group"><label>County</label><input type="text" name="county" placeholder="Davidson" /></div>
+      <div class="form-group"><label>Case No.</label><input type="text" name="case_no" placeholder="e.g. 26D-1234" /></div>
+      <div class="form-group"><label>Plaintiff / Petitioner</label><input type="text" name="plaintiff_name" placeholder="Jane A. Smith" /></div>
+      <div class="form-group"><label>Defendant / Respondent</label><input type="text" name="defendant_name" placeholder="John B. Smith" /></div>
+      <div class="form-group"><label>We Represent</label><input type="text" name="client_role" placeholder="e.g. Defendant" /></div>
+      <div class="form-group full"><label>Motion / Matter</label><input type="text" name="matter_description" placeholder="e.g. Plaintiff's Motion to Compel Discovery" /></div>
+      <div class="form-group"><label>Hearing Date</label><input type="date" name="hearing_date" /></div>
+      <div class="form-group"><label>Time</label><input type="text" name="hearing_time" placeholder="e.g. 9:00 a.m." /></div>
+      <div class="form-group full"><label>Courtroom / Judge</label><input type="text" name="courtroom" placeholder="e.g. Courtroom 6C, Judge Smith" /></div>
+    </div>
+
     <div class="btn-group" style="margin-top:1.25rem">
       <button type="submit" class="btn btn-primary">Generate Document →</button>
-      <button type="reset" class="btn btn-secondary" onclick="resetDrafting()">Clear</button>
+      <button type="reset" class="btn btn-secondary" data-on-click='[["resetDrafting",[]]]'>Clear</button>
     </div>
   </form>
 </div>
@@ -517,98 +1024,10 @@
 <!-- Result area (preview shown after generation, before account creation) -->
 <div id="drafting-result" style="display:none"></div>
 
-<!-- ── Account Creation Modal (shown after document is generated) ─────────── -->
-<div id="claim-modal" class="modal-overlay" style="display:none" onclick="handleClaimOverlay(event)">
-  <div class="modal-box" style="max-width:520px">
-    <div class="modal-header">
-      <h2>⚖ Save &amp; Download Your Document</h2>
-      <button class="modal-close" onclick="closeClaimModal()" title="Close">✕</button>
-    </div>
-    <div class="modal-body" style="padding:1.5rem 2rem 2rem">
-
-      <!-- Step 1: account form -->
-      <div id="claim-step-form">
-        <p style="font-family:Arial,sans-serif;font-size:.93rem;color:var(--gray-4);margin-bottom:1.2rem;line-height:1.6">
-          Your document is ready. <strong>Create a free client account</strong> to download it —
-          it will also be saved to your secure client portal for future access.<br>
-          <span style="font-size:.82rem;color:var(--gold)">A document generation fee of
-          <strong>0.5 billable hours</strong> will be applied to your account.</span>
-        </p>
-
-        <div class="form-grid" style="gap:.8rem">
-          <div class="form-group">
-            <label for="claim-name">Full Name *</label>
-            <input type="text" id="claim-name" placeholder="Jane A. Smith" required />
-          </div>
-          <div class="form-group">
-            <label for="claim-case-type">Case Type</label>
-            <select id="claim-case-type">
-              <option value="Other">Other / General</option>
-              <option value="Criminal Defense">Criminal Defense</option>
-              <option value="Civil Litigation">Civil Litigation</option>
-              <option value="Contract Dispute">Contract Dispute</option>
-              <option value="Personal Injury">Personal Injury</option>
-              <option value="Family Law — Divorce">Family Law — Divorce</option>
-              <option value="Family Law — Child Custody">Family Law — Child Custody</option>
-              <option value="Family Law — Other">Family Law — Other</option>
-              <option value="Real Estate">Real Estate</option>
-              <option value="Employment Law">Employment Law</option>
-              <option value="DeFi / Crypto Law">DeFi / Crypto Law</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="claim-email">Email</label>
-            <input type="email" id="claim-email" placeholder="jane@example.com" />
-          </div>
-          <div class="form-group">
-            <label for="claim-phone">Phone</label>
-            <input type="tel" id="claim-phone" placeholder="(555) 000-0000" />
-          </div>
-          <div class="form-group full">
-            <label for="claim-password">Choose a Portal Password *</label>
-            <input type="password" id="claim-password" placeholder="At least 8 characters" />
-          </div>
-        </div>
-
-        <div id="claim-error" style="display:none;color:#c0392b;font-size:.88rem;margin:.6rem 0;padding:.5rem .75rem;background:#fdf0ef;border-radius:6px"></div>
-
-        <div class="btn-group" style="margin-top:1.2rem">
-          <button class="btn btn-primary" onclick="submitClaim()" id="claim-submit-btn">
-            Create Account &amp; Download →
-          </button>
-          <button class="btn btn-secondary" onclick="closeClaimModal()">Cancel</button>
-        </div>
-
-        <p style="font-size:.78rem;color:var(--gray-3);margin-top:1rem;text-align:center">
-          Already have an account?
-          <a href="/client-login" style="color:var(--gold)">Log in to your portal</a>
-        </p>
-      </div>
-
-      <!-- Step 2: success state -->
-      <div id="claim-step-success" style="display:none;text-align:center">
-        <div style="font-size:3rem;margin-bottom:.75rem">✅</div>
-        <h3 style="color:var(--navy);margin-bottom:.5rem">Account Created!</h3>
-        <p id="claim-success-msg" style="font-family:Arial,sans-serif;font-size:.93rem;color:var(--gray-4);line-height:1.6;margin-bottom:1.2rem"></p>
-        <div class="btn-group" style="justify-content:center;flex-wrap:wrap;gap:.6rem">
-          <button class="btn btn-primary" onclick="downloadDocument()" id="claim-download-btn">
-            ⬇ Download Document
-          </button>
-          <a href="/client-login" class="btn btn-secondary">Go to Portal →</a>
-        </div>
-        <p style="font-size:.78rem;color:var(--gray-3);margin-top:.9rem">
-          Your username: <strong id="claim-username-display" style="color:var(--navy)"></strong>
-        </p>
-      </div>
-
-    </div>
-  </div>
-</div>
-
 {% endblock %}
 
 {% block scripts %}
-<script>
+<script nonce="{{ csp_nonce() }}">
 
 // ── State ──────────────────────────────────────────────────────────────────
 var _generatedDraft    = "";   // raw document content from AI
@@ -623,95 +1042,6 @@ function resetDrafting() {
   r.style.display = "none";
   _generatedDraft    = "";
   _generatedTemplate = "";
-}
-
-// ── Claim modal helpers ───────────────────────────────────────────────────
-function openClaimModal() {
-  document.getElementById("claim-step-form").style.display    = "";
-  document.getElementById("claim-step-success").style.display = "none";
-  document.getElementById("claim-error").style.display        = "none";
-  document.getElementById("claim-modal").style.display        = "flex";
-}
-function closeClaimModal() {
-  document.getElementById("claim-modal").style.display = "none";
-}
-function handleClaimOverlay(e) {
-  if (e.target === document.getElementById("claim-modal")) closeClaimModal();
-}
-
-// ── Submit account creation + save doc ───────────────────────────────────
-function submitClaim() {
-  var name     = document.getElementById("claim-name").value.trim();
-  var password = document.getElementById("claim-password").value.trim();
-  var email    = document.getElementById("claim-email").value.trim();
-  var phone    = document.getElementById("claim-phone").value.trim();
-  var caseType = document.getElementById("claim-case-type").value;
-  var errEl    = document.getElementById("claim-error");
-
-  errEl.style.display = "none";
-
-  if (!name) {
-    errEl.textContent = "Please enter your full name.";
-    errEl.style.display = "";
-    return;
-  }
-  if (!password || password.length < 8) {
-    errEl.textContent = "Password must be at least 8 characters.";
-    errEl.style.display = "";
-    return;
-  }
-  if (!_generatedDraft) {
-    errEl.textContent = "No document found. Please generate a document first.";
-    errEl.style.display = "";
-    return;
-  }
-
-  var btn = document.getElementById("claim-submit-btn");
-  btn.disabled = true;
-  btn.textContent = "Saving…";
-
-  fetch("/drafting/claim-document", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      full_name:     name,
-      password:      password,
-      email:         email,
-      phone:         phone,
-      case_type:     caseType,
-      template_type: _generatedTemplate,
-      draft_content: _generatedDraft,
-    })
-  })
-  .then(function(r) {
-    if (!r.ok) {
-      return r.text().then(function(txt) {
-        try { var j = JSON.parse(txt); throw new Error(j.error || "Server error (" + r.status + ")"); }
-        catch(e) { if (e.message) throw e; throw new Error("Server error (" + r.status + ")"); }
-      });
-    }
-    return r.json();
-  })
-  .then(function(data) {
-    btn.disabled = false;
-    btn.textContent = "Create Account & Download \u2192";
-    if (data.error) {
-      errEl.textContent = data.error;
-      errEl.style.display = "";
-      return;
-    }
-    // Show success step
-    document.getElementById("claim-success-msg").textContent = data.message || "Account created successfully.";
-    document.getElementById("claim-username-display").textContent = data.username || "";
-    document.getElementById("claim-step-form").style.display    = "none";
-    document.getElementById("claim-step-success").style.display = "";
-  })
-  .catch(function(err) {
-    btn.disabled = false;
-    btn.textContent = "Create Account & Download \u2192";
-    errEl.textContent = err.message || "A network error occurred. Please try again.";
-    errEl.style.display = "";
-  });
 }
 
 // ── Download document as HTML file ────────────────────────────────────────
@@ -822,18 +1152,34 @@ document.addEventListener("DOMContentLoaded", function() {
       h3.textContent = templateType;
       var sub = document.createElement("p");
       sub.style.cssText = "margin:.25rem 0 0;font-size:.85rem;color:var(--gray-3)";
-      sub.textContent = "Document generated — create a free account to save & download it.";
+      sub.textContent = "Document generated. Review it before use.";
       titleWrap.appendChild(h3);
       titleWrap.appendChild(sub);
 
       var claimBtn = document.createElement("button");
       claimBtn.className = "btn btn-primary";
       claimBtn.style.whiteSpace = "nowrap";
-      claimBtn.textContent = "⬇ Save & Download →";
-      claimBtn.addEventListener("click", openClaimModal);
+      claimBtn.textContent = "⬇ Download";
+      claimBtn.addEventListener("click", downloadDocument);
+
+      var gdocBtn = document.createElement("button");
+      gdocBtn.className = "btn btn-secondary";
+      gdocBtn.style.whiteSpace = "nowrap";
+      gdocBtn.textContent = "Open as Google Doc ↗";
+
+      var gdocStatus = document.createElement("p");
+      gdocStatus.style.cssText = "margin:0 0 .75rem;font-size:.85rem";
+      gdocBtn.addEventListener("click", function() {
+        openAsGoogleDoc(templateType, _generatedDraft, "", gdocStatus);
+      });
+
+      var actions = document.createElement("div");
+      actions.style.cssText = "display:flex;gap:.5rem;flex-wrap:wrap";
+      actions.appendChild(gdocBtn);
+      actions.appendChild(claimBtn);
 
       head.appendChild(titleWrap);
-      head.appendChild(claimBtn);
+      head.appendChild(actions);
 
       var body = document.createElement("div");
       body.style.cssText = "max-height:320px;overflow:auto;background:#f9f9fc;border-radius:8px;" +
@@ -843,6 +1189,7 @@ document.addEventListener("DOMContentLoaded", function() {
         (data.draft.length > 3000 ? "…  (preview truncated — save to see the full document)" : "");
 
       card.appendChild(head);
+      card.appendChild(gdocStatus);
       card.appendChild(body);
       resultDiv.appendChild(card);
 

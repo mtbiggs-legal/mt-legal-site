@@ -4,6 +4,7 @@ from cryptography.fernet import Fernet
 
 import app as app_module
 from services import storage
+from conftest import put_raw
 
 
 def test_security_headers(client):
@@ -15,7 +16,7 @@ def test_security_headers(client):
 
 def test_undecryptable_client_returns_500(attorney_session, tmp_path):
     other = Fernet(Fernet.generate_key())
-    (tmp_path / "accounts" / "badU.json").write_bytes(other.encrypt(b'{"username":"badU"}'))
+    put_raw("badU", other.encrypt(b'{"username":"badU"}'))
     r = attorney_session.get("/portal/attorney/client/badU")
     assert r.status_code == 500
     assert r.get_json() == {"error": "Client record could not be decrypted."}
@@ -35,13 +36,13 @@ def test_startup_ok_when_keys_set(monkeypatch):
     assert app_module.check_startup_config() == []
 
 
-def test_startup_reports_plaintext_records(monkeypatch, make_client):
+def test_startup_reports_record_files_not_in_database(monkeypatch):
+    import shared
     monkeypatch.setenv("SECRET_KEY", "x" * 64)
-    make_client("plainOne")
-    make_client("plainTwo")
+    for name in ("plainOne", "plainTwo"):
+        (shared.CLIENT_ACCOUNTS_DIR / f"{name}.json").write_text('{"username": "%s"}' % name)
     problems = app_module.check_startup_config()
-    assert any("2 client record(s) are not yet encrypted" in p
-               and "encrypt_existing_records.py" in p for p in problems)
+    assert any("2 client record file(s)" in p and "migrate_to_db.py" in p for p in problems)
 
 
 def test_startup_ok_with_encrypted_records(monkeypatch, make_client):

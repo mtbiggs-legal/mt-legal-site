@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{{ firm_name }} | Nashville DeFi, Digital Asset &amp; Trial Attorney{% endblock %}
+{% block title %}{{ firm_name }} | Nashville Blockchain, Digital Assets &amp; Criminal Defense Attorney{% endblock %}
 
 {% block styles %}
 <link rel="preload" as="image" type="image/webp" fetchpriority="high"
@@ -35,16 +35,16 @@
 <section class="ed-section ed-section--tight ed-section--overlap" id="practice">
   <div class="ed-grid ed-grid--titles ed-grid--four ed-grid--checker4">
     {% for slug, area in areas.items() %}
-    <a href="{{ url_for('public.practice_area', slug=slug) }}" class="ed-cell">
+    <a href="{{ site_link('public.practice_area', slug=slug) }}" class="ed-cell">
       <h3>{{ area.name }}</h3>
     </a>
     {% endfor %}
-    <a href="{{ url_for('intake.intake') }}" class="ed-cell">
+    <a href="{{ site_link('intake.intake') }}" class="ed-cell">
       <h3>Not sure where your matter fits?</h3>
     </a>
   </div>
 </section>
-<script>
+<script nonce="{{ csp_nonce() }}">
 // Phones: the opening paragraph shows its first sentence; tapping it reveals the rest.
 (function () {
   var lede = document.querySelector("[data-lede-fold]");
@@ -125,22 +125,22 @@
 <!-- ── Explore: every box opens its own page ───────────────────────────────── -->
 <section class="ed-section ed-section--tight">
   <div class="ed-boxes ed-boxes--explore">
-    <a href="{{ url_for('public.meet_the_firm') }}" class="ed-box">
+    <a href="{{ site_link('public.meet_the_firm') }}" class="ed-box">
       <span class="ed-box-label">About</span>
       <h3>Meet Madison</h3>
       <p>Background, experience, and why he practices.</p>
     </a>
-    <a href="{{ url_for('public.emerging_tech') }}" class="ed-box">
+    <a href="{{ site_link('public.emerging_tech') }}" class="ed-box">
       <span class="ed-box-label">Practice focus</span>
       <h3>Emerging Tech</h3>
       <p>Stablecoins, agentic commerce, tokenization, and structuring for the assets that come next.</p>
     </a>
-    <a href="{{ url_for('public.case_search') }}" class="ed-box">
+    <a href="{{ site_link('public.case_search') }}" class="ed-box">
       <span class="ed-box-label">Court records</span>
       <h3>Search for your case</h3>
       <p>Find your case in official Tennessee court records by county.</p>
     </a>
-    <a href="{{ url_for('public.how_it_works') }}" class="ed-box">
+    <a href="{{ site_link('public.how_it_works') }}" class="ed-box">
       <span class="ed-box-label">Process</span>
       <h3>How it works</h3>
       <p>From first message to engagement, with no hand-offs.</p>
@@ -201,7 +201,7 @@
         Choose a county to look up your case. Crypto, AI, and tokenization clients are welcome
         from anywhere.</p>
       <ul class="ed-counties ed-counties--panel">
-        {% for c in service_counties %}<li><a href="{{ url_for('public.case_search', county=c) }}">{{ c }} County</a></li>{% endfor %}
+        {% for c in service_counties %}<li><a href="{{ site_link('public.case_search', county=c) }}">{{ c }} County</a></li>{% endfor %}
       </ul>
       </div>
     </div>
@@ -209,7 +209,7 @@
 </section>
 
 <!-- ── Closing CTA: the whole band is the link ──────────────────────────────── -->
-<a href="{{ url_for('intake.intake') }}" class="ed-cta ed-cta--link">
+<a href="{{ site_link('intake.intake') }}" class="ed-cta ed-cta--link">
   <div>
     <h2>Tell us what happened.</h2>
     <p>Start with a brief call at no cost. The consultation fee is credited toward your retainer if you hire us.</p>

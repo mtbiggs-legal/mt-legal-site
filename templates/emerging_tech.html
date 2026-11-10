@@ -25,7 +25,7 @@
 <section class="ed-section ed-section--tight">
   <div class="ed-boxes ed-boxes--areas ed-boxes--titles">
     {% for slug, area in areas.items() %}
-    <a href="{{ url_for('public.practice_area', slug=slug) }}" class="ed-box">
+    <a href="{{ site_link('public.practice_area', slug=slug) }}" class="ed-box">
       <h3>{{ area.name }}</h3>
     </a>
     {% endfor %}
@@ -44,7 +44,7 @@
     change quickly; we confirm current law for every engagement.</p>
 </section>
 
-<a href="{{ url_for('intake.intake') }}?case_type=Stablecoins%20%2F%20Agentic%20Payments" class="ed-cta ed-cta--link">
+<a href="{{ site_link('intake.intake') }}?case_type=Stablecoins%20%2F%20Agentic%20Payments" class="ed-cta ed-cta--link">
   <div>
     <h2>Building something new?</h2>
     <p>A confidential consultation on your stablecoin, agentic commerce, or tokenization project.</p>

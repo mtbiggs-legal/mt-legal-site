@@ -1,6 +1,7 @@
 """Attorney conflict endpoints (spec D3, D4)."""
 
 import json
+from conftest import access_log
 
 import shared
 from services import storage
@@ -35,7 +36,7 @@ def test_manual_check_attached(attorney_session, make_client):
                           json={"names": ["Bob Smith"], "username": "c2"})
     c2 = storage.load_client("c2")
     assert c2["conflict_checks"][0]["trigger"] == "manual"
-    assert c2["access_log"][-1]["action"] == "conflict_check"
+    assert access_log(c2["username"])[-1]["action"] == "conflict_check"
 
 
 def test_manual_check_validation(attorney_session, other_attorney_session, make_client):

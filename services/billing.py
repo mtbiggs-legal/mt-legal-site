@@ -6,6 +6,12 @@ read-modify-write. Client-record saves never touch it, so a stale save can't
 undo a statement or a sent notice. billing_log is append-only; the ledger
 records how many leading entries are covered ("covered_through").
 
+Flat fees: a client can be billed a flat fee instead of hourly
+(client["flat_fee"]). The fee is earned on receipt and is added to the amount
+due. Time logged while a flat fee is in place is stamped "billable": False by
+storage on save: it is tracked for the attorney (to measure the fee against
+the time spent) but is never billed or shown to the client.
+
 LOCK-ORDER INVARIANT: a ledger lock may be held while briefly taking a client
 lock (storage.load_client). Never take a ledger lock, call any billing function,
 or call storage.save_client while holding a client lock.
@@ -23,6 +29,8 @@ from services import storage
 DEFAULT_STATEMENT_THRESHOLD = 2000.0
 MIN_THRESHOLD = 100.0
 MAX_THRESHOLD = 100_000.0
+MAX_FLAT_FEE = 100_000.0
+FLAT_FEE_PLANS = {"full": "Paid in full up front", "half": "Half up front, half later"}
 NOTICE_ASYNC = True
 NOTICE_STALE_SECONDS = 900
 _TS_FORMAT = "%Y-%m-%dT%H:%M:%S"
@@ -138,6 +146,15 @@ def _hours(entries) -> float:
     return round(sum(float(e.get("hours", 0) or 0) for e in entries), 2)
 
 
+def is_private(entry) -> bool:
+    """Time logged under a flat fee: the attorney's own record, never billed."""
+    return isinstance(entry, dict) and entry.get("billable") is False
+
+
+def _billable(entries) -> list:
+    return [e for e in entries if not is_private(e)]
+
+
 def _fingerprint(entry: dict) -> list:
     return [entry.get("date", ""), float(entry.get("hours", 0) or 0),
             (entry.get("note") or "")[:40]]
@@ -145,15 +162,62 @@ def _fingerprint(entry: dict) -> list:
 
 def unbilled_entries(client: dict, ledger: dict) -> list:
     log = client.get("billing_log") or []
-    return list(log[min(ledger["covered_through"], len(log)):])
+    return _billable(log[min(ledger["covered_through"], len(log)):])
 
 
 def unbilled_amount(client: dict, ledger: dict) -> float:
     return round(_hours(unbilled_entries(client, ledger)) * shared.HOURLY_RATE, 2)
 
 
+# Money: every sum below is done in whole cents (storage.to_cents) and only
+# turned back into dollars at the end, so totals never drift by fractions of
+# a cent. Statements and payments also store their amount in cents.
+
+def _cents_of(obj: dict) -> int:
+    return obj["amount_cents"] if isinstance(obj.get("amount_cents"), int)         else storage.to_cents(obj.get("amount", 0) or 0)
+
+
 def statement_total(ledger: dict) -> float:
-    return round(sum(float(s.get("amount", 0)) for s in ledger["statements"]), 2)
+    return sum(_cents_of(s) for s in ledger["statements"]) / 100
+
+
+# ── Automatic time entries ────────────────────────────────────────────────────
+# Time the portal logs by itself (an AI reply to a client, a saved research
+# memo, an upload, a scheduling-order review, opening a file) starts out
+# unbilled and marked for review. Nothing reaches a statement until the
+# attorney approves it in the Time tab. Approve before issuing a statement:
+# a statement covers the log up to that point, so an entry approved after
+# the statement that spans it stays unbilled.
+
+def auto_entry(**fields) -> dict:
+    import secrets
+    return {**fields, "id": secrets.token_hex(5), "auto": True,
+            "billable": False, "pending_review": True}
+
+
+def review_auto_entry(username: str, entry_id: str, approve: bool, reviewer: str):
+    """Approve (bill normally) or reject (keep unbilled) a pending automatic
+    entry. Returns the updated entry, or None if there is no such pending entry."""
+    done = {}
+
+    def _apply(c):
+        for e in c.get("billing_log") or []:
+            if isinstance(e, dict) and e.get("id") == entry_id and e.get("pending_review"):
+                e["pending_review"] = False
+                e["reviewed_by"] = reviewer
+                e["reviewed_at"] = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+                if approve:
+                    # Back to the default, so a flat fee still applies to it.
+                    e.pop("billable", None)
+                    fee = c.get("flat_fee")
+                    if isinstance(fee, dict) and fee.get("amount"):
+                        e["billable"] = False
+                else:
+                    e["rejected"] = True
+                done["entry"] = dict(e)
+                return
+    storage.update_client_atomic(username, _apply)
+    return done.get("entry")
 
 
 def billed_hours(ledger: dict) -> float:
@@ -161,11 +225,117 @@ def billed_hours(ledger: dict) -> float:
 
 
 def paid_total(client: dict) -> float:
-    return round(sum(float(p.get("amount", 0) or 0) for p in client.get("payments") or []), 2)
+    return sum(storage.payment_cents(p) for p in client.get("payments") or []) / 100
 
 
 def amount_due(client: dict, ledger: dict) -> float:
-    return max(0.0, round(statement_total(ledger) - paid_total(client), 2))
+    fee = flat_fee(client)
+    owed = sum(_cents_of(s) for s in ledger["statements"]) +         (storage.to_cents(fee["amount"]) if fee else 0)
+    paid = sum(storage.payment_cents(p) for p in client.get("payments") or [])
+    return max(0, owed - paid) / 100
+
+
+# ── Flat fees ────────────────────────────────────────────────────────────────
+
+def flat_fee(client: dict):
+    """The client's flat-fee arrangement, or None when billed hourly."""
+    fee = (client or {}).get("flat_fee")
+    if not isinstance(fee, dict):
+        return None
+    try:
+        amount = float(fee.get("amount") or 0)
+    except (TypeError, ValueError):
+        return None
+    if not (math.isfinite(amount) and amount > 0):
+        return None
+    return {**fee, "amount": round(amount, 2)}
+
+
+def private_hours(client: dict) -> float:
+    return _hours(e for e in client.get("billing_log") or [] if is_private(e))
+
+
+def flat_fee_status(client: dict, ledger: dict, today: str = ""):
+    """Fee, paid, remaining and payment status. Payments go to issued
+    statements first; the rest counts toward the flat fee."""
+    fee = flat_fee(client)
+    if not fee:
+        return None
+    amount = fee["amount"]
+    plan = fee.get("plan") if fee.get("plan") in FLAT_FEE_PLANS else "full"
+    paid = round(min(amount, max(0.0, paid_total(client) - statement_total(ledger))), 2)
+    remaining = round(amount - paid, 2)
+    first = amount if plan == "full" else round(amount / 2, 2)
+    if remaining <= 0:
+        status = "paid"
+    elif plan == "half" and paid >= first:
+        status = "half_paid"
+    elif paid > 0:
+        status = "partial"
+    else:
+        status = "unpaid"
+    due = fee.get("due_date") or ""
+    today = today or datetime.now().strftime("%Y-%m-%d")
+    return {
+        "amount": amount, "plan": plan, "plan_label": FLAT_FEE_PLANS[plan],
+        "first_payment": first, "due_date": due, "description": fee.get("description", ""),
+        "set_at": fee.get("set_at", ""), "paid": paid, "remaining": remaining,
+        "status": status, "overdue": remaining > 0 and bool(due) and due < today,
+    }
+
+
+def _valid_date(value: str) -> str:
+    value = (value or "").strip()
+    if not value:
+        return ""
+    try:
+        return datetime.strptime(value, "%Y-%m-%d").strftime("%Y-%m-%d")
+    except ValueError:
+        raise ValueError("Due date must be a date (YYYY-MM-DD).")
+
+
+def set_flat_fee(username: str, amount, plan: str, due_date: str = "", description: str = "",
+                 set_by: str = ""):
+    """Put a client on a flat fee (or change it). The fee covers the matter:
+    time not yet on a statement, and time logged from now on, is tracked
+    privately. Returns the saved client, or None if not found.
+    Raises ValueError for bad input."""
+    try:
+        amount = round(float(amount), 2)
+    except (TypeError, ValueError):
+        raise ValueError("Flat fee must be a dollar amount.")
+    if not (math.isfinite(amount) and 1 <= amount <= MAX_FLAT_FEE):
+        raise ValueError(f"Flat fee must be between $1 and ${MAX_FLAT_FEE:,.0f}.")
+    if plan not in FLAT_FEE_PLANS:
+        raise ValueError("Payment plan must be full or half.")
+    due_date = _valid_date(due_date)
+    description = (description or "").strip()[:120]
+    covered = load_ledger(username)["covered_through"] if storage.safe_username(username) == username else 0
+
+    def mutate(client):
+        old = client.get("flat_fee") if isinstance(client.get("flat_fee"), dict) else None
+        verb = "updated" if old else "set"
+        client["flat_fee"] = {
+            "amount": amount, "plan": plan, "due_date": due_date, "description": description,
+            "set_at": (old or {}).get("set_at") or _now(), "set_by": set_by,
+            # Time already on a statement stays billed; everything after is private.
+            "from_entry": (old or {}).get("from_entry", min(covered, len(client.get("billing_log") or []))),
+        }
+        client.setdefault("activity_log", []).append({
+            "timestamp": _now(), "action_type": "flat_fee",
+            "description": f"Flat fee {verb}: ${amount:,.2f} ({FLAT_FEE_PLANS[plan].lower()})",
+        })
+    return storage.update_client_atomic(username, mutate)
+
+
+def clear_flat_fee(username: str):
+    """Back to hourly billing. Time already logged under the flat fee stays private."""
+    def mutate(client):
+        if client.pop("flat_fee", None) is not None:
+            client.setdefault("activity_log", []).append({
+                "timestamp": _now(), "action_type": "flat_fee",
+                "description": "Flat fee removed; billing is hourly again"})
+    return storage.update_client_atomic(username, mutate)
 
 
 # ── Issuing ──────────────────────────────────────────────────────────────────
@@ -185,7 +355,7 @@ def issue_statement(username: str, *, reason: str, issued_by: str, notify: bool,
         _check_fingerprint(username, client, ledger)
         log = client.get("billing_log") or []
         start = min(ledger["covered_through"], len(log))
-        entries = log[start:]
+        entries = _billable(log[start:])
         hours = _hours(entries)
         if not math.isfinite(hours):
             print(f"billing: non-finite hours for client {username!r}; no statement issued",
@@ -194,7 +364,8 @@ def issue_statement(username: str, *, reason: str, issued_by: str, notify: bool,
         if not entries or hours <= 0:
             return None
         rate = float(shared.HOURLY_RATE)
-        amount = round(hours * rate, 2)
+        amount_cents = storage.to_cents(storage.to_cents(rate) * hours / 100)
+        amount = amount_cents / 100
         if only_if_over_threshold and amount < get_threshold(client.get("assigned_attorney")):
             return None
         number = max((s["number"] for s in ledger["statements"]), default=0) + 1
@@ -204,7 +375,7 @@ def issue_statement(username: str, *, reason: str, issued_by: str, notify: bool,
             "id": f"st_{number}", "number": number, "issued_at": now,
             "billed_through": max(dates) if dates else now[:10],
             "entries_from": start, "entries_to": len(log),
-            "hours": hours, "rate": rate, "amount": amount,
+            "hours": hours, "rate": rate, "amount": amount, "amount_cents": amount_cents,
             "reason": reason, "issued_by": issued_by,
             "notice": {"status": "pending" if notify else "skipped",
                        "at": None, "error": "", "claimed_at": None},
@@ -243,7 +414,14 @@ _PUBLIC_STATEMENT_FIELDS = ("id", "number", "issued_at", "billed_through", "hour
 def billing_summary(client: dict, ledger: dict) -> dict:
     """Attorney-facing billing state."""
     unbilled = unbilled_entries(client, ledger)
+    fee = flat_fee_status(client, ledger)
+    tracked = private_hours(client)
+    if fee:
+        fee["tracked_hours"] = tracked
+        fee["effective_rate"] = round(fee["amount"] / tracked, 2) if tracked else None
+        fee["hourly_rate"] = shared.HOURLY_RATE
     return {
+        "flat_fee":        fee,
         "unbilled_hours":  _hours(unbilled),
         "unbilled_amount": unbilled_amount(client, ledger),
         "threshold":       get_threshold(client.get("assigned_attorney")),
@@ -275,7 +453,7 @@ def client_billing_view(client: dict, ledger: dict) -> dict:
                 "statement_number": s["number"] if s else None,
                 "amount": round(hours * float(s["rate"]), 2) if s else None}
 
-    entries = [entry_view(i, e) for i, e in enumerate(log[:covered])]
+    entries = [entry_view(i, e) for i, e in enumerate(log[:covered]) if not is_private(e)]
     latest = statements[-1] if statements else None
     return {
         "statements":      [{k: s[k] for k in _PUBLIC_STATEMENT_FIELDS} for s in reversed(statements)],
@@ -290,7 +468,15 @@ def client_billing_view(client: dict, ledger: dict) -> dict:
         "has_new_statement": bool(latest) and latest["issued_at"] > (client.get("billing_seen_at") or ""),
         "latest_billed_through": latest["billed_through"] if latest else None,
         "hourly_rate":     shared.HOURLY_RATE,
+        "flat_fee":        _client_fee_view(flat_fee_status(client, ledger)),
     }
+
+
+def _client_fee_view(fee):
+    if not fee:
+        return None
+    return {k: fee[k] for k in ("amount", "plan", "plan_label", "first_payment", "due_date",
+                                "description", "paid", "remaining", "status", "overdue")}
 
 
 # ── Notices ──────────────────────────────────────────────────────────────────

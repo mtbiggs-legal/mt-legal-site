@@ -1,6 +1,7 @@
 """Client account records are encrypted at rest (spec section C)."""
 
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -9,6 +10,7 @@ import pytest
 from cryptography.fernet import Fernet
 
 import shared
+from conftest import access_log, get_record, put_raw
 from services import storage
 from services import accounts
 
@@ -20,8 +22,9 @@ def _accounts(tmp_path):
 
 
 def test_save_client_writes_ciphertext(tmp_path):
+    from services import db
     storage.save_client({"username": "encU", "client_name": "Secret Name"})
-    raw = (_accounts(tmp_path) / "encU.json").read_bytes()
+    raw = bytes(db.conn().execute("SELECT data FROM clients WHERE username='encU'").fetchone()[0])
     assert not raw.lstrip().startswith(b"{")
     assert b"Secret Name" not in raw
 
@@ -47,14 +50,14 @@ def test_all_clients_reads_both_formats(make_client):
 
 def test_wrong_key_raises_record_decrypt_error(tmp_path):
     other = Fernet(Fernet.generate_key())
-    (_accounts(tmp_path) / "badU.json").write_bytes(other.encrypt(b'{"username": "badU"}'))
+    put_raw("badU", other.encrypt(b'{"username": "badU"}'))
     with pytest.raises(storage.RecordDecryptError):
         storage.load_client("badU")
 
 
 def test_all_clients_skips_undecryptable(tmp_path, capsys):
     other = Fernet(Fernet.generate_key())
-    (_accounts(tmp_path) / "badU.json").write_bytes(other.encrypt(b'{"username": "badU"}'))
+    put_raw("badU", other.encrypt(b'{"username": "badU"}'))
     storage.save_client({"username": "goodU"})
     assert [c["username"] for c in storage.all_clients()] == ["goodU"]
     assert "badU" in capsys.readouterr().err
@@ -104,33 +107,10 @@ def _seed_plain(tmp_path, name, **fields):
     return p
 
 
-def test_encrypt_all_backs_up_and_encrypts(tmp_path):
-    import encrypt_existing_records as mig
-    _seed_plain(tmp_path, "a1", client_name="A")
-    storage.save_client({"username": "a2"})                 # already encrypted
-    counts, backup = mig.encrypt_all(_accounts(tmp_path), tmp_path / "bk",
-                                     project_root=tmp_path / "project")
-    assert counts == {"encrypted": 1, "already": 1, "failed": 0}
-    assert (backup / "a1.json").read_text().startswith("{")
-    assert not (_accounts(tmp_path) / "a1.json").read_bytes().startswith(b"{")
-    assert storage.load_client("a1")["client_name"] == "A"
 
 
-def test_encrypt_all_is_idempotent(tmp_path):
-    import encrypt_existing_records as mig
-    _seed_plain(tmp_path, "a1")
-    mig.encrypt_all(_accounts(tmp_path), tmp_path / "bk", project_root=tmp_path / "project")
-    counts, _ = mig.encrypt_all(_accounts(tmp_path), tmp_path / "bk",
-                                project_root=tmp_path / "project")
-    assert counts == {"encrypted": 0, "already": 1, "failed": 0}
 
 
-def test_encrypt_all_refuses_backup_inside_project(tmp_path):
-    import encrypt_existing_records as mig
-    project = tmp_path / "project"
-    project.mkdir()
-    with pytest.raises(SystemExit):
-        mig.encrypt_all(_accounts(tmp_path), project / "backups", project_root=project)
 
 
 def test_scripts_compile():
@@ -147,18 +127,32 @@ def _seed_bom(tmp_path, name, **fields):
     return p
 
 
-def test_bom_plaintext_loads(tmp_path):
-    _seed_bom(tmp_path, "bomU", client_name="Bom")
+def test_migration_reads_bom_plaintext_and_encrypted_files(tmp_path):
+    import migrate_to_db as mig
+    _seed_bom(tmp_path, "bomU", client_name="Bom",
+              access_log=[{"timestamp": "2026-01-02T03:04:05", "attorney": "Endocide",
+                           "action": "view_record", "detail": "", "ip": "1.2.3.4"}])
+    storage._write_record(_accounts(tmp_path) / "encU.json", {"username": "encU", "client_name": "E"})
+    (_accounts(tmp_path) / "skip.json").write_text("{not json", encoding="utf-8")
+    report = mig.migrate(apply=True, backup_dir=tmp_path / "bk")
+    assert report["unreadable"] == ["skip.json"] and report["imported"] == 0   # nothing moved
+    (_accounts(tmp_path) / "skip.json").unlink()
+    report = mig.migrate(apply=True, backup_dir=tmp_path / "bk")
+    assert report["imported"] == 2 and report["audit"] == 1
     assert storage.load_client("bomU")["client_name"] == "Bom"
+    assert "access_log" not in get_record("bomU")
+    assert access_log("bomU")[0]["ip"] == "1.2.3.4"
+    assert not list(_accounts(tmp_path).glob("*.json"))                    # originals moved
+    assert len(list(Path(report["backup"]).glob("*.json"))) == 2
 
 
-def test_encrypt_all_encrypts_bom_plaintext(tmp_path):
-    import encrypt_existing_records as mig
-    _seed_bom(tmp_path, "bomU", client_name="Bom")
-    counts, _ = mig.encrypt_all(_accounts(tmp_path), tmp_path / "bk",
-                                project_root=tmp_path / "project")
-    assert counts == {"encrypted": 1, "already": 0, "failed": 0}
-    assert storage.load_client("bomU")["client_name"] == "Bom"
+def test_migration_refuses_backup_inside_project(tmp_path):
+    import migrate_to_db as mig
+    _seed_plain(tmp_path, "a1")
+    with pytest.raises(SystemExit):
+        mig.migrate(apply=True, backup_dir=shared.BASE_DIR / "backups")
+
+
 
 
 def test_require_outside_dir(tmp_path):
@@ -171,21 +165,12 @@ def test_require_outside_dir(tmp_path):
 
 def test_upgrade_reports_skipped(tmp_path):
     other = Fernet(Fernet.generate_key())
-    (_accounts(tmp_path) / "badU.json").write_bytes(other.encrypt(b'{"username": "badU"}'))
+    put_raw("badU", other.encrypt(b'{"username": "badU"}'))
     skipped = []
     assert accounts.upgrade_all_plaintext_passwords(apply=False, skipped=skipped) == []
     assert skipped == ["badU"]
 
 
-def test_encrypt_all_continues_after_bad_record(tmp_path):
-    import encrypt_existing_records as mig
-    _seed_plain(tmp_path, "a1", client_name="A")
-    (_accounts(tmp_path) / "a0.json").write_text("{not json", encoding="utf-8")
-    counts, _ = mig.encrypt_all(_accounts(tmp_path), tmp_path / "bk",
-                                project_root=tmp_path / "project")
-    assert counts == {"encrypted": 1, "already": 0, "failed": 1}
-    assert (_accounts(tmp_path) / "a0.json").read_text() == "{not json"
-    assert storage.load_client("a1")["client_name"] == "A"
 
 
 def test_malformed_key_raises_runtime_error(monkeypatch):
@@ -196,7 +181,7 @@ def test_malformed_key_raises_runtime_error(monkeypatch):
 
 
 def test_write_record_retries_permission_error(tmp_path, monkeypatch):
-    real = shared.os.replace
+    real = os.replace
     calls = {"n": 0}
 
     def flaky(a, b):
@@ -224,20 +209,52 @@ def test_write_record_gives_up_and_cleans_tmp(tmp_path, monkeypatch):
     assert not list(_accounts(tmp_path).glob("*.tmp"))
 
 
-def test_encrypt_all_restores_on_roundtrip_mismatch(tmp_path, monkeypatch):
-    import encrypt_existing_records as mig
+def test_migration_stops_on_readback_mismatch(tmp_path, monkeypatch):
+    import migrate_to_db as mig
     _seed_plain(tmp_path, "a1", client_name="A")
-    monkeypatch.setattr(storage, "_read_record", lambda p: {"username": "different"})
-    counts, backup = mig.encrypt_all(_accounts(tmp_path), tmp_path / "bk",
-                                     project_root=tmp_path / "project")
-    assert counts == {"encrypted": 0, "already": 0, "failed": 1}
-    assert (_accounts(tmp_path) / "a1.json").read_bytes().startswith(b"{")
+    monkeypatch.setattr(storage, "_db_get", lambda c, u: {"username": "different"})
+    with pytest.raises(SystemExit):
+        mig.migrate(apply=True, backup_dir=tmp_path / "bk")
+    assert (_accounts(tmp_path) / "a1.json").exists()          # original kept
 
 
 def test_upgrade_skips_malformed_record(tmp_path, make_client):
     make_client("goodPw", password="password")
-    (_accounts(tmp_path) / "broken.json").write_text("{not json", encoding="utf-8")
+    put_raw("broken", b"{not json")
     skipped = []
     assert accounts.upgrade_all_plaintext_passwords(skipped=skipped) == ["goodPw"]
     assert skipped == ["broken"]
     assert storage.load_client("goodPw")["password"].startswith("$2")
+
+
+def test_concurrent_atomic_updates_lose_nothing(make_client):
+    """Many threads appending to one record through update_client_atomic: the
+    database transaction must keep every append."""
+    import threading
+    make_client("busy")
+    errors = []
+
+    def worker(i):
+        try:
+            for j in range(5):
+                storage.update_client_atomic("busy", lambda c: c.setdefault("notes", []).append(f"{i}-{j}"))
+        except Exception as exc:          # pragma: no cover - reported below
+            errors.append(exc)
+    threads = [threading.Thread(target=worker, args=(i,)) for i in range(8)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    assert not errors
+    assert len(storage.load_client("busy")["notes"]) == 40
+
+
+def test_migration_with_bad_backup_location_changes_nothing(tmp_path, monkeypatch):
+    import migrate_to_db as mig
+    _seed_plain(tmp_path, "a1", client_name="A")
+    blocker = tmp_path / "not-a-folder"
+    blocker.write_text("x")                        # a file where the backup folder would go
+    with pytest.raises(SystemExit):
+        mig.migrate(apply=True, backup_dir=blocker / "backups")
+    assert (_accounts(tmp_path) / "a1.json").exists()
+    assert storage.all_usernames() == []          # nothing imported

@@ -8,6 +8,7 @@ import pytest
 
 from services import billing
 import shared
+from conftest import put_raw
 from services import storage
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
@@ -88,21 +89,11 @@ def test_corrupt_record_blocks_marking_but_migrates_others(make_client, tmp_path
     (shared.FIRM_SETTINGS_DIR / "migrations.json").unlink()
     monkeypatch.setattr(shared, "HOURLY_RATE", 350.0)
     _seed(make_client, "good", (2.0,))
-    (shared.CLIENT_ACCOUNTS_DIR / "bad.json").write_bytes(b"\x00\xffgarbage")
+    put_raw("bad", b"\x00\xffgarbage")
     counts = mig.migrate(tmp_path / "bk", project_root=tmp_path / "project")
     assert counts["unreadable"] == 1 and counts["opening"] == 1
     assert not billing.is_migrated()
     assert len(billing.load_ledger("good")["statements"]) == 1
-
-
-def test_unsafe_filename_counted_as_skipped(make_client, tmp_path, monkeypatch):
-    import issue_opening_statements as mig
-    (shared.FIRM_SETTINGS_DIR / "migrations.json").unlink()
-    (shared.CLIENT_ACCOUNTS_DIR / "bad name!.json").write_text("{}")
-    counts = mig.migrate(tmp_path / "bk", project_root=tmp_path / "project")
-    assert counts["skipped"] == 1 and not billing.is_migrated()
-    assert any(r[0] == "bad name!" and r[4] == "skipped" for r in mig.LAST_REPORT)
-
 
 def test_backup_includes_firm_settings(make_client, tmp_path):
     import issue_opening_statements as mig
@@ -156,7 +147,7 @@ def test_main_exit_codes(make_client, tmp_path, monkeypatch, capsys):
     code, out = _run_main(mig, monkeypatch, capsys, "--backup-dir", str(tmp_path / "bk1"))
     assert code == 0 and "Backup written to" in out
 
-    (shared.CLIENT_ACCOUNTS_DIR / "bad.json").write_bytes(b"\x00garbage")
+    put_raw("bad", b"\x00garbage")
     (shared.FIRM_SETTINGS_DIR / "migrations.json").unlink()
     code, out = _run_main(mig, monkeypatch, capsys, "--backup-dir", str(tmp_path / "bk2"))
     assert code == 1 and "Migration NOT marked complete" in out

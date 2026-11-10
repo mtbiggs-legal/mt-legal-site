@@ -116,3 +116,17 @@
     body: JSON.stringify({page: page})
   });
 })();
+
+// Enter sends, Shift+Enter adds a line; the box grows up to 80px.
+// (Wired here, not inline: the Content-Security-Policy forbids inline handlers.)
+(function () {
+  var box = document.getElementById("chat-input");
+  if (!box) return;
+  box.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChatMsg(); }
+  });
+  box.addEventListener("input", function () {
+    box.style.height = "auto";
+    box.style.height = Math.min(box.scrollHeight, 80) + "px";
+  });
+})();

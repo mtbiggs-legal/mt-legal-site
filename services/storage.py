@@ -1,9 +1,15 @@
 """services/storage.py — encrypted client records, per-client locks, and the
 small JSON stores (token usage, page visits).
 
+Client records live in the database (services/db.py, table `clients`), each
+encrypted on its own with DATA_ENCRYPTION_KEY. Writes run in a database
+transaction, so a read-modify-write can't lose a concurrent change.
+_read_record/_write_record remain for the other encrypted files (ledgers).
+
 Configuration (data folders, rates) is read as shared.<NAME> at call time."""
 
 import json
+import logging
 import os
 import sys
 import threading
@@ -14,6 +20,8 @@ from pathlib import Path
 from cryptography.fernet import Fernet, InvalidToken
 
 import shared
+
+log = logging.getLogger(__name__)
 
 
 # ── Client file I/O helpers ───────────────────────────────────────────────────
@@ -98,6 +106,7 @@ def _atomic_write(path: Path, payload: bytes) -> None:
     On Windows os.replace fails with PermissionError while another handle
     (OneDrive sync, antivirus, a concurrent all_clients() read) has the target
     open, so retry with exponential backoff before giving up."""
+    path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(path.name + ".tmp")
     try:
         with open(tmp, "wb") as f:
@@ -142,6 +151,36 @@ def write_json(path: Path, data, indent: int | None = 2, ensure_ascii: bool = Tr
     _atomic_write(path, json.dumps(data, indent=indent, ensure_ascii=ensure_ascii).encode("utf-8"))
 
 
+def write_encrypted_json(path: Path, data) -> None:
+    """Encrypt `data` as JSON with DATA_ENCRYPTION_KEY and write it atomically.
+    For anything holding client or prospect details (intakes, leads)."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    _atomic_write(path, _fernet().encrypt(json.dumps(data, indent=2).encode("utf-8")))
+
+
+def read_encrypted_json(path: Path, default=None):
+    """Read a file written by write_encrypted_json (or a legacy plaintext JSON
+    file). Returns `default` when missing or unreadable."""
+    if not path.exists():
+        return default
+    try:
+        raw = path.read_bytes()
+        if _is_plaintext(raw):
+            return json.loads(raw.decode("utf-8-sig"))
+        return json.loads(_fernet().decrypt(raw).decode("utf-8"))
+    except Exception:
+        print(f"[warn] {path.name} unreadable - using defaults", file=sys.stderr)
+        return default
+
+
+def encrypt_bytes(payload: bytes) -> bytes:
+    return _fernet().encrypt(payload)
+
+
+def decrypt_bytes(payload: bytes) -> bytes:
+    return _fernet().decrypt(payload)
+
+
 _CLIENT_LIST_DEFAULTS = ("co_counsel", "access_log", "opposing_parties",
                          "related_parties", "conflict_checks")
 
@@ -163,42 +202,109 @@ def _apply_client_defaults(data: dict) -> dict:
     return data
 
 
+def _encrypt_record(data: dict) -> bytes:
+    return _fernet().encrypt(json.dumps(data).encode("utf-8"))
+
+
+def _decrypt_record(blob: bytes, username: str) -> dict:
+    try:
+        return json.loads(_fernet().decrypt(bytes(blob)).decode("utf-8"))
+    except InvalidToken as exc:
+        raise RecordDecryptError(username) from exc
+
+
+def _db_get(c, username: str):
+    row = c.execute("SELECT data FROM clients WHERE username = ?", (username,)).fetchone()
+    return _decrypt_record(row["data"], username) if row else None
+
+
+def _db_put(c, data: dict) -> None:
+    """Insert or replace a record inside the caller's transaction; bumps its rev."""
+    c.execute(
+        "INSERT INTO clients(username, data, assigned_attorney, archived) VALUES(?, ?, ?, ?) "
+        "ON CONFLICT(username) DO UPDATE SET data = excluded.data, "
+        "assigned_attorney = excluded.assigned_attorney, archived = excluded.archived, "
+        "rev = clients.rev + 1, updated_at = strftime('%Y-%m-%dT%H:%M:%S', 'now', 'localtime')",
+        (data["username"], _encrypt_record(data), data.get("assigned_attorney") or "",
+         1 if data.get("archived") else 0))
+
+
+def _valid_username(username) -> bool:
+    return bool(username) and safe_username(username) == username
+
+
+def client_exists(username: str) -> bool:
+    from services import db
+    if not _valid_username(username):
+        return False
+    return db.conn().execute("SELECT 1 FROM clients WHERE username = ?",
+                             (username,)).fetchone() is not None
+
+
+def all_usernames() -> list:
+    from services import db
+    return [r["username"] for r in db.conn().execute("SELECT username FROM clients ORDER BY username")]
+
+
+def client_revs() -> dict:
+    """username -> revision; changes on every write (live updates use it)."""
+    from services import db
+    return {r["username"]: r["rev"] for r in db.conn().execute("SELECT username, rev FROM clients")}
+
+
 def load_client(username: str):
-    # Reject anything that isn't a plain account name so a crafted username
-    # cannot read a file from outside CLIENT_ACCOUNTS_DIR.
-    if not username or safe_username(username) != username:
+    # Reject anything that isn't a plain account name.
+    from services import db
+    if not _valid_username(username):
         return None
-    path = shared.CLIENT_ACCOUNTS_DIR / f"{username}.json"
-    if not path.exists():
-        return None
-    with _get_client_lock(username):
-        data = _read_record(path)
-    return _apply_client_defaults(data)
+    data = _db_get(db.conn(), username)
+    return _apply_client_defaults(data) if data is not None else None
+
+
+def _mark_flat_fee_time(client: dict) -> None:
+    """Under a flat fee, stamp newly logged time as private (not billable) so
+    it is tracked for the attorney but never billed. Runs on every save, so
+    every code path that appends to billing_log is covered."""
+    fee = client.get("flat_fee")
+    if not isinstance(fee, dict) or not fee.get("amount"):
+        return
+    try:
+        start = max(0, int(fee.get("from_entry") or 0))
+    except (TypeError, ValueError):
+        start = 0
+    for entry in (client.get("billing_log") or [])[start:]:
+        if isinstance(entry, dict) and "billable" not in entry:
+            entry["billable"] = False
 
 
 def save_client(data: dict):
+    from services import db
     username = data["username"]
-    if not username or safe_username(username) != username:
+    if not _valid_username(username):
         raise ValueError(f"Refusing to save client with unsafe username: {username!r}")
-    path = shared.CLIENT_ACCOUNTS_DIR / f"{username}.json"
-    with _get_client_lock(username):
-        _write_record(path, data)
+    _mark_flat_fee_time(data)
+    with _get_client_lock(username), db.transaction() as c:
+        _db_put(c, data)
     # Outside the client lock — see the LOCK-ORDER INVARIANT above _get_client_lock.
-    from services import billing
+    _after_save(username)
+
+
+def _after_save(username: str) -> None:
+    from services import billing, felony
     billing.after_client_save(username)
+    felony.after_client_save(username)
 
 
 def all_clients(skipped: list | None = None):
+    from services import db
     clients = []
-    for p in sorted(shared.CLIENT_ACCOUNTS_DIR.glob("*.json")):
+    for row in db.conn().execute("SELECT username, data FROM clients ORDER BY username"):
         try:
-            clients.append(_read_record(p))
+            clients.append(_decrypt_record(row["data"], row["username"]))
         except RecordDecryptError:
-            print(f"[warn] could not decrypt client record: {p.stem}", file=sys.stderr)
+            print(f"[warn] could not decrypt client record: {row['username']}", file=sys.stderr)
             if skipped is not None:
-                skipped.append(p.stem)
-        except Exception:
-            pass
+                skipped.append(row["username"])
     return clients
 
 
@@ -237,64 +343,58 @@ def recalc_hours(client: dict) -> float:
 
 def _log_activity(username: str, action_type: str, description: str):
     """Append a timestamped activity entry to the client's activity_log. Silent on error."""
+    entry = {
+        "timestamp":   datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
+        "action_type": action_type,
+        "description": description,
+    }
     try:
-        client = load_client(username)
-        if not client:
-            return
-        client.setdefault("activity_log", []).append({
-            "timestamp":   datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
-            "action_type": action_type,
-            "description": description,
-        })
-        save_client(client)
+        update_client_atomic(username, lambda c: c.setdefault("activity_log", []).append(entry))
     except Exception:
-        pass
+        log.warning("Could not log activity for %s", username, exc_info=True)
 
 
 # ── Atomic record updates ─────────────────────────────────────────────────────
 
 def update_client_field_atomic(username: str, field: str, value) -> None:
-    """Set one top-level field without clobbering concurrent writes:
-    re-read the record under the lock, set, write."""
-    if not username or safe_username(username) != username:
+    """Set one top-level field without clobbering concurrent writes."""
+    from services import db
+    if not _valid_username(username):
         return
-    path = shared.CLIENT_ACCOUNTS_DIR / f"{username}.json"
-    with _get_client_lock(username):
-        if not path.exists():
+    with _get_client_lock(username), db.transaction() as c:
+        record = _db_get(c, username)
+        if record is None:
             return
-        record = _read_record(path)
         record[field] = value
-        _write_record(path, record)
+        _db_put(c, record)
 
 
 def update_client_atomic(username: str, mutate):
-    """Re-read the client record under its lock, apply `mutate(client)` in
-    place, and write it back — then run the billing save-hook outside the
-    lock, exactly like save_client().
+    """Re-read the client record inside a transaction, apply `mutate(client)`
+    in place, and write it back — then run the save hooks outside it, exactly
+    like save_client().
 
     Use this instead of load_client() ... save_client() whenever the gap
     between the two would be long enough for something else to write the
-    same record in between (an AI call, a second request) — that plain
-    read-modify-write silently drops whatever the other write added, because
-    the later save() still has only the record as it was at the top of the
-    request.
+    same record in between (an AI call, a second request).
 
     `mutate` receives the freshly-read, defaulted client dict and changes it
     in place; its return value is ignored. Returns the saved client, or None
     if the record does not exist.
     """
-    if not username or safe_username(username) != username:
+    from services import db
+    if not _valid_username(username):
         return None
-    path = shared.CLIENT_ACCOUNTS_DIR / f"{username}.json"
-    with _get_client_lock(username):
-        if not path.exists():
+    with _get_client_lock(username), db.transaction() as c:
+        client = _db_get(c, username)
+        if client is None:
             return None
-        client = _apply_client_defaults(_read_record(path))
+        client = _apply_client_defaults(client)
         mutate(client)
-        _write_record(path, client)
+        _mark_flat_fee_time(client)
+        _db_put(c, client)
     # Outside the client lock — see the LOCK-ORDER INVARIANT above _get_client_lock.
-    from services import billing
-    billing.after_client_save(username)
+    _after_save(username)
     return client
 
 
@@ -330,7 +430,7 @@ def _log_token_usage(username: str, label: str, usage):
             data["total_output_tokens"] = data.get("total_output_tokens", 0) + entry["output_tokens"]
             write_json(path, data)
     except Exception:
-        pass
+        log.warning("Ignored error in storage", exc_info=True)
 
 
 # ── Payment helper ────────────────────────────────────────────────────────────
@@ -340,46 +440,64 @@ def _apply_payment(username, amount_paid, method, reference):
 
     Both the provider webhook and the browser redirect can report the same
     payment, so a reference that is already recorded is silently ignored.
+    Amounts are kept in whole cents (amount_cents); `amount` stays for older
+    readers.
     """
-    if not username or safe_username(username) != username:
+    from services import db
+    if not _valid_username(username):
         return False
-    path = shared.CLIENT_ACCOUNTS_DIR / f"{username}.json"
-    # Load, duplicate check, credit and save must be one critical section, or
-    # the webhook and the browser redirect can both credit the same reference.
-    # The lock is not re-entrant, so use the record I/O directly.
-    with _get_client_lock(username):
-        if not path.exists():
+    cents = to_cents(amount_paid)
+    # Load, duplicate check, credit and save are one transaction, so the
+    # webhook and the browser redirect can't both credit the same reference.
+    with _get_client_lock(username), db.transaction() as c:
+        client = _db_get(c, username)
+        if client is None:
             return False
-        client   = _read_record(path)
         payments = client.setdefault("payments", [])
         if reference and any(p.get("reference") == reference for p in payments):
             return False
         payments.append({
-            "date":      datetime.now().strftime("%Y-%m-%d"),
-            "amount":    amount_paid,
-            "method":    method,
-            "reference": reference,
+            "date":         datetime.now().strftime("%Y-%m-%d"),
+            "amount":       cents / 100,
+            "amount_cents": cents,
+            "method":       method,
+            "reference":    reference,
         })
-        client["hours_paid"] = round(
-            sum(p.get("amount", 0) for p in payments) / shared.HOURLY_RATE, 2
-        )
-        _write_record(path, client)
+        rate_cents = to_cents(shared.HOURLY_RATE)
+        client["hours_paid"] = round(sum(payment_cents(p) for p in payments) / rate_cents, 2) \
+            if rate_cents else 0
+        _db_put(c, client)
     _log_activity(username, "payment_received",
-                  f"Payment received: ${amount_paid:.2f} via {method} (ref: {reference})")
+                  f"Payment received: ${cents / 100:.2f} via {method} (ref: {reference})")
     return True
+
+
+# ── Money ─────────────────────────────────────────────────────────────────────
+# Sums of money are done in whole cents; floats only for display.
+
+def to_cents(amount) -> int:
+    from decimal import Decimal, ROUND_HALF_UP
+    return int((Decimal(str(amount or 0)) * 100).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+
+
+def payment_cents(p: dict) -> int:
+    if isinstance(p.get("amount_cents"), int):
+        return p["amount_cents"]
+    return to_cents(p.get("amount", 0))
 
 
 # ── Page-visit tracker ────────────────────────────────────────────────────────
 
-_PAGE_VISITS_FILE = shared.DATA_ROOT / "page-visits.json"
+def _page_visits_path() -> Path:
+    return shared.DATA_ROOT / "page-visits.json"
 
 
 def _load_page_visits():
-    return read_json(_PAGE_VISITS_FILE, {})
+    return read_json(_page_visits_path(), {})
 
 
 def _save_page_visits(data: dict):
     try:
-        write_json(_PAGE_VISITS_FILE, data, indent=None)
+        write_json(_page_visits_path(), data, indent=None)
     except Exception:
-        pass
+        log.warning("Ignored error in storage", exc_info=True)

@@ -2,6 +2,7 @@
 
 from services import billing
 import shared
+from conftest import get_record, put_record
 from services import storage
 
 
@@ -72,13 +73,12 @@ def test_fingerprint_mismatch_warns(make_client, capsys):
 
 def test_update_client_field_atomic(make_client):
     make_client("hk")
-    path = shared.CLIENT_ACCOUNTS_DIR / "hk.json"
     # A concurrent writer changes another field first; the atomic update keeps it.
-    rec = storage._read_record(path)
+    rec = get_record("hk")
     rec["client_name"] = "Changed Elsewhere"
-    storage._write_record(path, rec)
+    put_record(rec)
     storage.update_client_field_atomic("hk", "billing_seen_at", "2026-10-02T00:00:00")
-    got = storage._read_record(path)
+    got = get_record("hk")
     assert got["billing_seen_at"] == "2026-10-02T00:00:00"
     assert got["client_name"] == "Changed Elsewhere"
 
@@ -87,4 +87,4 @@ def test_update_client_field_atomic_unsafe_or_missing(make_client):
     storage.update_client_field_atomic("../evil", "x", 1)       # no-op, no raise
     storage.update_client_field_atomic("", "x", 1)
     storage.update_client_field_atomic("nobody", "x", 1)
-    assert not (shared.CLIENT_ACCOUNTS_DIR / "nobody.json").exists()
+    assert not storage.client_exists("nobody")

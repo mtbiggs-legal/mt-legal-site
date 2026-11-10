@@ -1,5 +1,6 @@
 """services/gcal.py — Google Calendar and Drive."""
 
+import html
 from datetime import datetime, timedelta, timezone
 
 import shared
@@ -120,6 +121,31 @@ def create_intake_doc(record, urgent_dates):
         body=file_metadata, media_body=media, fields="id,webViewLink"
     ).execute()
     return f.get("webViewLink")
+
+
+def text_to_doc_html(title: str, text: str) -> str:
+    """Plain draft text as HTML Drive converts cleanly: paragraphs on blank
+    lines, line breaks kept, everything escaped."""
+    paras = [p for p in text.replace("\r\n", "\n").split("\n\n") if p.strip()]
+    body = "".join(f"<p>{html.escape(p).replace(chr(10), '<br>')}</p>" for p in paras)
+    return (f"<html><head><meta charset='utf-8'><title>{html.escape(title)}</title></head>"
+            f"<body style='font-family:\"Times New Roman\",serif;font-size:12pt;line-height:1.5'>"
+            f"{body}</body></html>")
+
+
+def create_google_doc(title: str, text: str) -> dict:
+    """Upload a draft to Google Drive as a Google Doc. Returns {"id", "url"}.
+
+    Raises ValueError with a user-facing message when Google isn't authorized."""
+    from googleapiclient.http import MediaInMemoryUpload
+
+    service = get_drive_service()
+    media   = MediaInMemoryUpload(text_to_doc_html(title, text).encode("utf-8"), mimetype="text/html")
+    f = service.files().create(
+        body={"name": title, "mimeType": "application/vnd.google-apps.document"},
+        media_body=media, fields="id,webViewLink",
+    ).execute()
+    return {"id": f.get("id"), "url": f.get("webViewLink")}
 
 
 def _push_court_date_to_gcal(client_name: str, court_date_str: str):

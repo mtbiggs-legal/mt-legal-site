@@ -1,16 +1,20 @@
-flask
-anthropic
-python-dotenv
-pyopenssl
-requests
-google-api-python-client
-google-auth-httplib2
-google-auth-oauthlib
-mammoth
-pypdf
-fpdf2
-stripe
-sendgrid
-bcrypt
-cryptography
-gunicorn
+# Pinned to the versions the test suite runs against. Upgrade deliberately:
+# change a version here, run `python -m pytest tests -q`, then deploy.
+flask==3.1.3
+werkzeug==3.1.6
+jinja2==3.1.6
+anthropic==0.84.0
+python-dotenv==1.2.2
+pyopenssl==25.3.0
+requests==2.32.5
+google-api-python-client==2.190.0
+google-auth-httplib2==0.3.0
+google-auth-oauthlib==1.3.0
+mammoth==1.11.0
+pypdf==6.7.4
+fpdf2==2.8.7
+stripe==14.4.0
+sendgrid==6.12.5
+bcrypt==5.0.0
+cryptography==46.0.5
+gunicorn==26.2.0

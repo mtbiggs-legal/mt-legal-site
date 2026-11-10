@@ -118,7 +118,7 @@
         <div style="font-family:Arial,sans-serif;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(168,136,60,.7);margin-bottom:.4rem">Recent Searches</div>
         <div id="cs-recent-chips" style="display:flex;flex-wrap:wrap;gap:.4rem"></div>
       </div>
-      <form id="cs-form" onsubmit="submitCaseSearch(event)">
+      <form id="cs-form" data-on-submit='[["submitCaseSearch",["$event"]]]'>
         <div class="case-search-grid">
 
           <div class="form-group fg-full">
@@ -257,7 +257,7 @@
 </section>
 
 <!-- ── Case Search Warning Modal (injected by JS) ────────────────────────── -->
-<script>
+<script nonce="{{ csp_nonce() }}">
 /* ── Case search history (localStorage) ── */
 var CS_HISTORY_KEY = 'cs_search_history';
 var CS_MAX = 5;
@@ -417,7 +417,7 @@ function showCaseSearchWarning(url, courtName) {
 }
 </script>
 
-<a href="{{ url_for('intake.intake') }}" class="ed-cta ed-cta--link">
+<a href="{{ site_link('intake.intake') }}" class="ed-cta ed-cta--link">
   <div>
     <h2>Found your case?</h2>
     <p>Talk through it in a confidential consultation, starting with a brief call at no cost.</p>

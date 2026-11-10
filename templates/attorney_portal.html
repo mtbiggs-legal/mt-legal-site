@@ -25,18 +25,25 @@
     {% include "attorney/_panel_conflict_check.html" %}
     {% include "attorney/_panel_new_client.html" %}
     {% include "attorney/_panel_research.html" %}
+    {% include "attorney/_panel_email_review.html" %}
+    {% include "attorney/_panel_firm_admin.html" %}
 
   </div><!-- end portal-main -->
 </div>
 
 {% include "attorney/_modals.html" %}
+{% include "attorney/_assistant.html" %}
 {% endblock %}
 
 {% block scripts %}
-<script>
+<script nonce="{{ csp_nonce() }}">
   window._ALL_CLIENTS_DATA = {{ clients | tojson }};
 </script>
 <script src="{{ url_for('static', filename='js/attorney_portal.js') }}"></script>
+<script src="{{ url_for('static', filename='js/attorney_client_panels.js') }}"></script>
+<script src="{{ url_for('static', filename='js/attorney_documents.js') }}"></script>
+<script src="{{ url_for('static', filename='js/attorney_clients.js') }}"></script>
+<script src="{{ url_for('static', filename='js/attorney_dashboard.js') }}"></script>
 
 <!-- ── Back-navigation guard modal ─────────────────────────────────────────── -->
 <div id="nav-guard-modal" style="display:none;position:fixed;inset:0;z-index:9999;
@@ -51,12 +58,12 @@
       Your session is still active. Would you like to return to the portal or sign out?
     </p>
     <div style="display:flex;flex-direction:column;gap:.65rem">
-      <button onclick="navGuardStay()"
+      <button data-on-click='[["navGuardStay",[]]]'
               style="padding:.7rem 1rem;background:#1a3a5c;color:#fff;border:none;
                      border-radius:7px;font-size:.95rem;cursor:pointer;font-weight:600">
         Return to Portal
       </button>
-      <button onclick="navGuardLogout()"
+      <button data-on-click='[["navGuardLogout",[]]]'
               style="padding:.7rem 1rem;background:#fff;color:#c0392b;border:2px solid #c0392b;
                      border-radius:7px;font-size:.95rem;cursor:pointer;font-weight:600">
         Sign Out &amp; Go to Login
@@ -65,13 +72,23 @@
   </div>
 </div>
 
-<script>
+<script nonce="{{ csp_nonce() }}">
   window._ATTORNEYS = {{ attorneys | tojson }};
 </script>
 <script src="{{ url_for('static', filename='js/attorney_security.js') }}"></script>
+<script src="{{ url_for('static', filename='js/attorney_intakes.js') }}"></script>
 <script src="{{ url_for('static', filename='js/attorney_billing.js') }}"></script>
-<script>
+<script src="{{ url_for('static', filename='js/attorney_felony.js') }}"></script>
+<script src="{{ url_for('static', filename='js/attorney_firm_admin.js') }}"></script>
+<script nonce="{{ csp_nonce() }}">
   window._CASE_DATE_LABELS = {{ case_date_labels | tojson }};
 </script>
 <script src="{{ url_for('static', filename='js/attorney_schedule.js') }}"></script>
+<script src="{{ url_for('static', filename='js/attorney_email_review.js') }}"></script>
+<script src="{{ url_for('static', filename='js/attorney_assistant.js') }}"></script>
+<script src="{{ url_for('static', filename='js/attorney_esign.js') }}"></script>
+<script src="{{ url_for('static', filename='js/attorney_filings.js') }}"></script>
+<script src="{{ url_for('static', filename='js/attorney_live.js') }}"></script>
+<script src="{{ url_for('static', filename='js/attorney_nav.js') }}"></script>
+<script src="{{ url_for('static', filename='js/attorney_sidebar.js') }}"></script>
 {% endblock %}

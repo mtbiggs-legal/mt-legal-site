@@ -7,6 +7,22 @@ from flask import Blueprint, render_template, request, jsonify, session
 import shared
 from shared import require_attorney, ATTORNEYS
 from services.storage import all_clients, read_json
+from services import billing, storage
+
+
+def _revenue_billed(client: dict, year=None) -> float:
+    """Hourly time billed (flat-fee time is private, not billed) plus any
+    flat fee: all of it, or only what falls in `year`."""
+    total = 0.0
+    for e in client.get("billing_log", []):
+        if billing.is_private(e):
+            continue
+        if year is None or str(e.get("date", "")).startswith(str(year)):
+            total += float(e.get("hours", 0) or 0) * shared.HOURLY_RATE
+    fee = billing.flat_fee(client)
+    if fee and (year is None or str(fee.get("set_at", "")).startswith(str(year))):
+        total += fee["amount"]
+    return total
 
 # Data folders and money settings are read as shared.<NAME> at call time, so
 # the test suite's patched values reach these routes.
@@ -63,7 +79,7 @@ def attorney_insights():
 
     all_leads = []
     for p in shared.LEADS_DIR.glob("*.json"):
-        lead = read_json(p)
+        lead = storage.read_encrypted_json(p)
         if isinstance(lead, dict):
             all_leads.append(lead)
 
@@ -96,6 +112,7 @@ def attorney_insights():
     total_messages      = 0
     total_time_logs     = 0
     total_payments_sum  = 0.0
+    total_revenue_billed_sum = 0.0
     case_type_breakdown: dict = {}
 
     for c in clients_list:
@@ -109,7 +126,8 @@ def attorney_insights():
         hrs_paid = float(c.get("hours_paid",   0) or 0)
         s["total_hours_billed"]     += hrs
         s["total_hours_paid"]       += hrs_paid
-        s["total_revenue_billed"]   += hrs * shared.HOURLY_RATE
+        s["total_revenue_billed"]   += _revenue_billed(c)
+        total_revenue_billed_sum     += _revenue_billed(c)
 
         pmt_sum = sum(float(p.get("amount", 0) or 0) for p in c.get("payments", []))
         s["total_revenue_collected"] += pmt_sum
@@ -135,9 +153,8 @@ def attorney_insights():
 
         for entry in c.get("billing_log", []):
             if str(entry.get("date", "")).startswith(str(year)):
-                e_hrs = float(entry.get("hours", 0) or 0)
-                s["year_hours_billed"]   += e_hrs
-                s["year_revenue_billed"] += e_hrs * shared.HOURLY_RATE
+                s["year_hours_billed"]   += float(entry.get("hours", 0) or 0)
+        s["year_revenue_billed"] += _revenue_billed(c, year)
 
         for pmt in c.get("payments", []):
             if str(pmt.get("date", "")).startswith(str(year)):
@@ -179,7 +196,7 @@ def attorney_insights():
         "firm": {
             "total_clients":           total_clients,
             "total_hours_billed":      round(total_hours, 2),
-            "total_revenue_billed":    round(total_hours * shared.HOURLY_RATE, 2),
+            "total_revenue_billed":    round(total_revenue_billed_sum, 2),
             "total_revenue_collected": round(total_payments_sum, 2),
             "total_court_dates":       total_court_dates,
             "total_meetings":          total_meetings,
@@ -246,9 +263,8 @@ def insights_export_tax():
             s["cases"] += 1
             for entry in c.get("billing_log", []):
                 if str(entry.get("date", "")).startswith(str(year)):
-                    e_hrs = float(entry.get("hours", 0) or 0)
-                    s["year_hours"]   += e_hrs
-                    s["year_revenue"] += e_hrs * shared.HOURLY_RATE
+                    s["year_hours"]   += float(entry.get("hours", 0) or 0)
+            s["year_revenue"] += _revenue_billed(c, year)
             for pmt in c.get("payments", []):
                 if str(pmt.get("date", "")).startswith(str(year)):
                     s["year_collected"] += float(pmt.get("amount", 0) or 0)

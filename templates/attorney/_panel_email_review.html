@@ -1,0 +1,29 @@
+<!-- Inbox (firm-wide email reviewer). Behaviour: static/js/attorney_email_review.js -->
+<div id="tab-email-review" class="portal-panel">
+  <div class="page-header" style="margin-bottom:1.1rem">
+    <h1 style="font-size:1.5rem">Inbox</h1>
+    <p style="font-size:.88rem">New firm mail, sorted and summarised. The reviewer only adds Gmail labels. It never replies, deletes, archives or marks mail read.</p>
+  </div>
+
+  <div class="card">
+    <div class="er-status-row">
+      <div id="er-status" class="sec-note">Checking the Gmail connection…</div>
+      <div class="er-actions">
+        <a class="btn btn-secondary" id="er-connect" href="/email-review/authorize" target="_blank" rel="noopener" style="display:none">Connect Gmail</a>
+        <button type="button" class="btn btn-primary" id="er-run">Check now</button>
+        <button type="button" class="btn btn-secondary" id="er-digest">Send digest now</button>
+      </div>
+    </div>
+    <div id="er-message" style="margin-top:.5rem"></div>
+  </div>
+
+  <div class="card">
+    <div class="er-filter-row">
+      <label for="er-category">Category</label>
+      <select id="er-category"><option value="">All</option></select>
+      <label class="er-check"><input type="checkbox" id="er-urgent-only"> Urgent only</label>
+      <label class="er-check"><input type="checkbox" id="er-show-handled"> Show handled</label>
+    </div>
+    <div id="er-list"></div>
+  </div>
+</div>

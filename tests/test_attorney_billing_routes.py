@@ -2,6 +2,7 @@
 
 from services import billing
 from services import storage
+from conftest import access_log
 
 
 def _client(make_client, hours=1.0, **kw):
@@ -22,7 +23,7 @@ def test_issue_statement(attorney_session, make_client, sent_statement_emails):
     assert r.status_code == 200 and d["statement"]["reason"] == "manual"
     assert d["billing_summary"]["unbilled_hours"] == 0.0
     assert len(sent_statement_emails) == 1
-    assert storage.load_client("ab")["access_log"][-1]["action"] == "statement_issued"
+    assert access_log("ab")[-1]["action"] == "statement_issued"
     r2 = attorney_session.post("/portal/attorney/issue-statement", json={"username": "ab"})
     assert r2.status_code == 400 and r2.get_json()["error"] == "No unbilled time to bill."
 
@@ -92,4 +93,4 @@ def test_issue_statement_404_leaves_no_log(other_attorney_session, make_client):
     _client(make_client)
     assert other_attorney_session.post("/portal/attorney/issue-statement",
                                        json={"username": "ab"}).status_code == 404
-    assert storage.load_client("ab").get("access_log", []) == []
+    assert access_log("ab") == []

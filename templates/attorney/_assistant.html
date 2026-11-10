@@ -1,0 +1,35 @@
+<!-- ── Portal assistant: launcher + chat drawer (static/js/attorney_assistant.js) ── -->
+<button id="asst-launcher" class="asst-launcher" data-on-click='[["openAssistant",[]]]' aria-controls="asst-drawer">
+  <span aria-hidden="true">✦</span> Ask Assistant
+</button>
+
+<aside id="asst-drawer" class="asst-drawer" aria-label="Portal assistant" aria-hidden="true">
+  <div class="asst-head">
+    <span class="asst-head-ico" aria-hidden="true">✦</span>
+    <div class="asst-head-text">
+      <div class="asst-title">Assistant</div>
+      <div class="asst-sub">Asks your portal data. Changes wait for your OK.</div>
+    </div>
+    <button class="asst-head-btn" data-on-click='[["resetAssistant",[]]]' title="Start a new chat">New chat</button>
+    <button class="asst-head-btn asst-close" data-on-click='[["closeAssistant",[]]]' title="Close" aria-label="Close">✕</button>
+  </div>
+
+  <div id="asst-log" class="asst-log" aria-live="polite">
+    <div id="asst-empty" class="asst-empty">
+      <p>Ask about your schedule, clients, billing or leads, or tell me what to update.</p>
+      <div class="asst-chips">
+        <button class="asst-chip" data-on-click='[["askAssistant",["$text"]]]'>What's my schedule this week?</button>
+        <button class="asst-chip" data-on-click='[["askAssistant",["$text"]]]'>What counties do I have court in this month?</button>
+        <button class="asst-chip" data-on-click='[["askAssistant",["$text"]]]'>How's my billing this month?</button>
+        <button class="asst-chip" data-on-click='[["askAssistant",["$text"]]]'>Who owes me money?</button>
+        <button class="asst-chip" data-on-click='[["askAssistant",["$text"]]]'>What needs my attention today?</button>
+      </div>
+    </div>
+  </div>
+
+  <form id="asst-form" class="asst-form" data-on-submit='[["$prevent",[]],["sendAssistant",[]]]'>
+    <textarea id="asst-input" rows="2" maxlength="8000"
+              placeholder="e.g. Did Travis Greer pay his bill?"></textarea>
+    <button type="submit" id="asst-send" class="asst-send">Send</button>
+  </form>
+</aside>

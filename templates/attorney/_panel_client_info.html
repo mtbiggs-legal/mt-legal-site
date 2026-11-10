@@ -52,7 +52,30 @@
     </div>
     <div id="ci-result" style="margin-top:.75rem"></div>
     <div class="btn-group" style="margin-top:1rem">
-      <button class="btn btn-primary" onclick="saveClientInfo()">Save Changes</button>
+      <button class="btn btn-primary" data-on-click='[["saveClientInfo",[]]]'>Save Changes</button>
+      <button class="btn btn-secondary" type="button" id="ci-send-invite">Send portal invitation</button>
     </div>
+    <p class="intake-status" id="ci-invite-result"></p>
+    <input type="text" id="ci-invite-link" readonly style="display:none;width:100%;box-sizing:border-box;margin-top:.4rem;font-size:.8rem" />
+  </div>
+
+  <!-- Matters: one client, several engagements over time -->
+  <div class="card" style="margin-top:1rem">
+    <div class="portal-section-title">Matters</div>
+    <p class="intake-status">The fields above belong to the current matter. Switching saves them to it first.</p>
+    <div id="matters-list"></div>
+    <details style="margin-top:.75rem">
+      <summary style="cursor:pointer;font-family:Arial,sans-serif;font-size:.88rem">Open a new matter for this client</summary>
+      <div class="form-grid" style="margin-top:.6rem">
+        <div class="form-group"><label for="mt-title">Title *</label><input type="text" id="mt-title" placeholder="e.g. 2027 estate plan update" /></div>
+        <div class="form-group"><label for="mt-case-type">Case type</label><input type="text" id="mt-case-type" placeholder="Estate Planning" /></div>
+        <div class="form-group"><label for="mt-case-no">Case no.</label><input type="text" id="mt-case-no" /></div>
+        <div class="form-group"><label for="mt-county">County</label><input type="text" id="mt-county" /></div>
+        <div class="form-group full"><label for="mt-opposing">Opposing parties (one per line)</label><textarea id="mt-opposing" rows="2"></textarea></div>
+        <div class="form-group full"><label for="mt-issue">Legal issue</label><textarea id="mt-issue" rows="2"></textarea></div>
+      </div>
+      <button type="button" class="btn btn-primary" data-on-click='[["openMatter",[]]]'>Open matter &amp; run conflict check</button>
+      <div id="mt-result" class="intake-status"></div>
+    </details>
   </div>
 </div>

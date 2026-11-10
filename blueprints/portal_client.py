@@ -5,21 +5,26 @@ import hashlib
 import requests as _http
 import stripe
 from datetime import datetime, date
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for, session, send_file
+from flask import Blueprint, current_app, render_template, request, jsonify, redirect, url_for, session
 from werkzeug.utils import secure_filename
 
 # Payment settings and the hourly rate are read through `shared.` at call time
 # rather than imported by value, so a changed setting takes effect without a
 # reimport (and so tests can patch one place).
-from services import billing
+from services import billing, client_files
 import shared
 from services import storage
+from shared import portal_public, csrf_exempt
 from shared import (
-    require_client, ATTORNEYS, CLIENT_FILES_DIR, DOCS_CATEGORIES, get_anthropic_client,
+    require_client, ATTORNEYS, CLIENT_FILES_DIR, CLIENT_DOCS_CATEGORIES, get_anthropic_client,
     MODEL,
 )
-from services.accounts import MIN_PASSWORD_LENGTH, hash_password
-from services.storage import load_client, save_client, recalc_hours, _apply_payment
+from services.accounts import MIN_PASSWORD_LENGTH, acceptable_password, check_password, hash_password
+from services.security import (
+    begin_login_attempt, bump_session_version, clear_login_failures, lockout_message,
+    start_login_session,
+)
+from services.storage import load_client, recalc_hours, _apply_payment
 
 portal_client_bp = Blueprint("portal_client", __name__)
 
@@ -39,10 +44,12 @@ def client_portal():
     if client and client.get("must_change_password"):
         return redirect(url_for("portal_client.client_change_password"))
     ledger = billing.load_ledger(session["username"])
+    view = billing.client_billing_view(client, ledger)
     return render_template(
         "client_portal.html", client=client,
         billed_hours=billing.billed_hours(ledger),
-        has_new_statement=billing.client_billing_view(client, ledger)["has_new_statement"],
+        has_new_statement=view["has_new_statement"],
+        flat_fee=view["flat_fee"],
     )
 
 
@@ -51,19 +58,36 @@ def client_portal():
 def client_change_password():
     error = None
     if request.method == "POST":
-        new_pw  = request.form.get("new_password", "").strip()
-        confirm = request.form.get("confirm_password", "").strip()
-        if len(new_pw) < MIN_PASSWORD_LENGTH:
-            error = f"Password must be at least {MIN_PASSWORD_LENGTH} characters."
+        username = session["username"]
+        current  = request.form.get("current_password", "")
+        new_pw   = request.form.get("new_password", "")
+        confirm  = request.form.get("confirm_password", "")
+        client   = load_client(username)
+        ip       = request.remote_addr or ""
+        wait     = begin_login_attempt("change_pw", username, ip)
+        if wait:
+            error = lockout_message(wait)
+        elif not client or not check_password(current, client.get("password", "")):
+            error = "Your current password is not correct."
+        elif not acceptable_password(new_pw, username) or new_pw == current:
+            error = (f"Choose a new password of at least {MIN_PASSWORD_LENGTH} characters that "
+                     "isn't a common one, your username, or your current password.")
         elif new_pw != confirm:
             error = "Passwords do not match."
-        elif new_pw == "password":
-            error = "Please choose a password different from the temporary one."
         else:
-            client = load_client(session["username"])
-            client["password"]             = hash_password(new_pw)
-            client["must_change_password"] = False
-            save_client(client)
+            clear_login_failures("change_pw", username, ip)
+            hashed = hash_password(new_pw)
+
+            def _set(c):
+                c["password"]             = hashed
+                c["must_change_password"] = False
+            storage.update_client_atomic(username, _set)
+            # Sign out every other session, then give this one a fresh session.
+            bump_session_version("client", username)
+            start_login_session("client", username)
+            storage._log_activity(username, "password_changed", "Client changed their password.")
+            from services import audit
+            audit.record("password_changed", client=username)
             return redirect(url_for("portal_client.client_portal"))
     return render_template("change_password.html", error=error)
 
@@ -123,13 +147,10 @@ def client_send_message():
                 "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
                 "text": ai_reply,
             })
-            c.setdefault("billing_log", []).append({
-                "date":     date.today().isoformat(),
-                "hours":    0.1,
-                "note":     "AI assistant response \u2014 " + text[:60] + ("..." if len(text) > 60 else ""),
-                "type":     "ai_message",
-                "category": "Phone/Email",
-            })
+            c.setdefault("billing_log", []).append(billing.auto_entry(
+                date=date.today().isoformat(), hours=0.1,
+                note="AI assistant response \u2014 " + text[:60] + ("..." if len(text) > 60 else ""),
+                type="ai_message", category="Phone/Email"))
             recalc_hours(c)
             c["last_communication"] = date.today().isoformat()
 
@@ -184,7 +205,7 @@ def client_payment_stripe():
         return jsonify({"error": "No balance due"}), 400
 
     stripe.api_key = shared.STRIPE_SECRET_KEY
-    base = request.host_url.rstrip("/")
+    base = shared.portal_base()
     try:
         checkout = stripe.checkout.Session.create(
             payment_method_types=["card"],
@@ -204,11 +225,14 @@ def client_payment_stripe():
             cancel_url=f"{base}/client-portal?tab=billing",
         )
     except Exception as exc:
-        return jsonify({"error": f"Could not start card payment: {exc}"}), 502
+        current_app.logger.exception("Stripe checkout failed")
+        return jsonify({"error": "Could not start the card payment. Please try again or call the office."}), 502
     return jsonify({"checkout_url": checkout.url})
 
 
 @portal_client_bp.route("/webhooks/stripe", methods=["POST"])
+@portal_public
+@csrf_exempt
 def webhook_stripe():
     payload = request.get_data()
     sig     = request.headers.get("Stripe-Signature", "")
@@ -270,7 +294,7 @@ def client_payment_coinbase():
     if balance_due <= 0:
         return jsonify({"error": "No balance due"}), 400
 
-    base = request.host_url.rstrip("/")
+    base = shared.portal_base()
     try:
         resp = _http.post(
             "https://api.commerce.coinbase.com/charges",
@@ -291,13 +315,16 @@ def client_payment_coinbase():
             timeout=20,
         )
     except Exception as exc:
-        return jsonify({"error": f"Could not reach the crypto payment provider: {exc}"}), 502
+        current_app.logger.exception("Coinbase charge failed")
+        return jsonify({"error": "Could not reach the crypto payment provider. Please try again."}), 502
     if not resp.ok:
         return jsonify({"error": "Failed to create Coinbase charge"}), 502
     return jsonify({"hosted_url": resp.json()["data"]["hosted_url"]})
 
 
 @portal_client_bp.route("/webhooks/coinbase", methods=["POST"])
+@portal_public
+@csrf_exempt
 def webhook_coinbase():
     payload = request.get_data()
     sig     = request.headers.get("X-CC-Webhook-Signature", "")
@@ -325,7 +352,7 @@ def webhook_coinbase():
 def client_list_documents():
     username = session["username"]
     result   = {}
-    for cat in DOCS_CATEGORIES:
+    for cat in CLIENT_DOCS_CATEGORIES:            # attorney-only folders (Drafts) are never listed
         cat_dir = CLIENT_FILES_DIR / username / "documents" / cat
         files   = []
         if cat_dir.exists():
@@ -337,18 +364,18 @@ def client_list_documents():
                         continue
                     files.append({
                         "name":     f.name,
-                        "size":     st.st_size,
+                        "size":     client_files.plain_size(f),
                         "modified": datetime.fromtimestamp(st.st_mtime).strftime("%Y-%m-%d"),
                         "category": cat,
                     })
         result[cat] = files
-    return jsonify({"categories": DOCS_CATEGORIES, "files": result})
+    return jsonify({"categories": CLIENT_DOCS_CATEGORIES, "files": result})
 
 
 @portal_client_bp.route("/portal/client/document/<category>/<filename>")
 @require_client
 def client_serve_document(category, filename):
-    if category not in DOCS_CATEGORIES:
+    if category not in CLIENT_DOCS_CATEGORIES:
         return "Invalid category.", 400
     username  = session["username"]
     safe_name = secure_filename(filename)
@@ -357,4 +384,4 @@ def client_serve_document(category, filename):
     path = CLIENT_FILES_DIR / username / "documents" / category / safe_name
     if not path.exists():
         return "File not found.", 404
-    return send_file(str(path), as_attachment=True, download_name=safe_name)
+    return client_files.send(path, as_attachment=True, download_name=safe_name)

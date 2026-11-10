@@ -42,6 +42,16 @@ LAST_BACKUP = None
 LAST_REPORT = []   # rows: (username, legacy_due, new_due, delta, action)
 
 
+def _backup_db(dest):
+    """A consistent copy of the database (SQLite's online backup)."""
+    import sqlite3
+    from services import db
+    out = sqlite3.connect(str(dest))
+    with out:
+        db.conn().backup(out)
+    out.close()
+
+
 def _legacy_due(client) -> float:
     owed = round(float(client.get("hours_billed") or 0) - float(client.get("hours_paid") or 0), 2)
     return max(0.0, round(owed * float(shared.HOURLY_RATE), 2))
@@ -74,19 +84,19 @@ def migrate(backup_root, project_root: Path = ROOT, dry_run: bool = False) -> di
         storage.require_outside_dir(backup_root, project_root)
         stamp = f"{datetime.now():%Y%m%d_%H%M%S_%f}"
         dest = Path(backup_root).resolve() / f"billing-migration-{stamp}"
-        shutil.copytree(shared.CLIENT_ACCOUNTS_DIR, dest / "client-accounts")
+        dest.mkdir(parents=True, exist_ok=True)
+        _backup_db(dest / "mt-legal.db")
         for name, src in (("client-billing", shared.CLIENT_BILLING_DIR),
                           ("firm-settings", shared.FIRM_SETTINGS_DIR)):
             if Path(src).exists():
                 shutil.copytree(src, dest / name)
     counts = {"opening": 0, "baseline": 0, "covered": 0, "unreadable": 0, "skipped": 0}
-    for path in sorted(shared.CLIENT_ACCOUNTS_DIR.glob("*.json")):
-        username = path.stem
+    for username in storage.all_usernames():
         legacy = None
         try:
             client = storage.load_client(username)
             if not client:
-                print(f"  ! skipped (not loadable): {path.name}")
+                print(f"  ! skipped (not loadable): {username}")
                 counts["skipped"] += 1
                 LAST_REPORT.append((username, None, None, None, "skipped"))
                 continue

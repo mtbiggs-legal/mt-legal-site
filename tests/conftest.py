@@ -41,7 +41,8 @@ for _mod in ("anthropic", "google.oauth2.credentials",
 # anthropic.AuthenticationError / APIError are referenced in `except` clauses,
 # which requires them to be real exception classes.
 _anthropic = sys.modules["anthropic"]
-for _exc in ("AuthenticationError", "APIError"):
+for _exc in ("AuthenticationError", "APIError", "RateLimitError", "APIConnectionError",
+             "APIStatusError"):
     if not isinstance(getattr(_anthropic, _exc, None), type):
         setattr(_anthropic, _exc, type(_exc, (Exception,), {}))
 
@@ -65,7 +66,8 @@ import threading  # noqa: E402
 _REAL_BASE = Path(shared.BASE_DIR)          # captured before any monkeypatching
 _REAL_DATA_DIRS = ("client-accounts", "client-billing", "client-files", "client-data",
                    "leads", "firm-settings", "security-state", "draft-history",
-                   "research-history", "case-searches", "token-usage", "blog")
+                   "research-history", "case-searches", "token-usage", "blog",
+                   "email-review", "pending-intake", "db")
 
 
 def _snapshot_real_data():
@@ -100,6 +102,9 @@ flask_app.config["SECRET_KEY"] = "test"
 # The CSRF check is exercised explicitly in test_csrf.py; everywhere else the
 # existing .post() calls would all need a token.
 flask_app.config["CSRF_ENABLED"] = False
+# Rate limits are exercised explicitly (test_intake_privacy); elsewhere many
+# posts come from the same test IP.
+flask_app.config["RATE_LIMITS_ENABLED"] = False
 
 
 @pytest.fixture
@@ -133,6 +138,11 @@ def patch_dirs(tmp_path, monkeypatch, sent_statement_emails):
     monkeypatch.setattr(shared, "SECURITY_STATE_DIR", security, raising=False)
     monkeypatch.setattr(shared, "CLIENT_BILLING_DIR", billing_dir, raising=False)
     monkeypatch.setattr(shared, "FIRM_SETTINGS_DIR",  settings_dir, raising=False)
+    monkeypatch.setattr(shared, "PENDING_INTAKE_DIR", tmp_path / "pending-intake", raising=False)
+    monkeypatch.setattr(shared, "DB_PATH", tmp_path / "db" / "test.db", raising=False)
+    monkeypatch.setattr(shared, "DB_SYNCHRONOUS", "OFF", raising=False)   # speed; tmp data
+    monkeypatch.setattr(storage, "_page_visits_path", lambda: tmp_path / "page-visits.json")
+    monkeypatch.setattr(shared, "CLIENT_DATA_DIR",    data, raising=False)
     blog_dir = tmp_path / "blog"
     blog_seed = tmp_path / "blog_seed"
     blog_dir.mkdir(exist_ok=True)
@@ -140,6 +150,9 @@ def patch_dirs(tmp_path, monkeypatch, sent_statement_emails):
     monkeypatch.setattr(shared, "BLOG_DIR", blog_dir, raising=False)
     monkeypatch.setattr(shared, "BLOG_SEED_DIR", blog_seed, raising=False)
     monkeypatch.setattr(shared, "BLOG_AUTOGEN", False, raising=False)
+    # Email reviewer: results and the Gmail token live in tmp_path, never real.
+    monkeypatch.setattr(shared, "EMAIL_REVIEW_DIR", tmp_path / "email-review", raising=False)
+    monkeypatch.setattr(shared, "GMAIL_TOKEN_FILE", tmp_path / "gmail-token.json", raising=False)
     # Billing: treat the opening-statement migration as done, send notices
     # inline, and never call SendGrid. Tests that need otherwise override these.
     (settings_dir / "migrations.json").write_text('{"opening_statements": "test"}')
@@ -152,11 +165,15 @@ def patch_dirs(tmp_path, monkeypatch, sent_statement_emails):
     # Pin the rate so threshold arithmetic in tests never depends on the shell env.
     monkeypatch.setattr(shared, "HOURLY_RATE", 350.0)
 
-    import blueprints.portal_attorney as _pa
+    import blueprints.portal_attorney._common as _pa   # shared imports of the attorney modules
     import blueprints.portal_client as _pc
     import blueprints.public as _pub
     import blueprints.intake as _intake
+    import blueprints.drafting as _drafting
+    drafts = tmp_path / "drafts"
+    drafts.mkdir(exist_ok=True)
     for mod, name, value in (
+        (_drafting, "DRAFT_HISTORY_DIR", drafts),
         (_pa,  "CLIENT_FILES_DIR",    files),
         (_pa,  "CLIENT_ACCOUNTS_DIR", accounts),
         (_pa,  "TOKEN_USAGE_DIR",     tokens),
@@ -169,10 +186,20 @@ def patch_dirs(tmp_path, monkeypatch, sent_statement_emails):
         if hasattr(mod, name):
             monkeypatch.setattr(mod, name, value)
 
+    # The firm is solo, but access-control tests need a second attorney who
+    # is not assigned to the test clients.
+    monkeypatch.setitem(shared.ATTORNEYS, "SophiaH",
+                        {"password": "", "display": "Sophia L. Hargrove, Esq.",
+                         "case_type": "Civil Litigation"})
+    # 2FA is exercised in test_two_factor; elsewhere a password login is enough.
+    monkeypatch.setattr(shared, "ATTORNEY_2FA_REQUIRED", False)
+
     # Tests must not depend on whether the developer's .env sets a share
     # password; the gate itself is covered explicitly in test_share_password.
     monkeypatch.delenv("SHARE_PASSWORD", raising=False)
-    return tmp_path
+    yield tmp_path
+    from services import db as _db
+    _db.close_all()
 
 
 @pytest.fixture
@@ -222,9 +249,35 @@ def issue_test_statement():
         c.setdefault("billing_log", []).append(
             {"date": date, "hours": hours, "note": "test work", "category": "Other"})
         c["hours_billed"] = round(sum(float(e.get("hours", 0)) for e in c["billing_log"]), 2)
-        storage._write_record(shared.CLIENT_ACCOUNTS_DIR / f"{username}.json", c)
+        put_record(c)
         return billing.issue_statement(username, reason="manual", issued_by="test", notify=False)
     return _issue
+
+
+def put_record(record: dict) -> None:
+    """Write a client record straight to the test database (no defaults, no
+    save hooks), the way a pre-existing record would sit there."""
+    from services import db
+    with db.transaction() as c:
+        storage._db_put(c, record)
+
+
+def get_record(username: str) -> dict:
+    """The stored record as is (no defaults applied)."""
+    from services import db
+    return storage._db_get(db.conn(), username)
+
+
+def put_raw(username: str, blob: bytes) -> None:
+    """Store bytes as a record's data, e.g. one that won't decrypt."""
+    from services import db
+    db.conn().execute("INSERT INTO clients(username, data) VALUES(?, ?)", (username, blob))
+
+
+def access_log(username: str) -> list:
+    """The client's audit entries, oldest first (like the old access_log list)."""
+    from services import audit
+    return list(reversed(audit.for_client(username)))
 
 
 @pytest.fixture
@@ -243,8 +296,6 @@ def make_client(tmp_path):
             "messages":          [],
         }
         record.update(extra)
-        (tmp_path / "accounts" / f"{username}.json").write_text(
-            json.dumps(record), encoding="utf-8"
-        )
+        put_record(record)
         return record
     return _make

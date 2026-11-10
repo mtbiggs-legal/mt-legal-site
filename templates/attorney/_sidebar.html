@@ -5,50 +5,73 @@
     <div class="sidebar-name">{{ attorney.display }}</div>
   </div>
 
-  <!-- Permanent action buttons -->
-  <div style="border-top:1px solid rgba(255,255,255,.08)">
-    <button class="portal-tab-btn" onclick="showDashboard(this)" id="dashboard-btn">
-      Dashboard
+  <!-- Permanent action buttons. Each tab has its own colour (tone-*) and icon,
+       matching the dashboard cards, so sections are recognisable at a glance. -->
+  <div class="sidebar-group-label sidebar-collapse is-collapsed" data-collapse="workspace" role="button" tabindex="0" aria-expanded="false" aria-controls="sb-workspace"><span>Workspace</span><span class="sidebar-chev" aria-hidden="true">▾</span></div>
+  <div class="sidebar-section-body" id="sb-workspace" hidden>
+    <button class="portal-tab-btn tone-blue active" data-on-click='[["showDashboard",["$this"]]]' id="dashboard-btn">
+      <span class="tab-ico" aria-hidden="true">▦</span>Dashboard
     </button>
-    <button class="portal-tab-btn" onclick="showInsights(this)" id="insights-tab-btn">
-      Insights
+    <button class="portal-tab-btn tone-purple" data-on-click='[["showEmailReview",["$this"]]]' id="inbox-tab-btn">
+      <span class="tab-ico" aria-hidden="true">✉</span>Inbox <span id="inbox-badge" class="leads-badge" style="display:none" title="Urgent, not yet handled"></span>
     </button>
-    <button class="portal-tab-btn" onclick="showGlobalResearch(this)" id="global-research-btn">Research</button>
-    <a class="portal-tab-btn" href="{{ url_for('research.research') }}" style="display:block;text-decoration:none">Research Bot</a>
-    <a class="portal-tab-btn" href="{{ url_for('drafting.drafting') }}" style="display:block;text-decoration:none">Legal Documents</a>
-    <button class="portal-tab-btn" onclick="loadLeads(this)" id="leads-tab-btn">
-      Incoming Leads <span id="leads-badge" class="leads-badge" style="display:none"></span>
+    <button class="portal-tab-btn tone-amber" data-on-click='[["showFirmAdmin",["$this"]]]' id="firm-admin-tab-btn">
+      <span class="tab-ico" aria-hidden="true">✓</span>Firm Admin <span id="fa-badge" class="leads-badge" style="display:none" title="Due within 60 days or overdue"></span>
     </button>
-    <button class="portal-tab-btn" onclick="showNewClientTab(this)" id="new-client-tab-btn">
-      + New Client
+    <button class="portal-tab-btn tone-green" data-on-click='[["showInsights",["$this"]]]' id="insights-tab-btn">
+      <span class="tab-ico" aria-hidden="true">▲</span>Insights
     </button>
-    <button class="portal-tab-btn" onclick="showConflictCheck(this)" id="conflict-check-btn">
-      Conflict Check
+    <button class="portal-tab-btn tone-teal" data-on-click='[["showGlobalResearch",["$this"]]]' id="global-research-btn">
+      <span class="tab-ico" aria-hidden="true">⌕</span>Research
+    </button>
+    <a class="portal-tab-btn tone-teal" href="{{ url_for('research.research') }}">
+      <span class="tab-ico" aria-hidden="true">✦</span>Research Bot
+    </a>
+    <a class="portal-tab-btn tone-slate" href="{{ url_for('drafting.drafting') }}">
+      <span class="tab-ico" aria-hidden="true">✎</span>Legal Documents
+    </a>
+    <button class="portal-tab-btn tone-indigo" data-on-click='[["openAssistant",[]]]'>
+      <span class="tab-ico" aria-hidden="true">✦</span>Ask Assistant
+    </button>
+  </div>
+
+  <div class="sidebar-group-label sidebar-collapse is-collapsed" data-collapse="clients" role="button" tabindex="0" aria-expanded="false" aria-controls="sb-clients"><span>Clients</span><span class="sidebar-chev" aria-hidden="true">▾</span></div>
+  <div class="sidebar-section-body" id="sb-clients" hidden>
+    <button class="portal-tab-btn tone-amber" data-on-click='[["loadLeads",["$this"]]]' id="leads-tab-btn">
+      <span class="tab-ico" aria-hidden="true">☎</span>Incoming Leads <span id="leads-badge" class="leads-badge" style="display:none"></span>
+    </button>
+    <button class="portal-tab-btn tone-green" data-on-click='[["showNewClientTab",["$this"]]]' id="new-client-tab-btn">
+      <span class="tab-ico" aria-hidden="true">+</span>New Client
+    </button>
+    <button class="portal-tab-btn tone-red" data-on-click='[["showConflictCheck",["$this"]]]' id="conflict-check-btn">
+      <span class="tab-ico" aria-hidden="true">⚖</span>Conflict Check
     </button>
   </div>
 
   <!-- Tab nav (hidden until client selected) -->
   <nav id="atty-tabs" style="display:none">
-    <button class="portal-tab-btn active" onclick="showAttyTab('overview',   this)">Case Overview</button>
-    <button class="portal-tab-btn"        onclick="showAttyTab('client-info', this)">Client Info</button>
-    <button class="portal-tab-btn"        onclick="showAttyTab('time',        this)">Time &amp; Notes</button>
-    <button class="portal-tab-btn"        onclick="showAttyTab('messages',    this)">Messages</button>
-    <button class="portal-tab-btn"        onclick="showAttyTab('documents',   this)">Documents</button>
-    <button class="portal-tab-btn" onclick="showAttyTab('research', this)">Research</button>
-    <button class="portal-tab-btn" onclick="showAttyTab('security', this)">Parties &amp; Security</button>
+    <div class="sidebar-group-label sidebar-group-client">Selected Client</div>
+    <button class="portal-tab-btn tone-blue active" data-on-click='[["showAttyTab",["overview","$this"]]]'><span class="tab-ico" aria-hidden="true">◉</span>Case Overview</button>
+    <button class="portal-tab-btn tone-slate"       data-on-click='[["showAttyTab",["client-info","$this"]]]'><span class="tab-ico" aria-hidden="true">☰</span>Client Info</button>
+    <button class="portal-tab-btn tone-green"       data-on-click='[["showAttyTab",["time","$this"]]]'><span class="tab-ico" aria-hidden="true">◷</span>Time &amp; Notes</button>
+    <button class="portal-tab-btn tone-purple"      data-on-click='[["showAttyTab",["messages","$this"]]]'><span class="tab-ico" aria-hidden="true">✉</span>Messages</button>
+    <button class="portal-tab-btn tone-teal"        data-on-click='[["showAttyTab",["documents","$this"]]]'><span class="tab-ico" aria-hidden="true">▤</span>Documents</button>
+    <button class="portal-tab-btn tone-teal"        data-on-click='[["showAttyTab",["research","$this"]]]'><span class="tab-ico" aria-hidden="true">⌕</span>Research</button>
+    <button class="portal-tab-btn tone-red"         data-on-click='[["showAttyTab",["security","$this"]]]'><span class="tab-ico" aria-hidden="true">⚖</span>Parties &amp; Security</button>
   </nav>
 
-  <div class="client-list-label">Recent Clients</div>
+  <div class="client-list-label sidebar-collapse is-collapsed" data-collapse="recent" role="button" tabindex="0" aria-expanded="false" aria-controls="sb-recent"><span>Recent Clients</span><span class="sidebar-chev" aria-hidden="true">▾</span></div>
+  <div class="sidebar-section-body" id="sb-recent" hidden>
   <div class="client-search-wrap">
     <input class="client-search" id="client-search-input" type="search"
            placeholder="&#128269; Search clients…"
-           oninput="filterClientList(this.value)">
+           data-on-input='[["filterClientList",["$value"]]]'>
   </div>
   <div class="client-list" id="client-list">
     {% if clients %}
       {% for c in clients %}
       <button class="client-list-item{% if loop.index > 5 %} sidebar-hidden{% endif %}"
-              onclick="selectClient('{{ c.username }}')" id="cli-{{ c.username }}"
+              data-on-click='[["selectClient",[{{ (c.username)|tojson }}]]]' id="cli-{{ c.username }}"
               data-name="{{ (c.client_name or c.username)|lower }}">
         {{ c.client_name or c.username }}{% if c.is_co_counsel %} <span class="cc-badge">Co-counsel</span>{% endif %}{% if c.conflict_unresolved %} <span class="conflict-badge" title="Unresolved conflict check">Conflict</span>{% endif %}
       </button>
@@ -58,13 +81,14 @@
     {% endif %}
   </div>
   <div style="padding:.3rem .9rem .6rem">
-    <button class="see-all-btn" id="see-all-clients-btn" onclick="showAllClients(this)">See all clients →</button>
+    <button class="see-all-btn" id="see-all-clients-btn" data-on-click='[["showAllClients",["$this"]]]'>See all clients →</button>
+  </div>
   </div>
 
   <!-- Clerk Office Case Searches -->
   <div class="sidebar-clerk-section">
-    <div class="client-list-label">Case Searches</div>
-    <div class="clerk-search-stack">
+    <div class="client-list-label sidebar-collapse is-collapsed" data-collapse="searches" role="button" tabindex="0" aria-expanded="false" aria-controls="sb-searches"><span>Case Searches</span><span class="sidebar-chev" aria-hidden="true">▾</span></div>
+    <div class="clerk-search-stack sidebar-section-body" id="sb-searches" hidden>
 
       <a href="https://sci.ccc.nashville.gov/Search/Search"
          target="_blank" rel="noopener"
@@ -103,13 +127,13 @@
   </div>
 
   {% if archived_clients %}
-  <div class="archived-section-label" onclick="toggleArchivedList()" id="archived-label">
+  <div class="archived-section-label" data-on-click='[["toggleArchivedList",[]]]' id="archived-label">
     <span>Archived ({{ archived_clients|length }})</span>
     <span id="archived-chevron">▸</span>
   </div>
   <div id="archived-client-list" style="display:none">
     {% for c in archived_clients %}
-    <button class="client-list-item client-archived" onclick="selectClient('{{ c.username }}')" id="cli-{{ c.username }}"
+    <button class="client-list-item client-archived" data-on-click='[["selectClient",[{{ (c.username)|tojson }}]]]' id="cli-{{ c.username }}"
             data-name="{{ (c.client_name or c.username)|lower }}">
       {{ c.client_name or c.username }}{% if c.is_co_counsel %} <span class="cc-badge">Co-counsel</span>{% endif %}{% if c.conflict_unresolved %} <span class="conflict-badge" title="Unresolved conflict check">Conflict</span>{% endif %}
     </button>
@@ -118,6 +142,9 @@
   {% endif %}
 
   <div class="portal-sidebar-footer">
-    <a href="{{ url_for('auth.logout') }}" class="portal-logout-btn">Sign Out</a>
+    <form method="POST" action="{{ url_for('auth.logout') }}" class="logout-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <button type="submit" class="portal-logout-btn">Sign Out</button>
+    </form>
   </div>
 </aside>

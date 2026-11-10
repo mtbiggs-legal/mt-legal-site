@@ -1,15 +1,22 @@
 """blueprints/public.py — Public-facing pages and lead capture."""
 
+import logging
+
 from datetime import date, datetime
 from flask import (
     Blueprint, Response, abort, current_app, jsonify, redirect, render_template, request,
     send_from_directory, url_for,
 )
 
+import re
+import secrets
+
 import shared
-from services import blog
+from services import blog, storage
+from shared import public, csrf_exempt
+from services.security import rate_limit
 from shared import (
-    require_auth, require_attorney, LEADS_DIR, CASE_SEARCHES_DIR, CASE_ATTORNEY_MAP,
+    require_auth, require_attorney, CASE_SEARCHES_DIR, CASE_ATTORNEY_MAP,
     FIRM_NAME, MANAGING_PARTNER, SERVICE_COUNTIES, partner_photo_filename,
     get_anthropic_client, MODEL,
 )
@@ -19,16 +26,20 @@ from blueprints.practice_areas import (
     PRACTICE_AREAS, EMERGING_TECH_AREAS, EMERGING_TECH_TOPICS,
 )
 
+log = logging.getLogger(__name__)
+
 public_bp = Blueprint("public", __name__)
 
 
 @public_bp.route("/")
+@public
 @require_auth
 def index():
     return render_template("index.html", areas=PRACTICE_AREAS)
 
 
 @public_bp.route("/meet-the-firm")
+@public
 @require_auth
 def meet_the_firm():
     return render_template(
@@ -47,6 +58,7 @@ _SITEMAP_ENDPOINTS = (
 
 
 @public_bp.route("/favicon.ico")
+@public
 def favicon():
     """Browsers and Google ask for /favicon.ico at the site root."""
     return send_from_directory(current_app.static_folder, "favicon.ico",
@@ -64,6 +76,7 @@ _AI_CRAWLERS = (
 
 
 @public_bp.route("/robots.txt")
+@public
 def robots_txt():
     lines = (["User-agent: *"] + [f"User-agent: {bot}" for bot in _AI_CRAWLERS] + [
         "Allow: /",
@@ -104,6 +117,7 @@ def _llms_header():
 
 
 @public_bp.route("/llms.txt")
+@public
 @require_auth
 def llms_txt():
     def link(endpoint, title, note, **kw):
@@ -135,6 +149,7 @@ def llms_txt():
 
 
 @public_bp.route("/llms-full.txt")
+@public
 @require_auth
 def llms_full_txt():
     lines = _llms_header()
@@ -167,6 +182,7 @@ def llms_full_txt():
 
 
 @public_bp.route("/sitemap.xml")
+@public
 def sitemap_xml():
     urls = [url_for(e, _external=True) for e in _SITEMAP_ENDPOINTS]
     urls += [url_for("public.practice_area", slug=s, _external=True) for s in PRACTICE_AREAS]
@@ -184,24 +200,28 @@ def sitemap_xml():
 
 
 @public_bp.route("/case-search")
+@public
 @require_auth
 def case_search():
     return render_template("case_search.html")
 
 
 @public_bp.route("/how-it-works")
+@public
 @require_auth
 def how_it_works():
     return render_template("how_it_works.html")
 
 
 @public_bp.route("/why-nashville")
+@public
 @require_auth
 def why_nashville():
     return render_template("why_nashville.html")
 
 
 @public_bp.route("/emerging-tech")
+@public
 @require_auth
 def emerging_tech():
     areas = {slug: PRACTICE_AREAS[slug] for slug in EMERGING_TECH_AREAS}
@@ -220,6 +240,7 @@ _RETIRED_PRACTICE_AREAS = {"ai-emerging-tech", "defi-digital-assets"}
 
 
 @public_bp.route("/practice/<slug>")
+@public
 @require_auth
 def practice_area(slug):
     if slug in _RETIRED_PRACTICE_AREAS:
@@ -241,34 +262,43 @@ def practice_area(slug):
                            attorney=attorney, all_areas=PRACTICE_AREAS)
 
 
+def _field(data: dict, key: str, limit: int) -> str:
+    """A posted string field, trimmed and capped; anything else becomes ""."""
+    v = data.get(key, "")
+    return v.strip()[:limit] if isinstance(v, str) else ""
+
+
 @public_bp.route("/capture/lead", methods=["POST"])
+@public
+@csrf_exempt
 @require_auth
+@rate_limit("lead", limit=5, window=3600)
 def capture_lead():
     data = request.get_json()
     if not data:
         return jsonify({"error": "No data received."}), 400
 
-    name = data.get("name", "").strip()
+    name = _field(data, "name", 200)
     if not name:
         return jsonify({"error": "Name is required."}), 400
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    last_name  = name.split()[-1].replace(" ", "_")
-    filename   = f"{timestamp}_{last_name}_lead.json"
-    case_type  = data.get("case_type", "")
+    # A random name: the visitor's own text never becomes part of a path.
+    filename   = f"{timestamp}_{secrets.token_hex(6)}_lead.json"
+    case_type  = _field(data, "case_type", 100)
 
     record = {
         "timestamp":         timestamp,
         "name":              name,
-        "phone":             data.get("phone", ""),
-        "email":             data.get("email", ""),
+        "phone":             _field(data, "phone", 40),
+        "email":             _field(data, "email", 200),
         "case_type":         case_type,
-        "source":            data.get("source", ""),
-        "notes":             data.get("notes", ""),
+        "source":            _field(data, "source", 100),
+        "notes":             _field(data, "notes", 5000),
         "assigned_attorney": CASE_ATTORNEY_MAP.get(case_type, MANAGING_PARTNER["username"]),
     }
 
-    write_json(LEADS_DIR / filename, record)
+    storage.write_encrypted_json(shared.LEADS_DIR / filename, record)
 
     # Auto-reply email: warm acknowledgment + booking link
     if record.get("email", "").strip():
@@ -280,27 +310,29 @@ def capture_lead():
                 assigned_attorney = record["assigned_attorney"],
             )
         except Exception:
-            pass
+            log.warning("Ignored error in public", exc_info=True)
 
     return jsonify({"success": True})
 
 
 @public_bp.route("/follow-up/schedule", methods=["POST"])
+@public
+@csrf_exempt
 @require_auth
+@rate_limit("followup", limit=5, window=3600)
 def follow_up_schedule():
     data = request.get_json()
     if not data:
         return jsonify({"error": "No data received."}), 400
 
-    name  = data.get("name", "").strip()
-    phone = data.get("phone", "").strip()
+    name  = _field(data, "name", 200)
+    phone = _field(data, "phone", 40)
     if not name or not phone:
         return jsonify({"error": "Name and phone number are required."}), 400
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    last_name  = name.split()[-1].replace(" ", "_")
-    filename   = f"{timestamp}_{last_name}_followup.json"
-    case_type  = data.get("case_type", "")
+    filename   = f"{timestamp}_{secrets.token_hex(6)}_followup.json"
+    case_type  = _field(data, "case_type", 100)
 
     record = {
         "timestamp":         timestamp,
@@ -308,11 +340,11 @@ def follow_up_schedule():
         "name":              name,
         "phone":             phone,
         "case_type":         case_type,
-        "message":           data.get("message", ""),
+        "message":           _field(data, "message", 5000),
         "assigned_attorney": CASE_ATTORNEY_MAP.get(case_type, MANAGING_PARTNER["username"]),
     }
 
-    write_json(LEADS_DIR / filename, record)
+    storage.write_encrypted_json(shared.LEADS_DIR / filename, record)
 
     return jsonify({"success": True})
 
@@ -332,7 +364,10 @@ CHAT_CLOSED_REPLY = (
 
 
 @public_bp.route("/chat/message", methods=["POST"])
+@public
+@csrf_exempt
 @require_auth
+@rate_limit("chat", limit=30, window=600)
 def chat_message():
     """Public marketing-site chat widget.
 
@@ -341,7 +376,7 @@ def chat_message():
     which authenticates them via the session instead of a posted username.
     """
     data = request.get_json() or {}
-    text = data.get("message", "").strip()
+    text = _field(data, "message", 4000)
     if not text:
         return jsonify({"error": "Message is empty."}), 400
     if date.today() < shared.CHAT_OPENS_ON:
@@ -369,7 +404,10 @@ def chat_message():
     turns = []
     for turn in (data.get("history") or [])[-_CHAT_HISTORY_TURNS:]:
         role    = turn.get("role")
-        content = (turn.get("content") or "").strip()
+        if not isinstance(turn, dict):
+            continue
+        content = turn.get("content")
+        content = content.strip()[:4000] if isinstance(content, str) else ""
         if role in ("user", "assistant") and content:
             turns.append({"role": role, "content": content})
     # The model requires an alternating transcript that starts with the user.
@@ -393,11 +431,18 @@ def chat_message():
 
 
 @public_bp.route("/api/track-visit", methods=["POST"])
+@public
+@csrf_exempt
 @require_auth
+@rate_limit("visit", limit=120, window=600)
 def api_track_visit():
     data = request.get_json() or {}
     page = data.get("page", "unknown")
+    if not isinstance(page, str) or not re.fullmatch(r"[A-Za-z0-9_\-/]{1,60}", page):
+        return jsonify({"success": True})
     visits = _load_page_visits()
+    if page not in visits and len(visits) >= 200:
+        return jsonify({"success": True})
     visits[page] = visits.get(page, 0) + 1
     _save_page_visits(visits)
     return jsonify({"success": True})
@@ -433,10 +478,14 @@ def _clerk_url(county: str, case_type: str):
 # ── Case search ────────────────────────────────────────────────────────────────
 
 @public_bp.route("/api/case-search", methods=["POST"])
+@public
 @require_auth
+@rate_limit("case_search", limit=30, window=600)
 def api_case_search():
     data      = request.get_json(force=True) or {}
-    county    = (data.get("county") or "").strip()
+    county    = _field(data, "county", 60)
+    if county and not re.fullmatch(r"[A-Za-z .'\-]+", county):
+        return jsonify({"error": "Please select a county and case type."}), 400
     case_type = (data.get("case_type") or "").strip().lower()
     if not county or case_type not in ("criminal", "civil"):
         return jsonify({"error": "Please select a county and case type."}), 400

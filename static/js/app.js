@@ -22,7 +22,8 @@ function escapeHtml(str) {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");   // also safe inside single-quoted attributes (data-on-*)
 }
 
 // ── Utility: render model-generated HTML safely ────────────────────────────
@@ -86,7 +87,7 @@ function copyToClipboard(elementId) {
   if (!el) return;
   const text = el.tagName === "TEXTAREA" ? el.value : el.innerText;
   navigator.clipboard.writeText(text).then(function () {
-    const btn = document.querySelector('[onclick*="copyToClipboard"]');
+    const btn = document.querySelector('[data-on-click*="copyToClipboard"]');
     if (btn) {
       const original = btn.textContent;
       btn.textContent = "Copied!";
@@ -151,31 +152,29 @@ function submitIntake(event) {
     .then(function (r) { return r.json(); })
     .then(function (res) {
       if (res.error) { showError("intake-result", res.error); return; }
-      renderIntakeSummary(res, resultEl);
+      renderIntakeSummary(res, data, resultEl);
     })
     .catch(function (err) { showError("intake-result", "Network error: " + err.message); });
 }
 
-function renderIntakeSummary(res, el) {
-  const r = res.record;
-
-  // Build urgent banners
+function renderIntakeSummary(res, r, el) {
+  // `r` is what the visitor typed; the server returns no account or file details.
   let urgentHtml = "";
   if (res.urgent_dates && res.urgent_dates.length > 0) {
     const items = res.urgent_dates.map(function (d) {
-      return `<li><strong>${escapeHtml(d.label)}:</strong> ${escapeHtml(d.date)} (${d.days_away} day${d.days_away === 1 ? "" : "s"} away)</li>`;
+      const days = Number(d.days_away) || 0;
+      return `<li><strong>${escapeHtml(d.label)}:</strong> ${escapeHtml(d.date)} (${days} day${days === 1 ? "" : "s"} away)</li>`;
     }).join("");
     urgentHtml = `
       <div class="alert alert-urgent">
         <span class="alert-icon">🚨</span>
         <div>
-          <div class="alert-title">URGENT DEADLINE — Action Required</div>
+          <div class="alert-title">Upcoming date: please call us</div>
           <ul style="margin-top:.4rem;padding-left:1.2rem">${items}</ul>
         </div>
       </div>`;
   }
 
-  // Date rows
   function dateRow(label, val) {
     if (!val) return "";
     return `<tr><th>${escapeHtml(label)}</th><td>${escapeHtml(val)}</td></tr>`;
@@ -183,54 +182,30 @@ function renderIntakeSummary(res, el) {
 
   el.innerHTML = `
     <div class="card" id="intake-summary-card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-        <h2 style="margin:0">Intake Summary</h2>
-        <span style="font-family:Arial,sans-serif;font-size:.8rem;color:var(--gray-3)">Saved: ${escapeHtml(res.filename)}</span>
-      </div>
+      <h2 style="margin:0 0 1rem">Intake Received</h2>
       ${urgentHtml}
       <div class="alert alert-success" style="margin-bottom:1.25rem">
         <span class="alert-icon">✓</span>
-        <div>Intake record saved successfully.</div>
+        <div>Thank you. The attorney will review your information and contact you.
+          ${res.email_sent ? "A confirmation has been emailed to you." : ""}
+          Sending this form does not by itself create an attorney-client relationship.</div>
       </div>
-      ${res.portal_account ? `
-      <div class="alert alert-info" style="margin-bottom:1.25rem;background:linear-gradient(135deg,#0d1a2e,#1a2c4e);border:1px solid rgba(201,168,76,.4);color:rgba(255,255,255,.9)">
-        <span class="alert-icon">🔐</span>
-        <div style="width:100%">
-          <div style="font-weight:bold;margin-bottom:.5rem;color:var(--gold);font-size:1rem">Your Client Portal Account</div>
-          <div style="font-size:.92rem;line-height:1.85">
-            <strong>Username:</strong> ${escapeHtml(res.portal_account.username)}<br>
-            <strong>Temporary Password:</strong> ${escapeHtml(res.portal_account.temp_password)}<br>
-            <strong>Assigned Attorney:</strong> ${escapeHtml(res.portal_account.assigned_attorney)}
-          </div>
-          <div style="margin-top:.65rem;padding:.55rem .75rem;background:rgba(201,168,76,.12);border-radius:6px;border-left:3px solid var(--gold);font-size:.82rem;line-height:1.6">
-            ⚠ <strong style="color:var(--gold)">You will be required to set a new password</strong> the first time you log in.
-            Write down or save these credentials now.
-          </div>
-          <a href="/client-login" style="display:inline-block;margin-top:.75rem;font-size:.88rem;color:var(--gold);font-weight:bold">Log In to Client Portal →</a>
-        </div>
-      </div>` : ""}
-      ${res.doc_link ? `<div class="alert alert-info" style="margin-bottom:1.25rem"><span class="alert-icon">📄</span><div><strong>Saved to Google Docs</strong> — <a href="${res.doc_link}" target="_blank">Open document →</a></div></div>` : ""}
       <table class="summary-table">
         <tr><th>Full Name</th><td>${escapeHtml(r.full_name)}</td></tr>
-        <tr><th>Date of Birth</th><td>${escapeHtml(r.dob || "—")}</td></tr>
         <tr><th>Phone</th><td>${escapeHtml(r.phone || "—")}</td></tr>
         <tr><th>Email</th><td>${escapeHtml(r.email || "—")}</td></tr>
-        <tr><th>Case Type</th><td>${escapeHtml(r.case_type)}</td></tr>
-        <tr><th>Referral Source</th><td>${escapeHtml(r.referral_source || "—")}</td></tr>
+        <tr><th>Case Type</th><td>${escapeHtml(r.case_type || "Other")}</td></tr>
         <tr><th>Matter Description</th><td style="white-space:pre-wrap">${escapeHtml(r.matter_description)}</td></tr>
         ${dateRow("Arrest Date", r.arrest_date)}
         ${dateRow("Court Date", r.court_date_1)}
       </table>
       <div class="btn-group no-print">
-        <button class="btn btn-calendar"
-          data-client="${escapeHtml(r.full_name)}"
-          data-matter="${escapeHtml(r.matter_description)}"
-          data-casetype="${escapeHtml(r.case_type)}"
-          onclick="openScheduleModalFromBtn(this)">📞 Schedule Initial Call (Free)</button>
-        <button class="btn btn-print" onclick="printPage()">🖨 Print / Save as PDF</button>
-        <button class="btn btn-secondary" onclick="resetIntake()">New Intake</button>
+        <button class="btn btn-print" data-action="print">🖨 Print / Save as PDF</button>
+        <button class="btn btn-secondary" data-action="reset-intake">New Intake</button>
       </div>
     </div>`;
+  el.querySelector('[data-action="print"]').addEventListener("click", printPage);
+  el.querySelector('[data-action="reset-intake"]').addEventListener("click", resetIntake);
 
   el.style.display = "block";
   el.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -287,20 +262,12 @@ function submitResearch(event) {
       var dlBtn = document.createElement("button");
       dlBtn.className = "btn btn-print";
       dlBtn.textContent = "🖨 Download Research Report";
-      dlBtn.addEventListener("click", function () { openForcedIntakeModal("research"); });
+      dlBtn.addEventListener("click", printPage);
       actions.appendChild(dlBtn);
 
       resultEl.appendChild(memo);
       resultEl.appendChild(actions);
       resultEl.style.display = "block";
-      // Optional, dismissable consultation prompt (separate from the hard download gate)
-      setTimeout(function () {
-        showConsultModal(
-          "Ready to Discuss Your Case?",
-          "This memo is an educational overview. Our attorneys can evaluate how these principles apply to your specific situation and advise you on the strongest path forward. Schedule a free initial consultation — it costs nothing to learn your options.",
-          "Continue Reviewing"
-        );
-      }, 3000);
       // On mobile: auto-collapse the query panel so results are front and center
       if (window.innerWidth <= 800) {
         var qp  = document.getElementById("query-panel");
@@ -574,6 +541,41 @@ function onTemplateChange() {
     const target = document.getElementById(templateFieldsId(tmpl));
     if (target) target.style.display = "grid";
   }
+}
+
+// Save a draft to Google Drive as a Google Doc and open it in a new tab.
+// The tab is opened before the request so popup blockers allow it; statusEl
+// (optional) shows progress and errors as text.
+function openAsGoogleDoc(title, content, username, statusEl) {
+  if (!content) return;
+  var win = window.open("", "_blank");
+  if (win) { win.opener = null; win.document.title = "Creating Google Doc…"; }
+  function status(msg, isError) {
+    if (!statusEl) return;
+    statusEl.style.color = isError ? "var(--red, #c0392b)" : "";
+    statusEl.textContent = msg;
+  }
+  status("Creating Google Doc…", false);
+  fetch("/drafting/google-doc", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title: title, content: content, username: username || "" }),
+  })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (!d.success) {
+        if (win) win.close();
+        status(d.error || "Could not create the Google Doc.", true);
+        return;
+      }
+      if (win) win.location.href = d.url;
+      else window.open(d.url, "_blank", "noopener");
+      status("Saved to Google Drive as “" + d.title + "”.", false);
+    })
+    .catch(function (e) {
+      if (win) win.close();
+      status("Request failed: " + e.message, true);
+    });
 }
 
 // NOTE: the drafting form's submit handler lives in templates/drafting.html —

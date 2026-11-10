@@ -19,14 +19,17 @@
       <div class="sidebar-name">{{ client.client_name }}</div>
     </div>
     <nav>
-      <button class="portal-tab-btn active" onclick="showTab('overview', this)">My Case</button>
-      <button class="portal-tab-btn" onclick="showTab('documents', this); loadClientDocs()">Documents</button>
-      <button class="portal-tab-btn" onclick="showTab('research', this)">Research</button>
-      <button class="portal-tab-btn" onclick="showTab('messages', this)">Message Attorney</button>
-      <button class="portal-tab-btn" onclick="showTab('billing', this); loadBilling()">Billing{% if has_new_statement %} <span class="new-badge">New</span>{% endif %}</button>
+      <button class="portal-tab-btn active" data-on-click='[["showTab",["overview","$this"]]]'>My Case</button>
+      <button class="portal-tab-btn" data-on-click='[["showTab",["documents","$this"]],["loadClientDocs",[]]]'>Documents</button>
+      <button class="portal-tab-btn" data-on-click='[["showTab",["research","$this"]]]'>Research</button>
+      <button class="portal-tab-btn" data-on-click='[["showTab",["messages","$this"]]]'>Message Attorney</button>
+      <button class="portal-tab-btn" id="tab-btn-billing" data-on-click='[["showTab",["billing","$this"]],["loadBilling",[]]]'>Billing{% if has_new_statement %} <span class="new-badge">New</span>{% endif %}</button>
     </nav>
     <div class="portal-sidebar-footer">
-      <a href="{{ url_for('auth.logout') }}" class="portal-logout-btn">Sign Out</a>
+      <form method="POST" action="{{ url_for('auth.logout') }}" class="logout-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <button type="submit" class="portal-logout-btn">Sign Out</button>
+    </form>
     </div>
   </aside>
 
@@ -43,22 +46,22 @@
       <div class="portal-stats">
         <div class="portal-stat">
           <div class="portal-stat-label">Case Type</div>
-          <div class="portal-stat-value" style="font-size:1.1rem">{{ client.case_type or '—' }}</div>
+          <div class="portal-stat-value" style="font-size:1.1rem" id="cp-case-type">{{ client.case_type or '—' }}</div>
         </div>
         <div class="portal-stat ov-stat-link" style="cursor:pointer"
-             onclick="showTab('billing', document.querySelector('.portal-tab-btn[onclick*=billing]')); loadBilling();"
+             data-on-click='[["showTab",["billing","$id:tab-btn-billing"]],["loadBilling",[]]]'
              title="View billing breakdown">
-          <div class="portal-stat-label">Hours Billed</div>
-          <div class="portal-stat-value">{{ billed_hours or 0 }}</div>
+          <div class="portal-stat-label" id="cp-hours-label">{{ 'Fee Balance' if flat_fee else 'Hours Billed' }}</div>
+          <div class="portal-stat-value" id="cp-hours">{% if flat_fee %}${{ '%.2f' % flat_fee.remaining }}{% else %}{{ billed_hours or 0 }}{% endif %}</div>
           <div class="portal-stat-sub" style="color:var(--gold);font-weight:600">View breakdown →</div>
         </div>
         <div class="portal-stat">
           <div class="portal-stat-label">Last Communication</div>
-          <div class="portal-stat-value" style="font-size:1rem">{{ client.last_communication or '—' }}</div>
+          <div class="portal-stat-value" style="font-size:1rem" id="cp-lastcomm">{{ client.last_communication or '—' }}</div>
         </div>
         <div class="portal-stat">
           <div class="portal-stat-label">Next Court Date</div>
-          <div class="portal-stat-value" style="font-size:1rem;color:{% if client.next_court_date %}var(--red){% else %}var(--navy){% endif %}">
+          <div class="portal-stat-value" id="cp-court" style="font-size:1rem;color:{% if client.next_court_date %}var(--red){% else %}var(--navy){% endif %}">
             {{ client.next_court_date or 'TBD' }}
           </div>
         </div>
@@ -66,19 +69,18 @@
 
       <div class="card" style="margin-bottom:1.25rem">
         <div class="portal-section-title">Legal Issue</div>
-        <p style="font-family:Arial,sans-serif;font-size:.95rem;line-height:1.7;color:var(--gray-4)">
+        <p id="cp-legal-issue" style="font-family:Arial,sans-serif;font-size:.95rem;line-height:1.7;color:var(--gray-4)">
           {{ client.legal_issue or 'Your attorney has not yet entered a case summary. Please check back after your initial consultation.' }}
         </p>
       </div>
 
-      {% if client.next_meeting %}
-      <div class="card" style="margin-bottom:1.25rem;border-left:4px solid var(--gold)">
+      <div class="card" id="cp-meeting-card"
+           style="margin-bottom:1.25rem;border-left:4px solid var(--gold);{% if not client.next_meeting %}display:none{% endif %}">
         <div class="portal-section-title">Next Scheduled Meeting</div>
-        <p style="font-family:Arial,sans-serif;font-size:1rem;color:var(--navy);font-weight:bold">
-          {{ client.next_meeting }}
+        <p id="cp-meeting" style="font-family:Arial,sans-serif;font-size:1rem;color:var(--navy);font-weight:bold">
+          {{ client.next_meeting or '' }}
         </p>
       </div>
-      {% endif %}
     </div>
 
     <!-- Documents tab -->
@@ -113,7 +115,7 @@
             placeholder="Example: What does it mean if the prosecutor files a motion to continue? What rights do I have during a traffic stop?"
             style="font-family:Arial,sans-serif;font-size:.95rem;line-height:1.6;width:100%;box-sizing:border-box"></textarea>
         </div>
-        <button class="btn btn-primary" id="cr-submit-btn" onclick="submitClientResearch()">Get Answer →</button>
+        <button class="btn btn-primary" id="cr-submit-btn" data-on-click='[["submitClientResearch",[]]]'>Get Answer →</button>
         <span id="cr-spinner" style="display:none;font-family:Arial,sans-serif;font-size:.9rem;color:var(--gray-3);margin-left:.5rem"> Researching…</span>
         <div id="cr-error" style="color:var(--red);font-family:Arial,sans-serif;font-size:.88rem;margin-top:.5rem"></div>
       </div>
@@ -122,15 +124,17 @@
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;flex-wrap:wrap;gap:.5rem">
           <div class="portal-section-title" style="margin:0">Answer</div>
           <div style="display:flex;align-items:center;gap:.6rem">
-            <button class="btn btn-primary" id="cr-save-btn" onclick="saveClientResearch()"
+            <button class="btn btn-primary" id="cr-save-btn" data-on-click='[["saveClientResearch",[]]]'
                     style="padding:.35rem .9rem;font-size:.84rem">Save to My Documents</button>
             <span id="cr-save-result" style="font-family:Arial,sans-serif;font-size:.84rem"></span>
           </div>
         </div>
         <div id="cr-answer" style="font-family:Arial,sans-serif;font-size:.92rem;line-height:1.7;color:var(--navy)"></div>
+        {% if not flat_fee %}
         <div style="margin-top:.9rem;padding:.6rem .8rem;background:#fffbe6;border-radius:6px;border:1px solid #f0d060;font-family:Arial,sans-serif;font-size:.8rem;color:#5a4800">
-          Saving this answer will add <strong>0.2 billable hours</strong> to your account at the standard rate.
+          Saving this answer may add up to <strong>0.2 hours</strong> at the standard rate, if your attorney approves the charge after reviewing it.
         </div>
+        {% endif %}
       </div>
 
       <div class="card" style="margin-top:1.25rem;padding:1rem 1.25rem">
@@ -150,7 +154,7 @@
 
       <div class="card">
         <div style="background:#f0f4f8;border-left:4px solid #6b8cae;border-radius:4px;padding:.65rem 1rem;margin-bottom:.85rem;font-family:Arial,sans-serif;font-size:.82rem;color:#2c3e50">
-          <strong>{{ firm_name }} Assistant:</strong> You are chatting with an AI assistant. All messages are saved and reviewed by your attorney. Responses are billed at 0.1 hrs per message.
+          <strong>{{ firm_name }} Assistant:</strong> You are chatting with an AI assistant. All messages are saved and reviewed by your attorney.{% if not flat_fee %} Your attorney may bill up to 0.1 hrs per reply after reviewing it.{% endif %}
         </div>
         <div class="portal-section-title">Message Thread</div>
         <div class="message-thread" id="message-thread">
@@ -175,12 +179,13 @@
           <textarea id="msg-text" rows="4" placeholder="Type your message here…" style="resize:vertical"></textarea>
         </div>
         <div id="msg-result"></div>
-        <button class="btn btn-primary" onclick="sendMessage()">Send Message →</button>
+        <button class="btn btn-primary" data-on-click='[["sendMessage",[]]]'>Send Message →</button>
         <p style="font-family:Arial,sans-serif;font-size:.78rem;color:var(--gray-3);
                   margin-top:.75rem;line-height:1.6">
-          Messages receive an immediate reply from the {{ firm_name }} Assistant, billed at
-          0.1 hr of the standard hourly rate. Your attorney reviews every message.
-          <button type="button" onclick="openFeeSchedule()"
+          Messages receive an immediate reply from the {{ firm_name }} Assistant{% if flat_fee %}, included
+          in your flat fee{% else %}; your attorney may bill up to
+          0.1 hr of the standard hourly rate per reply after reviewing it{% endif %}. Your attorney reviews every message.
+          <button type="button" data-on-click='[["openFeeSchedule",[]]]'
                   style="background:none;border:none;padding:0;color:var(--gold);
                          font-family:inherit;font-size:inherit;text-decoration:underline;
                          cursor:pointer">See the fee schedule</button>.
@@ -197,7 +202,7 @@
 
       <!-- Balance summary -->
       <div class="portal-stats" id="billing-stats">
-        <div class="portal-stat">
+        <div class="portal-stat" id="bill-hours-stat">
           <div class="portal-stat-label">Billed Hours</div>
           <div class="portal-stat-value" id="bill-hours-billed">&mdash;</div>
         </div>
@@ -206,11 +211,20 @@
           <div class="portal-stat-value" id="bill-balance-due" style="color:var(--red)">&mdash;</div>
           <div class="portal-stat-sub" id="bill-balance-sub"></div>
         </div>
-        <div class="portal-stat">
+        <div class="portal-stat" id="bill-rate-stat">
           <div class="portal-stat-label">Rate</div>
           <div class="portal-stat-value" id="bill-rate">&mdash;</div>
           <div class="portal-stat-sub">per hour</div>
         </div>
+      </div>
+
+      <!-- Flat fee (hidden for hourly clients) -->
+      <div class="card" id="billing-flat-card" style="margin-bottom:1.25rem;display:none">
+        <div class="portal-section-title">Flat Fee</div>
+        <p id="billing-flat-desc" style="font-family:Arial,sans-serif;font-size:.9rem;color:var(--gray-4);margin:0 0 .6rem"></p>
+        <table style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:.9rem">
+          <tbody id="billing-flat-body"></tbody>
+        </table>
       </div>
 
       <!-- Pay Now card (hidden when balance = 0) -->
@@ -218,8 +232,8 @@
         <div class="portal-section-title">Pay Now</div>
         <p id="billing-amount-label" style="font-family:Arial,sans-serif;font-size:1.1rem;font-weight:bold;color:var(--navy);margin-bottom:1rem"></p>
         <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:.75rem">
-          <button class="btn btn-primary" id="btn-pay-card" onclick="payWithCard()">Pay with Card &rarr;</button>
-          <button class="btn btn-secondary" id="btn-pay-crypto" onclick="payWithCrypto()">Pay with Crypto &rarr;</button>
+          <button class="btn btn-primary" id="btn-pay-card" data-on-click='[["payWithCard",[]]]'>Pay with Card &rarr;</button>
+          <button class="btn btn-secondary" id="btn-pay-crypto" data-on-click='[["payWithCrypto",[]]]'>Pay with Crypto &rarr;</button>
         </div>
         <p style="font-family:Arial,sans-serif;font-size:.78rem;color:var(--gray-3)">
           Card: Visa &middot; Mastercard &middot; Amex &middot; ACH &nbsp;|&nbsp;
@@ -260,7 +274,7 @@
       <div class="card" id="billing-log-card" style="display:none;margin-bottom:1.25rem">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.85rem">
           <div class="portal-section-title" style="margin-bottom:0">Hours Breakdown</div>
-          <button onclick="openFeeSchedule()" style="font-family:Arial,sans-serif;font-size:.75rem;font-weight:600;color:var(--gold);background:rgba(168,136,60,.1);border:1px solid rgba(168,136,60,.3);border-radius:20px;padding:.25rem .8rem;cursor:pointer;transition:background .15s" onmouseover="this.style.background='rgba(168,136,60,.2)'" onmouseout="this.style.background='rgba(168,136,60,.1)'">
+          <button data-on-click='[["openFeeSchedule",[]]]' style="font-family:Arial,sans-serif;font-size:.75rem;font-weight:600;color:var(--gold);background:rgba(168,136,60,.1);border:1px solid rgba(168,136,60,.3);border-radius:20px;padding:.25rem .8rem;cursor:pointer;transition:background .15s" class="fee-schedule-btn">
             Standard Fee Schedule →
           </button>
         </div>
@@ -307,7 +321,7 @@
         <div style="font-family:Georgia,serif;font-size:1.1rem;font-weight:bold;color:#fff">Standard Fee Schedule</div>
         <div style="font-family:Arial,sans-serif;font-size:.75rem;color:rgba(255,255,255,.55);margin-top:.1rem">{{ firm_name }}</div>
       </div>
-      <button onclick="closeFeeSchedule()" style="background:none;border:none;color:rgba(255,255,255,.6);font-size:1.2rem;cursor:pointer;line-height:1;padding:.2rem .4rem" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.6)'">✕</button>
+      <button data-on-click='[["closeFeeSchedule",[]]]' style="background:none;border:none;color:rgba(255,255,255,.6);font-size:1.2rem;cursor:pointer;line-height:1;padding:.2rem .4rem" class="fee-schedule-close">✕</button>
     </div>
     <div style="padding:1.5rem">
       <p style="font-family:Arial,sans-serif;font-size:.82rem;color:var(--gray-3);margin-bottom:1.25rem;line-height:1.6">All services are billed at the standard hourly rate. The table below reflects the time allotted for common legal tasks. Time is billed in tenths of an hour (0.1 hr increments).</p>
@@ -330,7 +344,7 @@
       </div>
 
       <div style="margin-top:1rem;text-align:right">
-        <button onclick="closeFeeSchedule()" class="btn btn-secondary" style="font-size:.88rem">Close</button>
+        <button data-on-click='[["closeFeeSchedule",[]]]' class="btn btn-secondary" style="font-size:.88rem">Close</button>
       </div>
     </div>
   </div>
@@ -341,12 +355,14 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
+<script nonce="{{ csp_nonce() }}">
 function showTab(name, btn) {
   document.querySelectorAll(".portal-panel").forEach(p => p.classList.remove("active"));
   document.querySelectorAll(".portal-tab-btn").forEach(b => b.classList.remove("active"));
   document.getElementById("tab-" + name).classList.add("active");
   btn.classList.add("active");
+  // A new page starts at its top, so attention goes to its heading.
+  window.scrollTo({ top: 0, left: 0, behavior: "instant" });
 }
 
 function sendMessage() {
@@ -582,8 +598,38 @@ function loadBilling() {
     });
 }
 
+function renderFlatFee(f, hasStatements) {
+  var card = document.getElementById("billing-flat-card");
+  document.getElementById("bill-hours-stat").style.display = (f && !hasStatements) ? "none" : "";
+  document.getElementById("bill-rate-stat").style.display  = (f && !hasStatements) ? "none" : "";
+  if (!f) { card.style.display = "none"; return; }
+  card.style.display = "";
+  document.getElementById("billing-flat-desc").textContent =
+    (f.description ? f.description + " \u00b7 " : "") + f.plan_label;
+  var rows = [["Flat fee", "$" + f.amount.toFixed(2)]];
+  if (f.plan === "half") rows.push(["First half (up front)", "$" + f.first_payment.toFixed(2)]);
+  rows.push(["Paid", "$" + f.paid.toFixed(2)]);
+  rows.push(["Remaining", "$" + f.remaining.toFixed(2)]);
+  if (f.remaining > 0 && f.due_date) {
+    rows.push([f.plan === "half" ? "Second half due" : "Due by", f.due_date + (f.overdue ? " (past due)" : "")]);
+  }
+  var tbody = document.getElementById("billing-flat-body");
+  while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
+  rows.forEach(function(r, i) {
+    var tr = document.createElement("tr");
+    tr.style.borderBottom = "1px solid var(--gray-1)";
+    var a = document.createElement("td"); a.style.padding = ".4rem .5rem"; a.textContent = r[0];
+    var b = document.createElement("td"); b.style.padding = ".4rem .5rem"; b.style.textAlign = "right";
+    b.style.fontWeight = r[0] === "Remaining" ? "700" : "400";
+    if (r[0] === "Remaining") b.style.color = f.remaining > 0 ? "var(--red)" : "var(--green)";
+    b.textContent = r[1];
+    tr.appendChild(a); tr.appendChild(b); tbody.appendChild(tr);
+  });
+}
+
 function renderBilling() {
   var d = _billingData;
+  renderFlatFee(d.flat_fee, (d.statements || []).length > 0);
   document.getElementById("bill-hours-billed").textContent = d.billed_hours;
   document.getElementById("bill-rate").textContent         = "$" + d.hourly_rate.toFixed(0);
   renderBillingStatements(d.statements || []);
@@ -594,7 +640,8 @@ function renderBilling() {
     : "";
   if (d.amount_due > 0) {
     document.getElementById("bill-balance-due").textContent  = "$" + d.amount_due.toFixed(2);
-    document.getElementById("bill-balance-sub").textContent  = "on issued statements";
+    document.getElementById("bill-balance-sub").textContent  =
+      d.flat_fee && !(d.statements || []).length ? "remaining on your flat fee" : "on issued statements";
     document.getElementById("billing-amount-label").textContent = "Amount Due: $" + d.amount_due.toFixed(2);
     document.getElementById("bill-balance-due").style.color    = "var(--red)";
     document.getElementById("billing-pay-card").style.display  = "";
@@ -613,7 +660,7 @@ function renderBilling() {
     document.getElementById("bill-balance-sub").textContent    = "";
     document.getElementById("billing-pay-card").style.display  = "none";
     document.getElementById("billing-paid-msg").style.display  =
-      (d.statements || []).length ? "" : "none";
+      ((d.statements || []).length || d.flat_fee) ? "" : "none";
   }
   var payments = d.payments || [];
   if (payments.length) {
@@ -916,10 +963,156 @@ function navGuardStay() {
   document.getElementById('nav-guard-modal').style.display = 'none';
 }
 
+// ── Live updates ──────────────────────────────────────────────────────────────
+// Polls /portal/client/live every few seconds while the tab is visible, and
+// right after the client changes something. When the file changes, the case
+// overview, message thread, documents and billing redraw in place.
+var _cpLive = { token: "", first: true, inflight: false, stopped: false, timer: null, msgCount: null };
+// Requests made by the live code are marked X-Live-Refresh so they don't count
+// as activity for the idle timeout. _cpBg marks fetches started by page
+// functions (loadBilling) called from here.
+var _cpBaseFetch = window.fetch.bind(window);
+var _cpBg = false;
+function _cpMark(opts) {
+  var o = Object.assign({}, opts || {});
+  var h = new Headers(o.headers || {});
+  h.set("X-Live-Refresh", "1");
+  o.headers = h;
+  return o;
+}
+function _cpFetch(input, opts) { return _cpBaseFetch(input, _cpMark(opts)); }
+
+function cpLivePoll() {
+  if (_cpLive.stopped || _cpLive.inflight) return;
+  _cpLive.inflight = true;
+  _cpFetch("/portal/client/live?since=" + encodeURIComponent(_cpLive.token))
+    .then(function(r) {
+      if (r.status === 401 || r.redirected) { _cpLive.stopped = true; return null; }
+      return r.ok ? r.json() : null;
+    })
+    .then(function(d) {
+      if (!d) return;
+      var first = _cpLive.first;
+      _cpLive.first = false;
+      _cpLive.token = d.token;
+      if (d.changed && !first) cpLiveRefresh();
+    })
+    .catch(function() {})
+    .finally(function() { _cpLive.inflight = false; });
+}
+
+function cpLiveRefresh() {
+  _cpFetch("/portal/client/summary")
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(s) {
+      if (!s) return;
+      document.getElementById("cp-case-type").textContent = s.case_type || "—";
+      document.getElementById("cp-hours-label").textContent = s.flat_fee ? "Fee Balance" : "Hours Billed";
+      document.getElementById("cp-hours").textContent     = s.flat_fee
+        ? "$" + Number(s.flat_fee.remaining).toFixed(2) : (s.billed_hours || 0);
+      document.getElementById("cp-lastcomm").textContent  = s.last_communication || "—";
+      var court = document.getElementById("cp-court");
+      court.textContent = s.next_court_date || "TBD";
+      court.style.color = s.next_court_date ? "var(--red)" : "var(--navy)";
+      document.getElementById("cp-legal-issue").textContent = s.legal_issue ||
+        "Your attorney has not yet entered a case summary. Please check back after your initial consultation.";
+      document.getElementById("cp-meeting").textContent = s.next_meeting || "";
+      document.getElementById("cp-meeting-card").style.display = s.next_meeting ? "" : "none";
+      cpRenderMessages(s);
+      if (s.has_new_statement && !document.querySelector(".portal-tab-btn .new-badge")) {
+        var billBtn = document.querySelector(".portal-tab-btn[onclick*='billing']");
+        if (billBtn) {
+          var badge = document.createElement("span");
+          badge.className = "new-badge";
+          badge.textContent = "New";
+          billBtn.appendChild(document.createTextNode(" "));
+          billBtn.appendChild(badge);
+        }
+      }
+    })
+    .catch(function() {});
+
+  // Documents and billing: refetch now if open, otherwise on next open.
+  var docsOpen = document.getElementById("tab-documents").classList.contains("active");
+  if (_clientDocData && docsOpen) {
+    _cpFetch("/portal/client/documents")
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(d) { if (d) { _clientDocData = d; renderClientDocList(); } })
+      .catch(function() {});
+  } else {
+    _clientDocData = null;
+  }
+  _billingData = null;
+  if (document.getElementById("tab-billing").classList.contains("active")) {
+    _cpBg = true;
+    try { loadBilling(); } finally { _cpBg = false; }
+  }
+}
+
+function cpRenderMessages(s) {
+  var msgs = s.messages || [];
+  if (_cpLive.msgCount === msgs.length) return;
+  _cpLive.msgCount = msgs.length;
+  var thread = document.getElementById("message-thread");
+  var atBottom = thread.scrollHeight - thread.scrollTop - thread.clientHeight < 40;
+  thread.textContent = "";
+  if (!msgs.length) {
+    var empty = document.createElement("p");
+    empty.style.cssText = "font-family:Arial,sans-serif;font-size:.9rem;color:var(--gray-3);text-align:center;padding:1.5rem 0";
+    empty.textContent = "No messages yet. Send your first message below.";
+    thread.appendChild(empty);
+    return;
+  }
+  msgs.forEach(function(m) {
+    var wrap = document.createElement("div");
+    var bubble = document.createElement("div");
+    bubble.className = "message-bubble from-" + (m.from || "client");
+    bubble.textContent = m.text;
+    var meta = document.createElement("div");
+    meta.className = "message-meta";
+    var ours = m.from === "attorney" || m.from === "ai";
+    meta.style.textAlign = ours ? "right" : "left";
+    var who = m.from === "attorney" ? "Attorney"
+            : m.from === "ai" ? "{{ firm_name }} Assistant"
+            : (s.client_name || "You");
+    meta.textContent = who + " · " + (m.date || "");
+    wrap.appendChild(bubble);
+    wrap.appendChild(meta);
+    thread.appendChild(wrap);
+  });
+  if (atBottom) thread.scrollTop = thread.scrollHeight;
+}
+
+// A change made from this page (a message, a saved answer) triggers a poll.
+window.fetch = function(input, opts) {
+  if (_cpBg) opts = _cpMark(opts);
+  var p = _cpBaseFetch(input, opts);
+  var method = ((opts && opts.method) || (input && input.method) || "GET").toUpperCase();
+  var url = typeof input === "string" ? input : (input && input.url) || "";
+  if (new URL(url, location.href).origin === location.origin && method !== "GET" && method !== "HEAD") {
+    p.then(function(r) { if (r.ok) setTimeout(cpLivePoll, 300); }).catch(function() {});
+  }
+  return p;
+};
+
+function cpLiveSchedule() {
+  clearInterval(_cpLive.timer);
+  _cpLive.timer = document.hidden ? null : setInterval(cpLivePoll, 8000);
+}
+document.addEventListener("visibilitychange", function() {
+  cpLiveSchedule();
+  if (!document.hidden) cpLivePoll();
+});
+window.addEventListener("DOMContentLoaded", function() {
+  _cpLive.msgCount = {{ (client.messages or [])|length }};
+  cpLivePoll();
+  cpLiveSchedule();
+});
+
 function navGuardLogout() {
   // Disable beforeunload so the logout redirect goes through cleanly
   window.onbeforeunload = null;
-  window.location.href = '/logout';
+  submitLogout();
 }
 </script>
 
@@ -936,12 +1129,12 @@ function navGuardLogout() {
       Your session is still active. Would you like to return to the portal or sign out?
     </p>
     <div style="display:flex;flex-direction:column;gap:.65rem">
-      <button onclick="navGuardStay()"
+      <button data-on-click='[["navGuardStay",[]]]'
               style="padding:.7rem 1rem;background:#1a3a5c;color:#fff;border:none;
                      border-radius:7px;font-size:.95rem;cursor:pointer;font-weight:600">
         Return to Portal
       </button>
-      <button onclick="navGuardLogout()"
+      <button data-on-click='[["navGuardLogout",[]]]'
               style="padding:.7rem 1rem;background:#fff;color:#c0392b;border:2px solid #c0392b;
                      border-radius:7px;font-size:.95rem;cursor:pointer;font-weight:600">
         Sign Out &amp; Go to Login

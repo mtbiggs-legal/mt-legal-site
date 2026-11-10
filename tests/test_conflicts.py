@@ -6,6 +6,8 @@ import pytest
 
 from services import conflicts
 import shared
+from flask import session
+from conftest import put_raw
 from services import storage
 from conftest import flask_app
 
@@ -53,8 +55,8 @@ def test_single_token_prefix_not_likely():
 def _with_viewer(username):
     ctx = flask_app.test_request_context("/")
     ctx.push()
-    shared.session["role"] = "attorney"
-    shared.session["username"] = username
+    session["role"] = "attorney"
+    session["username"] = username
     return ctx
 
 
@@ -147,7 +149,7 @@ def test_clean_names_and_related():
 
 def test_record_check_incomplete_on_undecryptable(make_client, tmp_path):
     make_client("c1", client_name="Robert Smith")
-    (tmp_path / "accounts" / "bad.json").write_bytes(b"not-a-fernet-token")
+    put_raw("bad", b"not-a-fernet-token")
     new = {"username": "newc"}
     rec = conflicts.record_check(new, "create", "Endocide", client_names=["Bob Smith"])
     assert rec["incomplete"] == 1
@@ -157,7 +159,7 @@ def test_record_check_incomplete_on_undecryptable(make_client, tmp_path):
 
 def test_all_clients_skipped_list(make_client, tmp_path):
     make_client("c1")
-    (tmp_path / "accounts" / "bad.json").write_bytes(b"not-a-fernet-token")
+    put_raw("bad", b"not-a-fernet-token")
     skipped = []
     assert len(storage.all_clients(skipped)) == 1
     assert skipped == ["bad"]

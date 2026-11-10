@@ -68,13 +68,6 @@ def test_client_login_throttled(client, clock, make_client):
     assert r.status_code == 429
 
 
-def test_claim_document_throttled(client, clock, make_client):
-    make_client("tclient", client_name="Test Client", password=accounts.hash_password("right-pass"))
-    body = {"full_name": "Test Client", "password": "wrong-pass", "draft_content": "<p>x</p>"}
-    for _ in range(5):
-        assert client.post("/drafting/claim-document", json=body).status_code == 403
-    body["password"] = "right-pass"
-    assert client.post("/drafting/claim-document", json=body).status_code == 429
 
 
 def test_corrupt_state_file_is_treated_as_empty(clock):

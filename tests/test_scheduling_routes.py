@@ -1,8 +1,9 @@
 """Scheduling-order routes (spec C2, C3)."""
 
 import pytest
+from conftest import access_log
 
-import blueprints.portal_attorney as pa
+import blueprints.portal_attorney.scheduling as pa   # scheduling-order routes
 from services import scheduling_orders as so
 from services import storage
 
@@ -85,7 +86,7 @@ def test_confirm_saves_and_bills(attorney_session, order, gcal):
     assert c["case_dates_history"] == []
     bill = c["billing_log"][-1]
     assert (bill["hours"], bill["type"]) == (0.2, "scheduling_order") and bill["date"]
-    assert c["access_log"][-1]["action"] == "case_dates_confirmed"
+    assert access_log(c["username"])[-1]["action"] == "case_dates_confirmed"
     assert len(gcal["create"]) == 2
 
 
@@ -265,7 +266,7 @@ def test_removal_only_is_not_billed(attorney_session, order, gcal):
     _confirm(attorney_session, trial="2027-03-01")                    # removal only
     c = storage.load_client("sc")
     assert "motions" not in c["case_dates"] and len(_sched_bills(c)) == 1
-    assert c["case_dates_history"] and c["access_log"][-1]["action"] == "case_dates_confirmed"
+    assert c["case_dates_history"] and access_log(c["username"])[-1]["action"] == "case_dates_confirmed"
     _confirm(attorney_session, trial="2027-04-01")                    # change
     assert len(_sched_bills(storage.load_client("sc"))) == 2
 

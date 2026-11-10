@@ -2,7 +2,7 @@
 
 from datetime import date, timedelta
 
-import blueprints.portal_attorney as pa
+import blueprints.portal_attorney.pages as pa   # the dashboard reads the calendar
 
 
 def _d(days):

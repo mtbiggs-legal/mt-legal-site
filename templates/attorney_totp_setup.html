@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Set Up Two-Step Sign-In — {{ firm_name }}{% endblock %}
+{% block styles %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="card auth-card auth-card-wide">
+  {% if recovery_codes %}
+    <h2 class="auth-title">Save Your Recovery Codes</h2>
+    <p class="auth-lead">Two-step sign-in is on. If you lose your phone, each of these codes
+      signs you in once. Print them or store them in your password manager now:
+      they won't be shown again.</p>
+    <ol class="recovery-codes">
+      {% for c in recovery_codes %}<li><code>{{ c }}</code></li>{% endfor %}
+    </ol>
+    <a class="btn btn-primary auth-submit" href="{{ url_for('portal_attorney.attorney_portal') }}">I've saved them: open the portal →</a>
+  {% else %}
+    <h2 class="auth-title">Set Up Two-Step Sign-In</h2>
+    <p class="auth-lead">The attorney portal needs a code from an authenticator app
+      (Google Authenticator, Microsoft Authenticator, 1Password, Authy…) at every sign-in.</p>
+
+    <ol class="setup-steps">
+      <li>In your app, choose <strong>Add account</strong> → <strong>Enter a setup key</strong>.</li>
+      <li>Account: <strong>{{ firm_name }}</strong>. Key (time-based):
+        <code class="setup-key">{{ secret }}</code>
+        <span class="auth-note">On this phone? <a href="{{ uri }}">Open in authenticator app</a></span></li>
+      <li>Enter the 6-digit code the app shows.</li>
+    </ol>
+
+    {% if error %}
+    <div class="alert alert-urgent auth-alert"><span class="alert-icon">⚠</span><div>{{ error }}</div></div>
+    {% endif %}
+
+    <form method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <div class="form-group auth-field">
+        <label for="code">Code from the app</label>
+        <input type="text" id="code" name="code" inputmode="numeric" autocomplete="one-time-code"
+               maxlength="6" required autofocus />
+      </div>
+      <button type="submit" class="btn btn-primary auth-submit">Turn On &amp; Continue →</button>
+    </form>
+  {% endif %}
+  </div>
+</div>
+{% endblock %}

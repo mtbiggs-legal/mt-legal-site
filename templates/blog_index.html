@@ -14,9 +14,9 @@
 <section class="ed-section ed-section--tight">
   {% if areas %}
   <nav class="blog-chips" aria-label="Filter by practice area">
-    <a href="{{ url_for('blog.index') }}" class="blog-chip {% if not selected %}active{% endif %}">All</a>
+    <a href="{{ site_link('blog.index') }}" class="blog-chip {% if not selected %}active{% endif %}">All</a>
     {% for a in areas %}
-    <a href="{{ url_for('blog.index', area=a.slug) }}" class="blog-chip {% if selected == a.slug %}active{% endif %}">{{ a.name }}</a>
+    <a href="{{ site_link('blog.index', area=a.slug) }}" class="blog-chip {% if selected == a.slug %}active{% endif %}">{{ a.name }}</a>
     {% endfor %}
   </nav>
   {% endif %}
@@ -24,7 +24,7 @@
   {% if posts %}
   <div class="blog-list">
     {% for p in posts %}
-    <a href="{{ url_for('blog.post', slug=p.slug) }}" class="blog-card">
+    <a href="{{ site_link('blog.post', slug=p.slug) }}" class="blog-card">
       <span class="blog-card-meta">{{ area_names.get(p.area, '') }} &middot; {{ format_labels.get(p.format, 'Article') }}{% if p.published_at %} &middot; {{ p.published_at[:10] }}{% endif %}</span>
       <h2>{{ p.title }}</h2>
       <p>{{ p.summary }}</p>

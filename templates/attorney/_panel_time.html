@@ -4,6 +4,70 @@
     <h1 style="font-size:1.5rem">Time &amp; Notes</h1>
   </div>
 
+  <!-- Fee arrangement: hourly or flat fee -->
+  <div class="card fee-card" id="fee-card" style="margin-bottom:1.25rem">
+    <div class="portal-section-title">Fee Arrangement</div>
+    <div id="fee-status"></div>
+    <details id="fee-edit">
+      <summary id="fee-edit-summary">Set a flat fee</summary>
+      <div class="form-grid" style="margin-top:.75rem">
+        <div class="form-group">
+          <label for="fee-amount">Flat fee ($)</label>
+          <input type="number" id="fee-amount" min="1" max="100000" step="50" placeholder="e.g. 2500" />
+        </div>
+        <div class="form-group">
+          <label for="fee-plan">Payment</label>
+          <select id="fee-plan">
+            <option value="full">Paid in full up front</option>
+            <option value="half">Half up front, half later</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="fee-due" id="fee-due-label">Due by</label>
+          <input type="date" id="fee-due" />
+        </div>
+        <div class="form-group">
+          <label for="fee-desc">Covers (optional)</label>
+          <input type="text" id="fee-desc" maxlength="120" placeholder="e.g. DUI 1st, through General Sessions" />
+        </div>
+      </div>
+      <p class="sec-note">Earned on receipt and deposited as earned fees. The fee covers the matter: time not yet on a
+        statement, and time you log from now on, is tracked for you only. It is never billed or shown to the client.</p>
+      <div class="fee-actions">
+        <button type="button" class="btn btn-primary" id="fee-save-btn">Save flat fee</button>
+        <button type="button" class="btn btn-secondary" id="fee-remove-btn" style="display:none">Switch back to hourly</button>
+      </div>
+    </details>
+    <details id="pay-edit">
+      <summary>Record a payment</summary>
+      <div class="form-grid" style="margin-top:.75rem">
+        <div class="form-group">
+          <label for="pay-amount">Amount ($)</label>
+          <input type="number" id="pay-amount" min="0.01" step="0.01" />
+        </div>
+        <div class="form-group">
+          <label for="pay-method">Method</label>
+          <select id="pay-method">
+            <option value="check">Check</option>
+            <option value="cash">Cash</option>
+            <option value="card">Card</option>
+            <option value="wire">Wire</option>
+            <option value="zelle">Zelle</option>
+            <option value="venmo">Venmo</option>
+            <option value="money order">Money order</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label for="pay-ref">Reference (check no., confirmation)</label>
+          <input type="text" id="pay-ref" maxlength="60" />
+        </div>
+      </div>
+      <button type="button" class="btn btn-primary" id="pay-save-btn">Record payment</button>
+    </details>
+    <div id="fee-result"></div>
+  </div>
+
   <!-- Billing status -->
   <div class="card" id="bill-status-card" style="margin-bottom:1.25rem">
     <div class="portal-section-title">Billing Status</div>
@@ -47,7 +111,7 @@
       </div>
     </div>
     <div id="be-result" style="margin-top:.75rem"></div>
-    <button class="btn btn-primary" onclick="logBillingEntry()" style="margin-top:.75rem">Log Entry →</button>
+    <button class="btn btn-primary" data-on-click='[["logBillingEntry",[]]]' style="margin-top:.75rem">Log Entry →</button>
   </div>
 
   <!-- Billing log + running total -->

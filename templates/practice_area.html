@@ -138,7 +138,7 @@
     </section>
     {% endif %}
 
-    <a href="{{ url_for('public.meet_the_firm') }}" class="ed-layer ed-layer--link">
+    <a href="{{ site_link('public.meet_the_firm') }}" class="ed-layer ed-layer--link">
       <header class="ed-layer-head">
         <span class="ed-box-label">Your attorney</span>
         <h2>Meet Madison</h2>
@@ -170,7 +170,7 @@
 {% endif %}
 
 <!-- ── Closing CTA: the whole band is the link ──────────────────────────────── -->
-<a href="{{ url_for('intake.intake') }}?case_type={{ area.case_types[0] | urlencode }}" class="ed-cta ed-cta--link">
+<a href="{{ site_link('intake.intake') }}?case_type={{ area.case_types[0] | urlencode }}" class="ed-cta ed-cta--link">
   <div>
     <h2>Discuss your {{ area.name }} matter.</h2>
     <p>Start with a brief call at no cost. The consultation fee is credited toward your retainer if you hire us.</p>
@@ -183,7 +183,7 @@
   <h2 class="ed-subhead">Other practice areas</h2>
   <div class="ed-grid ed-grid--four ed-grid--compact">
     {% for s, a in all_areas.items() if s != slug %}
-    <a href="{{ url_for('public.practice_area', slug=s) }}" class="ed-cell"><h3>{{ a.name }}</h3></a>
+    <a href="{{ site_link('public.practice_area', slug=s) }}" class="ed-cell"><h3>{{ a.name }}</h3></a>
     {% endfor %}
   </div>
 </section>

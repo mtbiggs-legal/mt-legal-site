@@ -2,6 +2,7 @@
 
 import re
 import types
+from conftest import put_record
 
 import pytest
 
@@ -20,7 +21,7 @@ def test_billing_route_view_and_seen(client_session, make_client, issue_test_sta
     issue_test_statement("testclient", 1.0)
     c = storage.load_client("testclient")
     c["billing_log"].append({"date": "2026-10-03", "hours": 4.0, "note": "UNBILLED-SECRET"})
-    storage._write_record(shared.CLIENT_ACCOUNTS_DIR / "testclient.json", c)
+    put_record(c)
     r = client_session.get("/portal/client/billing")
     body = r.get_data(as_text=True)
     assert r.status_code == 200
@@ -49,7 +50,7 @@ def test_stripe_charges_statement_amount_only(client_session, make_client, issue
     issue_test_statement("testclient", 2.0)                      # $700
     c = storage.load_client("testclient")
     c["billing_log"].append({"date": "2026-10-03", "hours": 3.0, "note": "unbilled"})
-    storage._write_record(shared.CLIENT_ACCOUNTS_DIR / "testclient.json", c)
+    put_record(c)
     resp = client_session.post("/portal/client/payment/stripe", json={})
     assert resp.status_code == 200
     assert captured["line_items"][0]["price_data"]["unit_amount"] == 70000
@@ -61,7 +62,7 @@ def test_overview_shows_billed_hours(client_session, make_client, issue_test_sta
     c = storage.load_client("testclient")
     c["billing_log"].append({"date": "2026-10-03", "hours": 4.0, "note": "unbilled"})
     c["hours_billed"] = 5.5                                       # live total must not show
-    storage._write_record(shared.CLIENT_ACCOUNTS_DIR / "testclient.json", c)
+    put_record(c)
     html = client_session.get("/client-portal").get_data(as_text=True)
     values = re.findall(r'portal-stat-value[^>]*>\s*([^<]*?)\s*<', html)
     assert "1.5" in values and "5.5" not in values
@@ -114,7 +115,7 @@ def test_coinbase_charges_statement_amount_only(client_session, make_client, iss
     issue_test_statement("testclient", 2.0)                      # $700
     c = storage.load_client("testclient")
     c["billing_log"].append({"date": "2026-10-03", "hours": 3.0, "note": "unbilled"})
-    storage._write_record(shared.CLIENT_ACCOUNTS_DIR / "testclient.json", c)
+    put_record(c)
     monkeypatch.setattr(shared, "COINBASE_COMMERCE_API_KEY", "fake_key")
 
     captured = {}
@@ -135,12 +136,6 @@ def test_coinbase_charges_statement_amount_only(client_session, make_client, iss
     assert captured["json"]["local_price"]["amount"] == "700.00"
 
 
-def test_claim_document_returns_billed_hours(client):
-    d = client.post("/drafting/claim-document", json={
-        "full_name": "Cal Claimant", "password": "long-enough-1",
-        "draft_content": "<p>x</p>"}).get_json()
-    assert d["billed_hours"] == 0 and "hours_billed" not in d
-    assert d["success"] is True
 
 
 def test_checkout_names_hide_client_details(client_session, make_client, issue_test_statement, monkeypatch):

@@ -14,13 +14,14 @@ GATED_GET_ROUTES = [
     "/intake",
     "/research",
     "/drafting",
+    "/attorney-login",
+    "/client-login",
 ]
 
 GATED_POST_ROUTES = [
     "/intake/submit",
     "/research/query",
     "/drafting/generate",
-    "/drafting/claim-document",
     "/chat/message",
     "/capture/lead",
     "/follow-up/schedule",

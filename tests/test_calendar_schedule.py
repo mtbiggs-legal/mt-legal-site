@@ -29,7 +29,7 @@ BODY = {"client_name": "Test Client", "date": "2026-11-02", "time": "10:00"}
 
 def test_anonymous_cannot_touch_client(client, make_client):
     make_client("victim")
-    assert client.post("/calendar/schedule", json=BODY).status_code == 200
+    assert client.post("/calendar/schedule", json=BODY).status_code == 401
     assert storage.load_client("victim")["activity_log"] == []
 
 

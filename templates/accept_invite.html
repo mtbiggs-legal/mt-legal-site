@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Set Up Your Portal — {{ firm_name }}{% endblock %}
+{% block styles %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="card auth-card">
+    {% if invalid %}
+      <h2 class="auth-title">This link has expired</h2>
+      <p class="auth-lead">Invitation links work once and expire after 7 days.
+        Please contact the office and we'll send you a new one.</p>
+    {% else %}
+      <h2 class="auth-title">Set Up Your Client Portal</h2>
+      <p class="auth-lead">Your username is <strong>{{ username }}</strong>.
+        Choose a password to finish.</p>
+
+      {% if error %}
+      <div class="alert alert-urgent auth-alert"><span class="alert-icon">⚠</span><div>{{ error }}</div></div>
+      {% endif %}
+
+      <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <input type="hidden" name="username" value="{{ username }}" autocomplete="username" />
+        <div class="form-group auth-field">
+          <label for="new_password">New Password</label>
+          <input type="password" id="new_password" name="new_password" minlength="8"
+                 placeholder="At least 8 characters" required autocomplete="new-password" />
+        </div>
+        <div class="form-group auth-field">
+          <label for="confirm_password">Confirm Password</label>
+          <input type="password" id="confirm_password" name="confirm_password" minlength="8"
+                 required autocomplete="new-password" />
+        </div>
+        <button type="submit" class="btn btn-primary auth-submit">Save Password &amp; Enter Portal →</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

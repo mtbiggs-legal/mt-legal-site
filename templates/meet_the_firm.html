@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Meet {{ partner.name }} | Nashville DeFi, Digital Asset &amp; Trial Attorney | {{ firm_name }}{% endblock %}
+{% block title %}Meet {{ partner.name }} | Nashville Blockchain, Digital Assets &amp; Criminal Defense Attorney | {{ firm_name }}{% endblock %}
 {% block meta_description %}{{ partner.display }}, founder and managing attorney of {{ firm_name }}: a Nashville trial attorney involved in the crypto space since 2017, offering client-centered representation with dedicated support for DeFi and digital assets. Belmont Law graduate and Fisk University adjunct professor of Business Law, also handling criminal defense, civil rights, estate and family planning, and personal injury.{% endblock %}
 
 {% block styles %}
@@ -432,12 +432,12 @@
 <section class="ed-section ed-section--tight" style="padding-top:0">
   <div class="ed-boxes ed-boxes--compact">
     {% for slug, area in all_areas.items() %}
-    <a href="{{ url_for('public.practice_area', slug=slug) }}" class="ed-box"><h3>{{ area.name }}</h3></a>
+    <a href="{{ site_link('public.practice_area', slug=slug) }}" class="ed-box"><h3>{{ area.name }}</h3></a>
     {% endfor %}
   </div>
 </section>
 
-<a href="{{ url_for('intake.intake') }}" class="ed-cta ed-cta--link">
+<a href="{{ site_link('intake.intake') }}" class="ed-cta ed-cta--link">
   <div>
     <h2>Talk to {{ partner.name.split(' ')[0] }} directly.</h2>
     <p>Start with a brief call at no cost. The consultation fee is credited toward your retainer if you hire us.</p>
@@ -445,7 +445,7 @@
   <span class="btn ed-cta-btn">Start your intake</span>
 </a>
 
-<script>
+<script nonce="{{ csp_nonce() }}">
 // Phones: Read more / Show less for each part of the bio.
 document.querySelectorAll(".mp-read-more").forEach(function (btn) {
   btn.addEventListener("click", function () {
@@ -457,7 +457,7 @@ document.querySelectorAll(".mp-read-more").forEach(function (btn) {
   });
 });
 </script>
-<script>
+<script nonce="{{ csp_nonce() }}">
 (function () {
   var box = document.querySelector(".mp-bio-scroll");
   if (!box) return;

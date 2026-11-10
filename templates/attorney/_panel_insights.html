@@ -92,8 +92,8 @@
     <div class="ins-section-title" style="margin-top:0">Tax Reports &amp; W-2 Summaries</div>
     <div class="ins-year-row">
       <label>Tax Year:</label>
-      <select id="ins-tax-year" onchange="loadInsights()"></select>
-      <button class="btn btn-primary" style="padding:.3rem .85rem;font-size:.84rem" onclick="loadInsights()">Refresh ↻</button>
+      <select id="ins-tax-year" data-on-change='[["loadInsights",[]]]'></select>
+      <button class="btn btn-primary" style="padding:.3rem .85rem;font-size:.84rem" data-on-click='[["loadInsights",[]]]'>Refresh ↻</button>
     </div>
 
     <table class="ins-table" style="margin-bottom:1rem">
@@ -111,7 +111,7 @@
     </table>
 
     <div class="ins-export-row">
-      <button class="btn btn-primary" style="font-size:.84rem" onclick="exportTaxAll()">
+      <button class="btn btn-primary" style="font-size:.84rem" data-on-click='[["exportTaxAll",[]]]'>
         &#128438; Print All W-2 Summaries
       </button>
       <div id="ins-atty-export-btns"></div>
@@ -156,4 +156,13 @@
     </div>
   </div>
 
+
+  <!-- Sign-in activity (audit log) -->
+  <div class="card" style="margin-top:1rem">
+    <div class="ins-section-title" style="margin-top:0">Sign-in Activity</div>
+    <p style="font-family:Arial,sans-serif;font-size:.82rem;color:var(--gray-3);margin:.25rem 0 .6rem">
+      Recent sign-ins, failed attempts and lockouts for both portals, from the audit log.</p>
+    <button type="button" class="btn btn-secondary" data-on-click='[["loadSignInActivity",[]]]'>Show recent activity</button>
+    <div id="sign-in-activity" style="margin-top:.75rem"></div>
+  </div>
 </div><!-- /tab-insights -->

@@ -199,6 +199,31 @@ it the site has no starter topics or launch posts, and the writer picks its own 
 
 ## Later: turning on the portals
 
-Remove `PUBLIC_SITE_ONLY`, set `ATTORNEY_ENDOCIDE_HASH` (and any other attorney
-hashes), and configure Stripe/Coinbase webhooks and Google Calendar. Do a
-security review before enabling client logins on the public internet.
+Render runs `gunicorn wsgi:application` (see `render.yaml`). `wsgi.py` serves the
+public site on every host and the portals only on `PORTAL_URL`'s host, as two
+separate apps with separate cookies, from this one service and disk.
+
+1. In Render, add the portal domain (for example `portal.midtennlegal.com`) to
+   this service and point its DNS there.
+2. Set `PORTAL_URL` to that address (with `https://`), and `SITE_URL` to the
+   public site's address. Remove `PUBLIC_SITE_ONLY`.
+3. Set `ATTORNEY_ENDOCIDE_HASH`. At the first attorney sign-in the portal asks
+   you to set up an authenticator app; do that straight away and store the
+   recovery codes. A lost phone is reset with `scripts\reset_attorney_2fa.py`.
+4. Point the Stripe, Coinbase and Dropbox Sign webhooks at the portal host
+   (`https://<portal host>/webhooks/...`), and configure Google Calendar.
+
+Clients never register themselves: an intake waits under Incoming Leads until
+you approve it, which emails the client a single-use link to set a password.
+
+### Data and backups
+
+Client records live in a SQLite database at `DATA_DIR/db/mt-legal.db`. The
+first start after this change moves any old `client-accounts/*.json` files into
+it by itself, keeping the originals in `DATA_DIR/migration-backup/`. Locally,
+run `python scripts\migrate_to_db.py` instead (dry run first).
+
+Back up with `python scripts\backup_data.py create --out <folder>`; it needs
+`BACKUP_ENCRYPTION_KEY`, a key of its own. A backup left on the same disk does
+not survive losing the disk, so copy the file off the server, keep both keys
+somewhere else, and try a restore now and then.
