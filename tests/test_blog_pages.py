@@ -219,3 +219,14 @@ def test_blog_post_markup_links_author_and_firm(client):
     assert post["author"]["@id"] == "http://localhost/meet-the-firm#person"
     assert post["publisher"]["@id"] == "http://localhost/#firm"
     assert post["image"].endswith("/static/images/og-image.jpg")
+
+
+def test_retired_post_redirects_or_404s(client):
+    for slug, target in blog.RETIRED.items():
+        published(title=slug.replace("-", " "))
+        resp = client.get(f"/blog/{slug}")
+        if target:
+            assert resp.status_code == 301 and resp.headers["Location"].endswith(f"/blog/{target}")
+        else:
+            assert resp.status_code == 404
+

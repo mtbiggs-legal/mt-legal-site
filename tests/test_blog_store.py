@@ -134,3 +134,13 @@ def test_seed_post_is_dated_when_it_first_goes_live(patch_dirs):
     # A later boot keeps the original date.
     blog.seed_from_repo(datetime(2026, 12, 1, 9))
     assert blog.load_post(post["slug"])["published_at"] == launch.isoformat()
+
+
+def test_retired_posts_leave_the_listings(patch_dirs):
+    from datetime import datetime
+    for slug in blog.RETIRED:
+        p = blog.new_post("Old post", "s", "b", "civil-rights", "article", now=datetime(2026, 10, 1))
+        p.update(slug=slug, status="published", published_at="2026-10-01T09:00:00")
+        blog.save_post(p)
+    assert not {p["slug"] for p in blog.published_posts()} & set(blog.RETIRED)
+

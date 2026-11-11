@@ -359,9 +359,10 @@ def init_app(app) -> None:
 # carry this request's nonce; inline on*= handlers are blocked (pages use
 # data-on-* attributes, see static/js/events.js). Styles may stay inline.
 # Responses that set their own policy (document previews) keep it.
+# Frames: the blog's YouTube videos, from the privacy-enhanced domain only.
 CSP = ("default-src 'self'; script-src 'self' 'nonce-{nonce}'; "
        "style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; "
-       "connect-src 'self'; frame-src 'self'; frame-ancestors 'none'; "
+       "connect-src 'self'; frame-src 'self' https://www.youtube-nocookie.com; frame-ancestors 'none'; "
        "form-action 'self'; base-uri 'self'; object-src 'none'")
 
 

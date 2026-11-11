@@ -326,3 +326,82 @@ document.addEventListener("click", function (e) {
   seen.forEach(function (el) { io.observe(el); });
   root.classList.add("rv-ready");
 })();
+
+// YouTube videos (templates/_video.html): a thumbnail button until pressed.
+// Pressing play grows the video out of its thumbnail into a large player over a
+// tinted page; Escape, the close button or a click outside closes it and stops
+// the video. Nothing loads from YouTube until then. The site sends no
+// cross-site referrer, and YouTube's player won't run without one, so the frame
+// sets its own policy.
+(function () {
+  var modal = null, opener = null;
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  function close() {
+    if (!modal) return;
+    var m = modal;
+    modal = null;
+    m.classList.remove("is-open");
+    document.documentElement.classList.remove("yt-modal-open");
+    var frame = m.querySelector("iframe");
+    if (frame) frame.remove();               // stops playback
+    setTimeout(function () { m.remove(); }, reduce.matches ? 0 : 250);
+    if (opener) opener.focus();
+  }
+
+  function open(btn) {
+    opener = btn;
+    var title = btn.dataset.ytTitle || "Video";
+    var m = document.createElement("div");
+    m.className = "yt-modal";
+    m.setAttribute("role", "dialog");
+    m.setAttribute("aria-modal", "true");
+    m.setAttribute("aria-label", title);
+    var box = document.createElement("div");
+    box.className = "yt-modal-box";
+    var shut = document.createElement("button");
+    shut.type = "button";
+    shut.className = "yt-modal-close";
+    shut.setAttribute("aria-label", "Close video");
+    shut.textContent = "×";
+    var frame = document.createElement("iframe");
+    frame.src = "https://www.youtube-nocookie.com/embed/" + encodeURIComponent(btn.dataset.ytId) +
+                "?autoplay=1&rel=0";
+    frame.title = title;
+    frame.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+    frame.referrerPolicy = "strict-origin-when-cross-origin";
+    frame.allowFullscreen = true;
+    box.appendChild(frame);
+    m.appendChild(box);
+    m.appendChild(shut);
+    document.body.appendChild(m);
+    document.documentElement.classList.add("yt-modal-open");
+    modal = m;
+
+    // Start the box over the thumbnail, then let it grow into place.
+    if (!reduce.matches) {
+      var from = btn.getBoundingClientRect(), to = box.getBoundingClientRect();
+      box.style.transformOrigin = "0 0";
+      box.style.transform = "translate(" + (from.left - to.left) + "px," + (from.top - to.top) + "px) " +
+                            "scale(" + (from.width / to.width) + "," + (from.height / to.height) + ")";
+      void box.offsetWidth;
+      box.style.transition = "transform .45s cubic-bezier(.2, .7, .2, 1)";
+      box.style.transform = "none";
+    }
+    requestAnimationFrame(function () { m.classList.add("is-open"); });
+    shut.focus();
+
+    shut.addEventListener("click", close);
+    m.addEventListener("click", function (e) { if (e.target === m) close(); });
+    // Keep keyboard focus inside the dialog.
+    m.addEventListener("keydown", function (e) {
+      if (e.key === "Tab") { e.preventDefault(); (document.activeElement === shut ? frame : shut).focus(); }
+    });
+  }
+
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest(".yt-play");
+    if (btn) open(btn);
+  });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") close(); });
+})();

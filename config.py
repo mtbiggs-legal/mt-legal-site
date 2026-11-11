@@ -209,7 +209,7 @@ class Settings:
         self.FIRM_WEBSITE       = "midtennlegal.com"
         # The firm's public listings (Google Business Profile, Avvo, Justia,
         # social accounts). Published as sameAs so search engines join them up.
-        self.FIRM_PROFILES = []
+        self.FIRM_PROFILES = ["https://www.youtube.com/@MTLEGAL615"]
 
         # ── Google Calendar ──────────────────────────────────────────────────
         self.CALENDAR_SCOPES = [

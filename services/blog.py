@@ -43,6 +43,16 @@ ESTATE_LABEL = "Estate Planning"
 ESTATE_PAGE = "family-law"
 
 
+# Posts retired after going live. Their files stay on the server's disk, but
+# the site treats them as gone: they leave the blog, feed and sitemap, and their
+# address redirects to the post named here, or returns 404 when it's None.
+RETIRED = {
+    "traffic-stop-tips-protecting-your-rights-on-tennessee-roads": None,
+    "revocable-living-trust-or-will-which-does-your-plan-need":
+        "structuring-digital-assets-trusts-entities-and-access-plans-for-crypto",
+}
+
+
 def area_label(slug: str) -> str:
     """The name readers see for a blog area ("" for an unknown area)."""
     if slug == "estate-business":
@@ -88,7 +98,8 @@ def list_posts(status: str | None = None) -> list:
 
 
 def published_posts(area: str | None = None) -> list:
-    return [p for p in list_posts("published") if area is None or p.get("area") == area]
+    return [p for p in list_posts("published")
+            if p.get("slug") not in RETIRED and (area is None or p.get("area") == area)]
 
 
 def make_slug(title: str) -> str:

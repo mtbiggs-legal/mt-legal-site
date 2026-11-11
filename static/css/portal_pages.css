@@ -1708,3 +1708,57 @@ details[open] > .ed-box-body,
     animation: rvFadeIn .4s ease var(--rv-cue-delay, 0ms) both;
   }
 }
+
+/* ── YouTube videos (templates/_video.html) ─────────────────────────────── */
+.yt { margin: 0; }
+.yt-frame { position: relative; aspect-ratio: 16 / 9; background: var(--navy); overflow: hidden; }
+.yt-frame iframe, .yt-play { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.yt-play { padding: 0; cursor: pointer; background: var(--navy); }
+/* hqdefault thumbnails are 4:3 with bars; cover crops them to 16:9. */
+.yt-play img { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity .2s; }
+.yt-play:hover img, .yt-play:focus-visible img { opacity: .85; }
+/* Bottom-right corner, clear of the titles on the firm's thumbnails. */
+.yt-icon {
+  position: absolute; right: 12px; bottom: 12px;
+  width: 52px; height: 36px;
+  background: rgba(20, 24, 31, .82); border-radius: 8px;
+  transition: background .2s;
+}
+.yt-icon::after {
+  content: ""; position: absolute; left: 21px; top: 11px;
+  border-style: solid; border-width: 7px 0 7px 12px;
+  border-color: transparent transparent transparent #FFFDF9;
+}
+.yt-play:hover .yt-icon, .yt-play:focus-visible .yt-icon { background: var(--gold); }
+.yt-play:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.yt figcaption { margin-top: .6rem; font-size: .95rem; }
+.yt figcaption a { color: var(--ink); text-decoration: none; }
+.yt figcaption a:hover { color: var(--accent); text-decoration: underline; text-underline-offset: .2em; }
+.blog-post-video { margin-bottom: 2rem; }
+/* The large player (site.js): grows out of the thumbnail over a tinted page. */
+.yt-modal {
+  /* Above the chat widget (9999), so the whole page dims. */
+  position: fixed; inset: 0; z-index: 10000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 4rem 1rem;
+  background: rgba(10, 12, 16, 0);
+  transition: background .3s ease;
+}
+.yt-modal.is-open { background: rgba(10, 12, 16, .86); }
+.yt-modal-box {
+  width: min(1100px, 100%, calc((100vh - 8rem) * 16 / 9));
+  aspect-ratio: 16 / 9;
+  background: #000;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, .55);
+}
+.yt-modal-box iframe { width: 100%; height: 100%; border: 0; display: block; }
+.yt-modal-close {
+  position: absolute; top: 1rem; right: 1rem;
+  width: 44px; height: 44px;
+  border: 1px solid rgba(255, 253, 249, .4); border-radius: 50%;
+  background: rgba(20, 24, 31, .6); color: #FFFDF9;
+  font-size: 1.6rem; line-height: 1; cursor: pointer;
+}
+.yt-modal-close:hover, .yt-modal-close:focus-visible { background: var(--gold); border-color: var(--gold); }
+.yt-modal-open, .yt-modal-open body { overflow: hidden; }
+@media (prefers-reduced-motion: reduce) { .yt-modal { transition: none; } }

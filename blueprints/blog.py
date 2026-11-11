@@ -4,9 +4,9 @@ from datetime import datetime
 from email.utils import format_datetime
 from xml.sax.saxutils import escape
 
-from flask import Blueprint, Response, abort, make_response, render_template, request, url_for
+from flask import Blueprint, Response, abort, make_response, redirect, render_template, request, url_for
 
-from services import blog
+from services import blog, videos
 from blueprints.practice_areas import PRACTICE_AREAS
 from shared import FIRM_NAME, require_auth, public
 
@@ -68,11 +68,17 @@ def feed():
 @public
 @require_auth
 def post(slug):
+    if slug in blog.RETIRED:
+        target = blog.RETIRED[slug]
+        if target:
+            return redirect(url_for("blog.post", slug=target), 301)
+        abort(404)
     p = blog.load_post(slug)
     if not p or p.get("status") != "published":
         abort(404)
     blocks = blog.parse_body(p.get("body", ""))
     return render_template("blog_post.html", post=p, blocks=blocks,
+                           video=videos.for_post(p["slug"]), embed_origin=videos.EMBED_ORIGIN,
                            faq=blog.faq_entries(blocks) if p.get("format") == "qa" else [],
                            area_name=blog.area_label(p.get("area")),
                            area_page=blog.area_page(p.get("area")),

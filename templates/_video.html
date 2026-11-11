@@ -1,0 +1,28 @@
+{# YouTube videos (services/videos.py). The player is a thumbnail button until a
+   visitor presses play; site.js then swaps in the privacy-enhanced embed. #}
+
+{% macro player(v) %}
+<figure class="yt">
+  <div class="yt-frame">
+    <button type="button" class="yt-play" data-yt-id="{{ v.id }}" data-yt-title="{{ v.title }}"
+            aria-label="Play video: {{ v.title }}">
+      <img src="https://i.ytimg.com/vi/{{ v.id }}/hqdefault.jpg" alt="" loading="lazy" width="480" height="360">
+      <span class="yt-icon" aria-hidden="true"></span>
+    </button>
+  </div>
+  <figcaption>
+    <a href="https://www.youtube.com/watch?v={{ v.id }}" target="_blank" rel="noopener">{{ v.title }}</a>
+  </figcaption>
+</figure>
+{% endmacro %}
+
+{% macro video_object(v, embed_origin) -%}
+{"@type": "VideoObject",
+ "name": {{ v.title | tojson }},
+ "description": {{ v.summary | tojson }},
+ "thumbnailUrl": {{ ('https://i.ytimg.com/vi/' ~ v.id ~ '/hqdefault.jpg') | tojson }},
+ "uploadDate": {{ v.uploaded | tojson }},
+ "duration": {{ v.duration | tojson }},
+ "embedUrl": {{ (embed_origin ~ '/embed/' ~ v.id) | tojson }},
+ "url": {{ ('https://www.youtube.com/watch?v=' ~ v.id) | tojson }}}
+{%- endmacro %}

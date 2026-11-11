@@ -1,0 +1,64 @@
+# Videos from the firm's YouTube channel, each shown at the top of its blog post.
+# Loaded by services/videos.py. Edit here; no Python needed.
+#
+# To add one, copy a [[videos]] block:
+#   id        the part after "v=" in the YouTube link
+#   title     as it appears on YouTube
+#   summary   one plain sentence, shown to search engines
+#   uploaded  the upload date and time from YouTube
+#   duration  length as PT<minutes>M<seconds>S, e.g. PT2M37S
+#   post      the blog post's slug (the end of its address); the video shows
+#             at the top of that post
+#
+# Long text uses """\ ... """ strings: a line ending in a backslash joins onto
+# the next line, so keep the space before each backslash.
+
+[[videos]]
+id = "BXO48C2KJls"
+title = "Blockchain 101"
+summary = """\
+    Blockchain explained from scratch, built on one familiar image: a shared \
+    notebook that records who owns what."""
+uploaded = "2026-11-10T19:32:47-08:00"
+duration = "PT2M37S"
+post = "blockchain-101-a-plain-english-guide-to-how-it-works"
+
+[[videos]]
+id = "3xtxv-eRJvY"
+title = "Crypto 101"
+summary = """\
+    Cryptocurrency from zero: what it is, how Bitcoin began, and the basics of \
+    wallets, addresses and private keys."""
+uploaded = "2026-11-10T19:35:48-08:00"
+duration = "PT2M35S"
+post = "crypto-101-what-cryptocurrencies-are-used-for-from-payments-to-defi"
+
+[[videos]]
+id = "XN7Mcgw5oIU"
+title = "Tokenization 101 RWAs and Stocks"
+summary = """\
+    How ownership of real things, from buildings and bonds to company stock, can \
+    be represented by digital tokens on a blockchain."""
+uploaded = "2026-11-10T19:38:10-08:00"
+duration = "PT2M46S"
+post = "tokenization-101-how-real-world-assets-move-on-chain"
+
+[[videos]]
+id = "SmgnQT8mBPg"
+title = "Agentic Commerce 101 AI and Crypto"
+summary = """\
+    AI agents that act and pay on a person's behalf, and why stablecoins are \
+    emerging as their way to pay."""
+uploaded = "2026-11-10T19:40:17-08:00"
+duration = "PT2M37S"
+post = "the-genius-act-and-your-business-stablecoin-questions-answered"
+
+[[videos]]
+id = "XXP0ieuBMXw"
+title = "Crypto Inheritance 101 Multisig and Trusts"
+summary = """\
+    How a multisig wallet paired with a trust can let a family reach crypto \
+    without anyone handing over control today."""
+uploaded = "2026-11-10T19:43:31-08:00"
+duration = "PT2M37S"
+post = "structuring-digital-assets-trusts-entities-and-access-plans-for-crypto"
