@@ -6,6 +6,26 @@
 <style>
 .main-content { max-width: 100%; padding: 0; }
 </style>
+{# The service this page offers, tied to the firm and attorney, plus its place in the site. #}
+<script type="application/ld+json">
+[{
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "name": {{ area.name | tojson }},
+  "serviceType": {{ area.name | tojson }},
+  "description": {{ area.tagline | tojson }},
+  "url": {{ request.base_url | tojson }},
+  "provider": {"@type": "LegalService", "@id": {{ (site_link('public.index', _external=True) ~ '#firm') | tojson }}, "name": {{ firm_name | tojson }}},
+  "areaServed": [{% for c in service_counties %}{"@type": "AdministrativeArea", "name": {{ (c ~ " County, Tennessee") | tojson }}}{% if not loop.last %}, {% endif %}{% endfor %}]
+}, {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": {{ firm_name | tojson }}, "item": {{ site_link('public.index', _external=True) | tojson }}},
+    {"@type": "ListItem", "position": 2, "name": {{ area.name | tojson }}, "item": {{ request.base_url | tojson }}}
+  ]
+}]
+</script>
 {% if area.faqs %}
 <script type="application/ld+json">
 {

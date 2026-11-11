@@ -11,8 +11,11 @@
   "description": {{ post.summary | tojson }},
   "datePublished": {{ (post.published_at or '') | tojson }},
   "dateModified": {{ (post.updated_at or post.published_at or '') | tojson }},
-  "author": {"@type": "Person", "name": {{ partner.display | tojson }}},
-  "publisher": {"@type": "LegalService", "name": {{ firm_name | tojson }}},
+  "author": {"@type": "Person", "@id": {{ (site_link('public.meet_the_firm', _external=True) ~ '#person') | tojson }},
+             "name": {{ partner.display | tojson }}, "url": {{ site_link('public.meet_the_firm', _external=True) | tojson }}},
+  "publisher": {"@type": "LegalService", "@id": {{ (site_link('public.index', _external=True) ~ '#firm') | tojson }},
+                "name": {{ firm_name | tojson }}},
+  "image": {{ url_for('static', filename='images/og-image.jpg', v=None, _external=True) | tojson }},
   "mainEntityOfPage": {{ request.base_url | tojson }}
 }
 </script>

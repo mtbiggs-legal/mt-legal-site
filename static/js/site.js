@@ -215,3 +215,96 @@ document.addEventListener("click", function (e) {
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeAll(); });
   window.addEventListener("resize", sync);
 })();
+
+// Scroll reveals: sections fade up as they come into view, and the cards in a
+// grid arrive one after another. base.html adds .rv-on to <html> before the
+// first paint (not for reduced motion); the CSS hides these elements until
+// they get .rv-in, and .rv-done hands them back to their normal styles.
+(function () {
+  var root = document.documentElement;
+  if (!root.classList.contains("rv-on")) return;
+  window._rvReady = true;
+  // Groups whose children arrive one at a time, and the gap between them.
+  var STAGGERED = [
+    [".ed-hero-text", 160], [".ed-page-head", 120],
+    ["#practice .ed-grid", 140],
+    [".ed-grid", 90], [".ed-boxes", 90], [".ed-layers", 90],
+  ];
+  var SINGLE = ".ed-subhead, .ed-overview, .ed-quote, .ed-cta";
+  var seen = [];
+
+  // Homepage hero: "what comes next." rolls up into place, then the paragraph
+  // below writes itself in word by word.
+  var heroText = document.querySelector(".ed-hero--home .ed-hero-text");
+  if (heroText) {
+    var em = heroText.querySelector("h1 em");
+    if (em) em.classList.add("rv-roll");
+    var lede = heroText.querySelector(".ed-lede");
+    if (lede) {
+      seen.push(lede);   // its words animate instead of the whole block
+      var WORDS_START = 1200, WORD_STEP = 55;
+      splitWords(lede, WORDS_START, WORD_STEP);
+      // Phones show a "Read more" cue; it waits until the first sentence is written.
+      var first = lede.querySelector(".ed-lede-first");
+      var firstCount = first ? first.querySelectorAll(".rv-word").length
+                                   : lede.querySelectorAll(".rv-word").length;
+      var cueAt = WORDS_START + firstCount * WORD_STEP;
+      lede.style.setProperty("--rv-cue-delay", cueAt + "ms");
+      // Once the cue has faded in, let the fold's own show/hide take over again.
+      setTimeout(function () { lede.classList.add("rv-lede-done"); }, cueAt + 450);
+    }
+  }
+  // Wrap each word of el's text in a span with its own start time; returns the count.
+  function splitWords(el, start, step) {
+    var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    var nodes = [], n = 0;
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(function (node) {
+      var frag = document.createDocumentFragment();
+      node.nodeValue.split(/(\s+)/).forEach(function (part) {
+        if (!part) return;
+        if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); return; }
+        var span = document.createElement("span");
+        span.className = "rv-word";
+        span.style.setProperty("--d", (start + n++ * step) + "ms");
+        span.textContent = part;
+        frag.appendChild(span);
+      });
+      node.parentNode.replaceChild(frag, node);
+    });
+    return n;
+  }
+
+  function mark(el, delay) {
+    if (seen.indexOf(el) !== -1) return;
+    seen.push(el);
+    el.classList.add("rv");
+    el.style.setProperty("--rv-delay", delay + "ms");
+  }
+  STAGGERED.forEach(function (g) {
+    document.querySelectorAll(g[0]).forEach(function (group) {
+      Array.prototype.forEach.call(group.children, function (child, i) {
+        mark(child, Math.min(i, 8) * g[1]);
+      });
+    });
+  });
+  document.querySelectorAll(SINGLE).forEach(function (el) { mark(el, 0); });
+
+  function done(el) {
+    el.classList.add("rv-done");
+    el.style.removeProperty("--rv-delay");
+  }
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (!e.isIntersecting) return;
+      var el = e.target;
+      io.unobserve(el);
+      el.classList.add("rv-in");
+      // Hand back to the element's own transitions (hover lifts) once in place.
+      var ms = parseFloat(getComputedStyle(el).getPropertyValue("--rv-delay")) || 0;
+      setTimeout(function () { done(el); }, ms + 800);
+    });
+  }, { rootMargin: "0px 0px -8% 0px", threshold: 0.12 });
+  seen.forEach(function (el) { io.observe(el); });
+  root.classList.add("rv-ready");
+})();

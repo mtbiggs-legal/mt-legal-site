@@ -12,7 +12,7 @@ LEVELS = {"public", "portal", "attorney", "client"}
 EXPECTED_PUBLIC = {
     "healthz", "static",
     "public.index", "public.meet_the_firm", "public.favicon", "public.robots_txt",
-    "public.google_site_verification",
+    "public.google_site_verification", "public.indexnow_key",
     "public.llms_txt", "public.llms_full_txt", "public.sitemap_xml", "public.case_search",
     "public.how_it_works", "public.why_nashville", "public.emerging_tech",
     "public.practice_area", "public.capture_lead", "public.follow_up_schedule",

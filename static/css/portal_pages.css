@@ -1670,3 +1670,40 @@ details[open] > .ed-box-body,
 /* Hover states that used to be inline onmouseover handlers (CSP). */
 .fee-schedule-btn:hover   { background: rgba(168,136,60,.2) !important; }
 .fee-schedule-close:hover { color: #fff !important; }
+
+/* ── Scroll reveals (site.js) ───────────────────────────────────────────────
+   Only while <html> has .rv-on, which base.html sets unless the visitor asked
+   for reduced motion. .rv-done drops these rules so hover effects work again. */
+.rv-on .rv:not(.rv-done) { opacity: 0; transform: translateY(22px); }
+.rv-on .rv.rv-in:not(.rv-done) {
+  opacity: 1; transform: none;
+  transition: opacity .7s ease var(--rv-delay, 0ms),
+              transform .7s cubic-bezier(.2, .7, .2, 1) var(--rv-delay, 0ms);
+}
+/* Until site.js has marked the page, keep the hero text from flashing. */
+.rv-on:not(.rv-ready) .ed-hero-text > * { opacity: 0; }
+/* The homepage photo settles from a slight zoom as the page opens. */
+.rv-on .ed-hero--home { overflow: hidden; }
+.rv-on .ed-hero--home .ed-hero-photo { animation: rvSettle 1.8s cubic-bezier(.2, .7, .2, 1) both; }
+@keyframes rvSettle { from { transform: scale(1.06); } to { transform: none; } }
+/* Homepage hero: "what comes next." rolls up, then the paragraph writes in. */
+.rv-on .rv-roll {
+  display: inline-block;
+  transform-origin: 50% 100%;
+  animation: rvRoll .9s cubic-bezier(.2, .7, .2, 1) .45s both;
+}
+@keyframes rvRoll {
+  from { opacity: 0; transform: perspective(700px) rotateX(-75deg) translateY(.35em); }
+  to   { opacity: 1; transform: none; }
+}
+.rv-on .rv-word { display: inline-block; animation: rvWord .45s ease var(--d, 0ms) both; }
+@keyframes rvWord {
+  from { opacity: 0; transform: translateY(.35em); filter: blur(3px); }
+  to   { opacity: 1; transform: none; filter: none; }
+}
+@keyframes rvFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@media (max-width: 700px) {
+  .rv-on [data-lede-fold]:not(.is-open):not(.rv-lede-done) .ed-lede-first::after {
+    animation: rvFadeIn .4s ease var(--rv-cue-delay, 0ms) both;
+  }
+}

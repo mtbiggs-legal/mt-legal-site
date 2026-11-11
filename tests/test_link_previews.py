@@ -33,3 +33,24 @@ def test_meet_madison_profile_markup_names_the_headshot(client):
     # The firm's founder entry points at the same person.
     firm = next(b for b in blocks if b["@type"] == "LegalService")
     assert firm["founder"]["@id"] == person["@id"] == "http://localhost/meet-the-firm#person"
+
+
+def _flat(blocks):
+    for b in blocks:
+        yield from (b if isinstance(b, list) else [b])
+
+
+def test_firm_markup_has_contact_details_and_id(client):
+    firm = next(b for b in _flat(_json_ld(client.get("/").get_data(as_text=True)))
+                if b["@type"] == "LegalService")
+    assert firm["@id"] == "http://localhost/#firm"
+    assert firm["telephone"].startswith("+1-") and "@" in firm["email"]
+
+
+def test_practice_page_marks_up_service_and_breadcrumbs(client):
+    blocks = list(_flat(_json_ld(client.get("/practice/criminal-defense").get_data(as_text=True))))
+    service = next(b for b in blocks if b["@type"] == "Service")
+    assert service["name"] == "Criminal Defense"
+    assert service["provider"]["@id"] == "http://localhost/#firm"
+    crumbs = next(b for b in blocks if b["@type"] == "BreadcrumbList")["itemListElement"]
+    assert [c["position"] for c in crumbs] == [1, 2]

@@ -5,6 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="csrf-token" content="{{ csrf_token() }}" />
   <script nonce="{{ csp_nonce() }}">window._FIRM_NAME = {{ firm_name | tojson }};</script>
+  {% if app_kind != 'portal' %}
+  <script nonce="{{ csp_nonce() }}">
+  // Scroll reveals (site.js) start hidden, so switch them on before the first
+  // paint. Skipped for reduced motion; undone if site.js never takes over.
+  (function () {
+    if (!("IntersectionObserver" in window)) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var root = document.documentElement;
+    root.classList.add("rv-on");
+    setTimeout(function () { if (!window._rvReady) root.classList.remove("rv-on"); }, 3000);
+  })();
+  </script>
+  {% endif %}
   <script nonce="{{ csp_nonce() }}">
   // Adds the CSRF token to every same-origin state-changing fetch() and sends
   // the user to the login page when the server reports an expired session.
@@ -82,9 +95,13 @@
   {
     "@context": "https://schema.org",
     "@type": "LegalService",
+    "@id": {{ (site_link('public.index', _external=True) ~ '#firm') | tojson }},
     "name": {{ firm_name | tojson }},
     "description": "Solo law practice serving Nashville and Middle Tennessee.",
     "url": {{ request.url_root | tojson }},
+    "telephone": {{ ('+1-' ~ firm_phone) | tojson }},
+    "email": {{ firm_email | tojson }},{% if firm_profiles %}
+    "sameAs": {{ firm_profiles | tojson }},{% endif %}
     "logo": {{ url_for('static', filename='icons/icon-512.png', _external=True) | tojson }},
     "image": [{{ site_image | tojson }}, {{ url_for('static', filename='images/quote-justice.jpg', v=None, _external=True) | tojson }}],
     "founder": {"@type": "Person", "@id": {{ (site_link('public.meet_the_firm', _external=True) ~ '#person') | tojson }}, "name": {{ partner.display | tojson }}, "jobTitle": {{ partner.title | tojson }}},

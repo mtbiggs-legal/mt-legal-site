@@ -18,6 +18,7 @@ from itsdangerous import BadData, URLSafeTimedSerializer
 
 import shared
 from blueprints.practice_areas import PRACTICE_AREAS
+from services import indexnow
 from services.storage import read_json, write_json
 
 BLOG_AREAS = ("criminal-defense", "stablecoins", "rwa-tokenization", "civil-rights", "estate-business")
@@ -156,7 +157,8 @@ def publish(slug: str, now: datetime | None = None) -> bool:
         post["published_at"] = now.isoformat()
         post["updated_at"] = now.isoformat()
         save_post(post)
-        return True
+    _announce(slug)
+    return True
 
 
 def pull(slug: str) -> bool:
@@ -189,7 +191,13 @@ def takedown(slug: str) -> bool:
         post["status"] = "pulled"
         post["updated_at"] = datetime.now().isoformat()
         save_post(post)
-        return True
+    _announce(slug)
+    return True
+
+
+def _announce(slug: str) -> None:
+    """Tell search engines a post (and the blog index listing it) changed."""
+    indexnow.submit([f"/blog/{slug}", "/blog"])
 
 
 def update_post(slug: str, title: str, summary: str, body: str) -> dict:
@@ -206,7 +214,9 @@ def update_post(slug: str, title: str, summary: str, body: str) -> dict:
         # here, under the lock, so a concurrent publish can't be reverted.
         post.update(title=title, summary=summary, body=body, updated_at=datetime.now().isoformat())
         save_post(post)
-        return post
+    if post.get("status") == "published":
+        _announce(slug)
+    return post
 
 
 # ── Body format ───────────────────────────────────────────────────────────────

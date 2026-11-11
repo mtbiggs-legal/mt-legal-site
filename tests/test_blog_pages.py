@@ -211,3 +211,11 @@ def test_other_areas_keep_their_own_label_and_page(client):
     page = client.get(f"/blog/{p['slug']}").get_data(as_text=True)
     assert "Learn more about Civil Rights Litigation" in page
     assert 'href="/practice/civil-rights"' in page
+
+
+def test_blog_post_markup_links_author_and_firm(client):
+    p = published(title="Linked Up")
+    post = {d["@type"]: d for d in _ld(client.get(f"/blog/{p['slug']}").get_data(as_text=True))}["BlogPosting"]
+    assert post["author"]["@id"] == "http://localhost/meet-the-firm#person"
+    assert post["publisher"]["@id"] == "http://localhost/#firm"
+    assert post["image"].endswith("/static/images/og-image.jpg")

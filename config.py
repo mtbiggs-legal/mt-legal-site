@@ -207,6 +207,9 @@ class Settings:
         self.FIRM_PHONE_DISPLAY = get("FIRM_PHONE") or "615-606-2603"
         self.FIRM_EMAIL_DISPLAY = get("FIRM_EMAIL") or "mtbiggs@midtennlegal.com"
         self.FIRM_WEBSITE       = "midtennlegal.com"
+        # The firm's public listings (Google Business Profile, Avvo, Justia,
+        # social accounts). Published as sameAs so search engines join them up.
+        self.FIRM_PROFILES = []
 
         # ── Google Calendar ──────────────────────────────────────────────────
         self.CALENDAR_SCOPES = [

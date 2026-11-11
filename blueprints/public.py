@@ -12,7 +12,7 @@ import re
 import secrets
 
 import shared
-from services import blog, storage
+from services import blog, indexnow, storage
 from shared import public, csrf_exempt
 from services.security import rate_limit
 from shared import (
@@ -74,6 +74,13 @@ GOOGLE_SITE_VERIFICATION = "google60e1ea6c610b5ed3.html"
 def google_site_verification():
     return Response(f"google-site-verification: {GOOGLE_SITE_VERIFICATION}",
                     mimetype="text/html")
+
+
+# IndexNow ownership check: engines fetch the key file before trusting a ping.
+@public_bp.route(f"/{indexnow.KEY}.txt")
+@public
+def indexnow_key():
+    return Response(indexnow.KEY, mimetype="text/plain")
 
 
 # AI search, assistant and training crawlers, named so the welcome is explicit.
