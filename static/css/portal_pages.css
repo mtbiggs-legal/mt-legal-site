@@ -1762,3 +1762,20 @@ details[open] > .ed-box-body,
 .yt-modal-close:hover, .yt-modal-close:focus-visible { background: var(--gold); border-color: var(--gold); }
 .yt-modal-open, .yt-modal-open body { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) { .yt-modal { transition: none; } }
+
+/* Homepage quote band: the Where to Turn in Nashville link under the paragraph. */
+.ed-quote-link {
+  display: inline-flex; align-items: center; gap: .55rem;
+  margin-top: 1rem;
+  color: rgba(247,245,240,.9);
+  font-size: .9rem;
+  text-decoration: none;
+}
+.ed-quote-link span:first-of-type { text-decoration: underline; text-underline-offset: .25em; text-decoration-thickness: 1px; }
+.ed-quote-link:hover, .ed-quote-link:focus-visible { color: var(--gold-lt); }
+.ed-quote-link-arrow { width: 22px; height: 10px; flex: none; }
+/* Text for screen readers only. */
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
