@@ -243,11 +243,18 @@ document.addEventListener("click", function (e) {
     if (lede) {
       seen.push(lede);   // its words animate instead of the whole block
       var WORDS_START = 1200, WORD_STEP = 55;
-      splitWords(lede, WORDS_START, WORD_STEP);
+      var count = splitWords(lede, WORDS_START, WORD_STEP);
+      // Once every word is in, put the plain text back. Some phone browsers
+      // (iOS Safari) can leave animated words drawn soft until they repaint.
+      setTimeout(function () {
+        lede.querySelectorAll(".rv-word").forEach(function (w) {
+          w.replaceWith(document.createTextNode(w.textContent));
+        });
+        lede.normalize();
+      }, WORDS_START + count * WORD_STEP + 700);
       // Phones show a "Read more" cue; it waits until the first sentence is written.
       var first = lede.querySelector(".ed-lede-first");
-      var firstCount = first ? first.querySelectorAll(".rv-word").length
-                                   : lede.querySelectorAll(".rv-word").length;
+      var firstCount = first ? first.querySelectorAll(".rv-word").length : count;
       var cueAt = WORDS_START + firstCount * WORD_STEP;
       lede.style.setProperty("--rv-cue-delay", cueAt + "ms");
       // Once the cue has faded in, let the fold's own show/hide take over again.
