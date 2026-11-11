@@ -288,6 +288,9 @@ document.addEventListener("click", function (e) {
     el.classList.add("rv");
     el.style.setProperty("--rv-delay", delay + "ms");
   }
+  // On a repeat visit only the homepage headline animates; the rest stays put.
+  var repeat = root.classList.contains("rv-static");
+  if (repeat) { STAGGERED = [[".ed-hero--home .ed-hero-text", 160]]; SINGLE = ""; }
   STAGGERED.forEach(function (g) {
     document.querySelectorAll(g[0]).forEach(function (group) {
       Array.prototype.forEach.call(group.children, function (child, i) {
@@ -295,7 +298,15 @@ document.addEventListener("click", function (e) {
       });
     });
   });
-  document.querySelectorAll(SINGLE).forEach(function (el) { mark(el, 0); });
+  if (SINGLE) document.querySelectorAll(SINGLE).forEach(function (el) { mark(el, 0); });
+  // Remember this page, so the next visit to it stays still.
+  try {
+    var pages = JSON.parse(localStorage.getItem("mtl-seen-pages") || "[]");
+    if (pages.indexOf(location.pathname) === -1) {
+      pages.push(location.pathname);
+      localStorage.setItem("mtl-seen-pages", JSON.stringify(pages.slice(-200)));
+    }
+  } catch (e) {}
 
   function done(el) {
     el.classList.add("rv-done");

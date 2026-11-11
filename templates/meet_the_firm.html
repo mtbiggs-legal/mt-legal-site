@@ -111,6 +111,8 @@
 
   .mp-bio p { color: var(--muted); font-size: .98rem; line-height: 1.85; margin-bottom: 1.2rem; max-width: 66ch; }
   .mp-bio p.mp-lead { font-family: var(--font-display); font-size: 1.25rem; line-height: 1.6; color: var(--ink-2); }
+  /* Second intro paragraph, set like the section titles below it. */
+  .mp-bio p.mp-sub { font-family: var(--font-display); font-size: 1.35rem; line-height: 1.4; letter-spacing: -.015em; color: var(--ink); }
   .mp-bio h2 { font-size: 1.35rem; margin: 2.5rem 0 1rem; }
   .mp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.75rem 2.5rem; margin-top: 2.5rem; }
   .mp-grid h3 {
@@ -235,7 +237,6 @@
     .law-quote-photo-content { padding: 2.5rem 1.5rem; }
   }
   /* The short bio beside the photo is for phones only. */
-  .mp-short-crypto { display: block; margin-top: .45rem; }
   .mp-short { display: none; }
   @media (max-width: 700px) {
     /* Phones: photo and short bio side by side, name and title beneath both. */
@@ -294,9 +295,7 @@
            alt="{{ partner.display }}, {{ partner.title }} of {{ firm_name }}" />
     </picture>
     <p class="mp-short">A trial attorney with a passion for the underdog, forged over five
-      years of uphill criminal fights.
-      <span class="mp-short-crypto">Since 2017, that same fight carries into DeFi: protecting
-      your right to own and control what is yours.</span></p>
+      years of uphill criminal fights.</p>
     <div class="mp-name">{{ partner.display }}</div>
     <div class="mp-title">{{ partner.title }}</div>
     <ul class="mp-facts">
@@ -314,9 +313,11 @@
     <section class="mp-bio-part">
     <p class="mp-lead">{{ partner.name }} is a trial attorney who has been involved in the crypto
       space since 2017, and he built {{ firm_name }} around one idea: the client comes first,
-      especially when the other side is bigger. As an attorney with the Public Defender&rsquo;s
-      Office of Metropolitan Nashville &amp; Davidson County, he stood between individuals and the
-      full weight of the state.</p>
+      especially when the other side is bigger.</p>
+
+    <p class="mp-sub">As an attorney with the Public Defender&rsquo;s Office of Metropolitan
+      Nashville &amp; Davidson County, he stood between individuals and the full weight of the
+      state.</p>
 
     <p>Today he brings that courtroom experience to DeFi and
       digital-asset clients, whose privacy, ownership, and self-custody are on the line against
@@ -327,8 +328,10 @@
       Science from Middle Tennessee State University, he spent two years as a Deputy Court Clerk
       in the Rutherford County circuit criminal court (2016&ndash;2018), seeing how cases move
       from filing to disposition. At Belmont University College of Law he interned with the
-      Tennessee Justice Center and the Rutherford County District Attorney&rsquo;s Office,
-      giving him a view of both sides of a prosecution before he chose defense.</p>
+      Tennessee Justice Center, whose work focuses on Tennessee&rsquo;s safety-net programs and
+      on helping uninsured Tennesseans gain access to health care. He also interned with the
+      Rutherford County District Attorney&rsquo;s Office, giving him a view of both sides of a
+      prosecution before he chose defense.</p>
 
     <p>At the Nashville Defenders, Madison handled a wide range of misdemeanor and felony
       cases, secured multiple non-convictions, and connected clients to the housing, treatment,
@@ -373,6 +376,16 @@
       by their wealth.&rdquo; He focuses on representing underserved Nashville residents,
       mentoring law students, and ensuring that access to justice is not determined by
       financial circumstances.</p>
+    <button type="button" class="mp-read-more" aria-expanded="false">Read more</button>
+    </section>
+
+    <section class="mp-bio-part">
+    <h2>Outside the law</h2>
+    <p>Madison&rsquo;s roots in Middle Tennessee go back to grade school. He grew up here,
+      and the communities that raised him are the same ones he serves today.</p>
+    <p>He and his wife, Hannah, make their home in Nashville with their two dogs. They love
+      the city&rsquo;s culture, and Madison stays involved in the creative and cultural
+      community that makes Nashville feel like home.</p>
     <button type="button" class="mp-read-more" aria-expanded="false">Read more</button>
     </section>
     </div>

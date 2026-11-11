@@ -1683,8 +1683,9 @@ details[open] > .ed-box-body,
 /* Until site.js has marked the page, keep the hero text from flashing. */
 .rv-on:not(.rv-ready) .ed-hero-text > * { opacity: 0; }
 /* The homepage photo settles from a slight zoom as the page opens. */
-.rv-on .ed-hero--home { overflow: hidden; }
-.rv-on .ed-hero--home .ed-hero-photo { animation: rvSettle 1.8s cubic-bezier(.2, .7, .2, 1) both; }
+/* First visit only, like the scroll reveals. */
+.rv-on:not(.rv-static) .ed-hero--home { overflow: hidden; }
+.rv-on:not(.rv-static) .ed-hero--home .ed-hero-photo { animation: rvSettle 1.8s cubic-bezier(.2, .7, .2, 1) both; }
 @keyframes rvSettle { from { transform: scale(1.06); } to { transform: none; } }
 /* Homepage hero: "what comes next." rolls up, then the paragraph writes in. */
 .rv-on .rv-roll {

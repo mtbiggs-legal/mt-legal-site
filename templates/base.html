@@ -9,11 +9,17 @@
   <script nonce="{{ csp_nonce() }}">
   // Scroll reveals (site.js) start hidden, so switch them on before the first
   // paint. Skipped for reduced motion; undone if site.js never takes over.
+  // A page this visitor has opened before stays still (.rv-static), apart
+  // from the homepage headline and intro.
   (function () {
     if (!("IntersectionObserver" in window)) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     var root = document.documentElement;
     root.classList.add("rv-on");
+    try {
+      var pages = JSON.parse(localStorage.getItem("mtl-seen-pages") || "[]");
+      if (pages.indexOf(location.pathname) !== -1) root.classList.add("rv-static");
+    } catch (e) {}
     setTimeout(function () { if (!window._rvReady) root.classList.remove("rv-on"); }, 3000);
   })();
   </script>
